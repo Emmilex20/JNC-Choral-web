@@ -1,7 +1,6 @@
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import { prisma } from "@/lib/prisma";
-import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 
 function fmt(d: Date) {
   return new Intl.DateTimeFormat("en-NG", {
@@ -42,7 +41,15 @@ export default async function EventsPage() {
               {upcoming.length === 0 ? (
                 <p className="text-sm text-white/60">No upcoming events yet.</p>
               ) : (
-                upcoming.map((e: { id: Key | null | undefined; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; startsAt: Date; endsAt: Date; location: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; description: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+                upcoming.map(
+                  (e: {
+                    id: string;
+                    title: string;
+                    description: string | null;
+                    location: string | null;
+                    startsAt: Date;
+                    endsAt: Date | null;
+                  }) => (
                   <div
                     key={e.id}
                     className="rounded-2xl border border-white/10 bg-black/30 p-4"
@@ -50,7 +57,7 @@ export default async function EventsPage() {
                     <p className="font-semibold text-white">{e.title}</p>
                     <p className="mt-1 text-xs text-white/70">
                       {fmt(e.startsAt)}
-                      {e.endsAt ? ` – ${fmt(e.endsAt)}` : ""}
+                      {e.endsAt ? ` - ${fmt(e.endsAt)}` : ""}
                     </p>
                     {e.location ? (
                       <p className="mt-1 text-xs text-white/70">{e.location}</p>
@@ -70,7 +77,14 @@ export default async function EventsPage() {
               {past.length === 0 ? (
                 <p className="text-sm text-white/60">No past events yet.</p>
               ) : (
-                past.map((e: { id: Key | null | undefined; title: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; startsAt: Date; location: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; description: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; }) => (
+                past.map(
+                  (e: {
+                    id: string;
+                    title: string;
+                    description: string | null;
+                    location: string | null;
+                    startsAt: Date;
+                  }) => (
                   <div
                     key={e.id}
                     className="rounded-2xl border border-white/10 bg-black/30 p-4"
