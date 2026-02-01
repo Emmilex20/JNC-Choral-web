@@ -32,7 +32,8 @@ export default async function NewsPage() {
               No announcements yet.
             </div>
           ) : (
-            announcements.map((a) => (
+            announcements.map(
+              (a: { id: string; title: string; body: string; createdAt: Date }) => (
               <Link
                 key={a.id}
                 href={`/news/${a.id}`}
