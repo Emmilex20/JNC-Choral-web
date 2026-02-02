@@ -90,13 +90,23 @@ export default async function AuditionStatusPage() {
                         {new Date(app.createdAt).toLocaleString()}
                       </p>
                     </div>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${statusBadge(
-                        app.status
-                      )}`}
-                    >
-                      {app.status}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span
+                        className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${statusBadge(
+                          app.status
+                        )}`}
+                      >
+                        {app.status}
+                      </span>
+                      {app.status === "ACCEPTED" ? (
+                        <a
+                          href={`/auditions/status/${app.id}/download`}
+                          className="inline-flex items-center rounded-full border border-emerald-300/40 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-200 transition hover:bg-emerald-300/20"
+                        >
+                          Download status
+                        </a>
+                      ) : null}
+                    </div>
                   </div>
 
                   <div className="mt-4 grid gap-2 text-sm text-white/70 md:grid-cols-3">
