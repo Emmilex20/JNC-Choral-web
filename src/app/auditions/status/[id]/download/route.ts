@@ -98,7 +98,7 @@ export async function GET(
   const badgeText = "ACCEPTED";
   const badgeW = 60;
   const badgeH = 16;
-  page.drawRoundedRectangle({
+  page.drawRectangle({
     x: cardX + 14,
     y: y - 2,
     width: badgeW,
@@ -106,7 +106,6 @@ export async function GET(
     color: rgb(0.86, 0.98, 0.91),
     borderColor: rgb(0.67, 0.86, 0.72),
     borderWidth: 0.5,
-    radius: 8,
   });
   page.drawText(badgeText, {
     x: cardX + 20,
@@ -162,8 +161,9 @@ export async function GET(
   });
 
   const pdfBytes = await pdf.save();
+  const pdfBuffer = Buffer.from(pdfBytes);
 
-  return new NextResponse(pdfBytes, {
+  return new NextResponse(pdfBuffer, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
