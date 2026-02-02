@@ -69,10 +69,41 @@ export default async function HomePage() {
     },
   ];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    name: "Jude Nnam Choral",
+    url: "https://www.jnc-choral.vercel.app",
+    description:
+      "Jude Nnam Choral is a vibrant choir in Abuja, Nigeria. Auditions, events, and uplifting choral performances.",
+    areaServed: "Nigeria",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Abuja",
+      addressCountry: "NG",
+    },
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        contactType: "phone",
+        telephone: "+2348064087399",
+      },
+      {
+        "@type": "ContactPoint",
+        contactType: "phone",
+        telephone: "+234803943856",
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-black">
       <SiteNavbar />
       <Hero />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       <section className="mx-auto max-w-7xl px-4 pt-16 md:px-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">

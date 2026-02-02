@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "News",
+  description:
+    "Read the latest announcements and updates from Jude Nnam Choral in Abuja, Nigeria.",
+  alternates: {
+    canonical: "https://www.jnc-choral.vercel.app/news",
+  },
+};
 
 function fmt(d: Date) {
   return new Intl.DateTimeFormat("en-NG", {

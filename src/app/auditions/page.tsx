@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import AuditionForm from "./ui/audition-form";
+
+export const metadata: Metadata = {
+  title: "Auditions",
+  description:
+    "Register for Jude Nnam Choral auditions in Abuja. Apply as a singer, instrumentalist, or production crew.",
+  alternates: {
+    canonical: "https://www.jnc-choral.vercel.app/auditions",
+  },
+};
 
 export default function AuditionsPage() {
   return (

@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Events",
+  description:
+    "Explore upcoming and past Jude Nnam Choral events, rehearsals, and performances in Abuja.",
+  alternates: {
+    canonical: "https://www.jnc-choral.vercel.app/events",
+  },
+};
 
 function fmt(d: Date) {
   return new Intl.DateTimeFormat("en-NG", {
