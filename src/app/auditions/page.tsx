@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import AuditionForm from "./ui/audition-form";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Auditions",
@@ -46,6 +48,16 @@ export default function AuditionsPage() {
 
             <div className="mt-6 text-xs text-white/60">
               By submitting, you agree that your details may be used to contact you about the audition.
+            </div>
+
+            <div className="mt-6">
+              <Button
+                variant="outline"
+                className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                asChild
+              >
+                <Link href="/auditions/status">Track your application</Link>
+              </Button>
             </div>
           </div>
 

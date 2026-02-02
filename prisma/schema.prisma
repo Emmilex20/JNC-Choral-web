@@ -50,6 +50,7 @@ model User {
 
   accounts      Account[]
   sessions      Session[]
+  auditions     AuditionApplication[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -110,6 +111,7 @@ model PasswordReset {
  */
 model AuditionApplication {
   id               String            @id @default(cuid())
+  userId           String?
 
   fullName         String
   phone            String
@@ -137,7 +139,10 @@ model AuditionApplication {
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
+  user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([email])
+  @@index([userId])
   @@index([status])
   @@index([category])
 }

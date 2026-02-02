@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { auditionSchema, type AuditionInput } from "@/lib/audition-schema";
 import { submitAuditionAction } from "../actions";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 
 const categories = [
@@ -63,12 +64,18 @@ export default function AuditionForm() {
           Your audition application has been received. We’ll contact you via email/phone.
         </p>
 
-        <Button
-          className="mt-6 rounded-2xl"
-          onClick={() => setSuccess(false)}
-        >
-          Submit another response
-        </Button>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button className="rounded-2xl" onClick={() => setSuccess(false)}>
+            Submit another response
+          </Button>
+          <Button
+            variant="outline"
+            className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+            asChild
+          >
+            <Link href="/auditions/status">Track status</Link>
+          </Button>
+        </div>
       </div>
     );
   }

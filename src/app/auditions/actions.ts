@@ -2,8 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { auditionSchema } from "@/lib/audition-schema";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 
 export async function submitAuditionAction(input: unknown) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return {
+      ok: false as const,
+      error: "Please log in to submit your audition.",
+    };
+  }
+
   const parsed = auditionSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -17,6 +27,7 @@ export async function submitAuditionAction(input: unknown) {
   try {
     await prisma.auditionApplication.create({
       data: {
+        userId: session.user.id,
         fullName: data.fullName,
         phone: data.phone,
         email: data.email,
