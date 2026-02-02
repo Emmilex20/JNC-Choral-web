@@ -105,7 +105,7 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section className="mx-auto max-w-7xl px-4 pt-16 md:px-6">
+      <section className="mx-auto max-w-7xl px-4 pt-20 md:px-6 md:pt-28">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-white/50">
@@ -121,7 +121,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
           {featureCards.map((c) => (
             <div
               key={c.title}
@@ -141,7 +141,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-16 md:px-6">
+      <section className="mx-auto max-w-7xl px-4 pb-20 pt-12 md:px-6 md:pt-16 md:pb-28">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Featured Event */}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-10">
@@ -159,7 +159,11 @@ export default async function HomePage() {
                   <p className="mt-3 text-white/75">{featuredEvent.description}</p>
                 ) : null}
                 <div className="mt-6">
-                  <Button className="rounded-2xl" asChild>
+                  <Button
+                    variant="outline"
+                    className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                    asChild
+                  >
                     <Link href="/events">View all events</Link>
                   </Button>
                 </div>
@@ -170,7 +174,11 @@ export default async function HomePage() {
                   No upcoming event published yet. Admin can publish events in the dashboard.
                 </p>
                 <div className="mt-6">
-                  <Button className="rounded-2xl" asChild>
+                  <Button
+                    variant="outline"
+                    className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                    asChild
+                  >
                     <Link href="/events">Events page</Link>
                   </Button>
                 </div>
@@ -243,12 +251,15 @@ export default async function HomePage() {
               on growth, musicianship, and a community that serves with passion.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Button className="rounded-2xl" asChild>
+              <Button
+                className="group relative rounded-2xl border border-amber-400/40 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.35),rgba(234,88,12,0.08)_55%,rgba(0,0,0,0.2))] px-6 py-6 text-sm font-semibold text-white shadow-[0_0_30px_rgba(251,191,36,0.25)] transition hover:-translate-y-0.5 hover:border-amber-300/70 hover:shadow-[0_0_45px_rgba(251,191,36,0.45)]"
+                asChild
+              >
                 <Link href="/auditions">Join the choir</Link>
               </Button>
               <Button
                 variant="outline"
-                className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                className="group relative rounded-2xl border border-amber-400/40 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.35),rgba(234,88,12,0.08)_55%,rgba(0,0,0,0.2))] px-6 py-6 text-sm font-semibold text-white shadow-[0_0_30px_rgba(251,191,36,0.25)] transition hover:-translate-y-0.5 hover:border-amber-300/70 hover:shadow-[0_0_45px_rgba(251,191,36,0.45)]"
                 asChild
               >
                 <Link href="/news">Latest updates</Link>
@@ -316,7 +327,8 @@ export default async function HomePage() {
               <p className="mt-1 text-white/70">A quick peek at recent moments.</p>
             </div>
 
-            <Button className="rounded-2xl" asChild>
+            <Button className="group relative rounded-2xl border border-amber-400/40 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.35),rgba(234,88,12,0.08)_55%,rgba(0,0,0,0.2))] px-6 py-6 text-sm font-semibold text-white shadow-[0_0_30px_rgba(251,191,36,0.25)] transition hover:-translate-y-0.5 hover:border-amber-300/70 hover:shadow-[0_0_45px_rgba(251,191,36,0.45)]"
+                asChild>
               <Link href="/gallery">Open Gallery</Link>
             </Button>
           </div>
