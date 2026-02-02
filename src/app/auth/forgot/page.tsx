@@ -53,7 +53,7 @@ function ForgotForm() {
         type: "success",
         message: "If the email exists, a code has been sent.",
       });
-      if ("code" in res) {
+      if ("code" in res && typeof res.code === "string") {
         setCode(res.code);
       }
     });
