@@ -63,7 +63,7 @@ export default function SiteNavbar() {
             <img src="/logo.svg" alt="JNC logo" className="h-full w-full object-cover" />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-white">Jude Nnam</p>
+            <p className="text-sm font-semibold text-white">Jude Nnam Choral (JNC)</p>
             <p className="text-xs text-white/70">Choral Platform</p>
           </div>
         </Link>
