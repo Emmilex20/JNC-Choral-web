@@ -67,10 +67,12 @@ export async function GET(
   const logoPath = path.join(process.cwd(), "public", "logo.png");
   const logoBytes = await readFile(logoPath);
   const logoImage = await pdf.embedPng(logoBytes);
-  const logoDims = logoImage.scale(0.08);
+  const logoDims = logoImage.scale(0.06);
+  const logoX = cardX + 14;
+  const logoY = cardY + cardH - logoDims.height - 22;
   page.drawImage(logoImage, {
-    x: cardX + cardW - logoDims.width - 14,
-    y: cardY + cardH - logoDims.height - 22,
+    x: logoX,
+    y: logoY,
     width: logoDims.width,
     height: logoDims.height,
   });
@@ -78,7 +80,7 @@ export async function GET(
   let y = height - margin - 32;
 
   page.drawText("JUDE NNAM CHORAL", {
-    x: cardX + 14,
+    x: logoX + logoDims.width + 10,
     y,
     size: 8,
     font,
