@@ -40,18 +40,26 @@ export async function GET(
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const margin = 28;
+  const margin = 18;
   const cardX = margin;
   const cardY = margin;
   const cardW = width - margin * 2;
   const cardH = height - margin * 2;
 
   page.drawRectangle({
+    x: 0,
+    y: 0,
+    width,
+    height,
+    color: rgb(1, 0.98, 0.94),
+  });
+
+  page.drawRectangle({
     x: cardX,
-    y: cardY + cardH - 18,
+    y: cardY + cardH - 30,
     width: cardW,
-    height: 18,
-    color: rgb(0.93, 0.72, 0.25),
+    height: 30,
+    color: rgb(0.95, 0.78, 0.29),
   });
 
   page.drawRectangle({
@@ -59,16 +67,16 @@ export async function GET(
     y: cardY,
     width: cardW,
     height: cardH,
-    borderColor: rgb(0.88, 0.91, 0.95),
-    borderWidth: 1,
+    borderColor: rgb(0.93, 0.82, 0.52),
+    borderWidth: 1.2,
     color: rgb(1, 1, 1),
   });
 
   const logoPath = path.join(process.cwd(), "public", "logo.png");
   const logoBytes = await readFile(logoPath);
   const logoImage = await pdf.embedPng(logoBytes);
-  const logoDims = logoImage.scale(0.06);
-  const logoX = cardX + 14;
+  const logoDims = logoImage.scale(0.05);
+  const logoX = cardX + 12;
   const logoY = cardY + cardH - logoDims.height - 22;
   page.drawImage(logoImage, {
     x: logoX,
@@ -77,31 +85,38 @@ export async function GET(
     height: logoDims.height,
   });
 
-  let y = height - margin - 32;
-
   page.drawText("JUDE NNAM CHORAL", {
-    x: logoX + logoDims.width + 10,
-    y,
-    size: 8,
-    font,
-    color: rgb(0.35, 0.3, 0.2),
+    x: logoX + logoDims.width + 8,
+    y: cardY + cardH - 20,
+    size: 9,
+    font: fontBold,
+    color: rgb(0.22, 0.18, 0.1),
   });
 
-  y -= 18;
+  let y = cardY + cardH - 58;
   page.drawText("Audition Status", {
-    x: cardX + 14,
+    x: cardX + 16,
     y,
-    size: 14,
+    size: 18,
     font: fontBold,
     color: rgb(0.07, 0.07, 0.07),
   });
 
   y -= 16;
+  page.drawText("Acceptance Notice", {
+    x: cardX + 16,
+    y,
+    size: 10,
+    font,
+    color: rgb(0.45, 0.4, 0.25),
+  });
+
+  y -= 18;
   const badgeText = "ACCEPTED";
-  const badgeW = 60;
-  const badgeH = 16;
+  const badgeW = 80;
+  const badgeH = 18;
   page.drawRectangle({
-    x: cardX + 14,
+    x: cardX + 16,
     y: y - 2,
     width: badgeW,
     height: badgeH,
@@ -110,14 +125,25 @@ export async function GET(
     borderWidth: 0.5,
   });
   page.drawText(badgeText, {
-    x: cardX + 20,
-    y: y + 2,
-    size: 9,
+    x: cardX + 26,
+    y: y + 3,
+    size: 10,
     font: fontBold,
     color: rgb(0.09, 0.4, 0.2),
   });
 
-  y -= 20;
+  y -= 24;
+  page.drawRectangle({
+    x: cardX + 14,
+    y: y - 94,
+    width: cardW - 28,
+    height: 98,
+    color: rgb(0.98, 0.98, 0.99),
+    borderColor: rgb(0.9, 0.9, 0.93),
+    borderWidth: 0.8,
+  });
+
+  y -= 12;
   const rows = [
     ["Name", app.fullName],
     ["Category", app.category],
@@ -128,36 +154,36 @@ export async function GET(
 
   rows.forEach(([label, value]) => {
     page.drawText(`${label}:`, {
-      x: cardX + 14,
+      x: cardX + 24,
       y,
-      size: 9,
+      size: 10,
       font: fontBold,
       color: rgb(0.1, 0.1, 0.1),
     });
     page.drawText(String(value), {
-      x: cardX + 72,
+      x: cardX + 92,
       y,
-      size: 9,
+      size: 10,
       font,
       color: rgb(0.15, 0.15, 0.15),
-      maxWidth: cardW - 90,
+      maxWidth: cardW - 110,
     });
     y -= 12;
   });
 
-  y -= 6;
+  y -= 20;
   page.drawText("Please keep this for your records.", {
-    x: cardX + 14,
+    x: cardX + 16,
     y,
-    size: 8,
+    size: 9,
     font,
     color: rgb(0.45, 0.45, 0.45),
   });
 
   page.drawText("jnc-choral.vercel.app", {
-    x: cardX + 14,
-    y: cardY + 12,
-    size: 7,
+    x: cardX + 16,
+    y: cardY + 10,
+    size: 8,
     font,
     color: rgb(0.6, 0.62, 0.67),
   });
