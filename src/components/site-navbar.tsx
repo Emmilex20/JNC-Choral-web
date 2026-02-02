@@ -60,7 +60,7 @@ export default function SiteNavbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
           <div className="relative h-9 w-9 overflow-hidden rounded-xl bg-white/10">
-            <img src="/logo.png" alt="JNC logo" className="h-full w-full object-cover" />
+            <img src="/logo.svg" alt="JNC logo" className="h-full w-full object-cover" />
           </div>
           <div className="leading-tight">
             <p className="text-sm font-semibold text-white">Jude Nnam</p>

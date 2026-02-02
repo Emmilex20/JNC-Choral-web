@@ -9,7 +9,7 @@ export default function SiteFooter() {
           <div>
             <div className="flex items-center gap-3">
               <div className="relative h-10 w-10 overflow-hidden rounded-2xl bg-white/10">
-                <img src="/logo.png" alt="JNC logo" className="h-full w-full object-cover" />
+                <img src="/logo.svg" alt="JNC logo" className="h-full w-full object-cover" />
               </div>
               <p className="text-lg font-semibold text-white">Jude Nnam Choral</p>
             </div>
