@@ -4,6 +4,9 @@ import { Suspense, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import SiteNavbar from "@/components/site-navbar";
+import SiteFooter from "@/components/site-footer";
 
 type ToastState = { type: "success" | "error"; message: string } | null;
 
@@ -56,17 +59,24 @@ function LoginForm() {
   }, [toast]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black">
+    <div className="min-h-screen bg-black">
+      <SiteNavbar />
       <Toast toast={toast} onClose={() => setToast(null)} />
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8">
-        <h1 className="text-2xl font-semibold text-white">Sign in</h1>
-        <p className="mt-1 text-sm text-white/70">
-          Access auditions & admin dashboard
-        </p>
+      <div className="flex items-center justify-center px-4 py-16 md:py-20">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8"
+        >
+          <h1 className="text-2xl font-semibold text-white">Sign in</h1>
+          <p className="mt-1 text-sm text-white/70">
+            Access auditions & admin dashboard
+          </p>
 
         <Button
           onClick={() => signIn("google", { callbackUrl })}
-          className="mt-6 w-full rounded-2xl"
+          className="mt-6 w-full cursor-pointer rounded-2xl bg-linear-to-r from-white via-slate-100 to-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(255,255,255,0.28)]"
         >
           Continue with Google
         </Button>
@@ -118,7 +128,9 @@ function LoginForm() {
             </button>
           </div>
 
-          <Button className="rounded-2xl">Sign in</Button>
+          <Button className="rounded-2xl bg-linear-to-r from-amber-200 via-yellow-300 to-amber-500 text-black shadow-[0_10px_30px_rgba(245,158,11,0.25)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(245,158,11,0.45)] cursor-pointer">
+            Sign in
+          </Button>
         </form>
 
         <div className="mt-4 text-sm text-white/70">
@@ -126,7 +138,9 @@ function LoginForm() {
             Forgot password?
           </a>
         </div>
+        </motion.div>
       </div>
+      <SiteFooter />
     </div>
   );
 }
