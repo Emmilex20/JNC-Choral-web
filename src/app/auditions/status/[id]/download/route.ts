@@ -78,7 +78,8 @@ export async function GET(
   const logoImage = await pdf.embedPng(logoBytes);
   const logoDims = logoImage.scale(0.03);
   const logoX = cardX + 14;
-  const logoY = cardY + cardH - 22 - logoDims.height;
+  const brandY = cardY + cardH - 24;
+  const logoY = brandY - logoDims.height + 1;
   page.drawImage(logoImage, {
     x: logoX,
     y: logoY,
@@ -95,24 +96,25 @@ export async function GET(
     opacity: 0.08,
   });
 
+  const brandX = logoX + logoDims.width + 6;
   page.drawText("JUDE NNAM CHORAL", {
-    x: logoX + logoDims.width + 6,
-    y: logoY + 2,
+    x: brandX,
+    y: brandY,
     size: 10,
     font: fontBrand,
     color: rgb(0.22, 0.18, 0.1),
   });
 
-  let y = cardY + cardH - 58;
+  let y = brandY - 30;
   page.drawText("Audition Status", {
     x: cardX + 16,
     y,
-    size: 18,
+    size: 20,
     font: fontBold,
     color: rgb(0.07, 0.07, 0.07),
   });
 
-  y -= 16;
+  y -= 18;
   page.drawText("Acceptance Notice", {
     x: cardX + 16,
     y,
@@ -121,7 +123,7 @@ export async function GET(
     color: rgb(0.45, 0.4, 0.25),
   });
 
-  y -= 18;
+  y -= 20;
   const badgeText = "ACCEPTED";
   const badgeW = 80;
   const badgeH = 18;
