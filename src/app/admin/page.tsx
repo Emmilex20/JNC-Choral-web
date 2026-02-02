@@ -3,9 +3,10 @@ import AdminAuditionsClient from "./ui/admin-auditions-client";
 import AdminAnnouncementsClient from "./announcements/ui/admin-announcements-client";
 import AdminEventsClient from "./events/ui/admin-events-client";
 import AdminGalleryClient from "./gallery/ui/admin-gallery-client";
+import AdminUsersClient from "./users/ui/admin-users-client";
 
 export default async function AdminPage() {
-  const [rows, events, posts, items] = await Promise.all([
+  const [rows, events, posts, items, users] = await Promise.all([
     prisma.auditionApplication.findMany({
       orderBy: { createdAt: "desc" },
       take: 300,
@@ -22,6 +23,10 @@ export default async function AdminPage() {
       orderBy: { createdAt: "desc" },
       take: 300,
     }),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 300,
+    }),
   ]);
 
   const navItems = [
@@ -29,6 +34,7 @@ export default async function AdminPage() {
     { label: "Events", href: "#events" },
     { label: "Announcements", href: "#announcements" },
     { label: "Gallery", href: "#gallery" },
+    { label: "Users", href: "#users" },
   ];
 
   return (
@@ -118,6 +124,18 @@ export default async function AdminPage() {
             </p>
           </div>
           <AdminGalleryClient initialItems={items} />
+        </section>
+
+        <section id="users" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+              Users
+            </h2>
+            <p className="mt-2 text-sm text-white/70">
+              View all users, edit profiles/roles, and remove accounts.
+            </p>
+          </div>
+          <AdminUsersClient initialUsers={users} />
         </section>
       </div>
     </div>
