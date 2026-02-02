@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { auditionSchema, type AuditionInput } from "@/lib/audition-schema";
 import { submitAuditionAction } from "../actions";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 const categories = [
   { value: "SINGER", label: "Singer (Soprano/Alto/Tenor/Bass)" },
@@ -16,6 +17,7 @@ const categories = [
 export default function AuditionForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { status } = useSession();
 
   const form = useForm<AuditionInput>({
     resolver: zodResolver(auditionSchema),
@@ -36,6 +38,11 @@ export default function AuditionForm() {
   }, [category]);
 
   async function onSubmit(values: AuditionInput) {
+    if (status !== "authenticated") {
+      window.location.href = "/auth/login?callbackUrl=/auditions";
+      return;
+    }
+
     setServerError(null);
     const res = await submitAuditionAction(values);
 
