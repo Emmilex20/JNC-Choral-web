@@ -79,7 +79,7 @@ export async function GET(
   const logoDims = logoImage.scale(0.03);
   const logoX = cardX + 14;
   const brandY = cardY + cardH - 24;
-  const logoY = brandY - logoDims.height + 3;
+  const logoY = brandY - logoDims.height + 6;
   page.drawImage(logoImage, {
     x: logoX,
     y: logoY,
