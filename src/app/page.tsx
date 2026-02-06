@@ -25,6 +25,12 @@ export default async function HomePage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const latestNews = await prisma.announcement.findMany({
+    where: { isPublished: true },
+    orderBy: { createdAt: "desc" },
+    take: 3,
+  });
+
   const latestGallery = await prisma.galleryItem.findMany({
     orderBy: { createdAt: "desc" },
     take: 6,
@@ -286,6 +292,46 @@ export default async function HomePage() {
                 Doors open 30 minutes before start.
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="mt-12 rounded-3xl border border-white/10 bg-white/5 p-6 md:p-10">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-white">News</h2>
+              <p className="mt-1 text-white/70">
+                New releases, updates, and announcements from the team.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+              asChild
+            >
+              <Link href="/news">View all</Link>
+            </Button>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {latestNews.map((post) => (
+              <Link
+                key={post.id}
+                href={`/news/${post.id}`}
+                className="rounded-2xl border border-white/10 bg-black/30 p-4 transition hover:bg-white/10"
+              >
+                <p className="text-sm font-semibold text-white line-clamp-2">
+                  {post.title}
+                </p>
+                <p className="mt-2 text-sm text-white/70 line-clamp-3">
+                  {post.body}
+                </p>
+              </Link>
+            ))}
+            {latestNews.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-black/30 p-4 text-sm text-white/60">
+                No news yet. Check back soon.
+              </div>
+            ) : null}
           </div>
         </div>
 

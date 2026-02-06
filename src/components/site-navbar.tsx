@@ -51,7 +51,7 @@ export default function SiteNavbar() {
   const isAdmin = role === "ADMIN";
   const nav = [
     ...baseNav.slice(0, 3),
-    ...(isAdmin ? [] : userNav),
+    ...userNav,
     ...baseNav.slice(3),
     ...(isAdmin ? adminNav : []),
   ];

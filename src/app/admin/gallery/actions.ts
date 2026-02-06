@@ -30,6 +30,15 @@ export async function createGalleryItemAction(input: unknown) {
     },
   });
 
+  const title = parsed.data.title?.trim() || "New gallery release";
+  await prisma.announcement.create({
+    data: {
+      title: "New Gallery Release",
+      body: `New photo added: ${title}. Visit the Gallery to view it.`,
+      isPublished: true,
+    },
+  });
+
   return { ok: true as const };
 }
 

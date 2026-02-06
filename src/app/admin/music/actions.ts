@@ -30,6 +30,15 @@ export async function createMusicItemAction(input: unknown) {
     },
   });
 
+  const title = parsed.data.title?.trim() || "New track";
+  await prisma.announcement.create({
+    data: {
+      title: "New Music Release",
+      body: `New track uploaded: ${title}. Visit the Music page to listen.`,
+      isPublished: true,
+    },
+  });
+
   return { ok: true as const };
 }
 

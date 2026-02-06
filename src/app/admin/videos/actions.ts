@@ -30,6 +30,15 @@ export async function createVideoItemAction(input: unknown) {
     },
   });
 
+  const title = parsed.data.title?.trim() || "New video";
+  await prisma.announcement.create({
+    data: {
+      title: "New Video Release",
+      body: `New video uploaded: ${title}. Visit the Videos page to watch.`,
+      isPublished: true,
+    },
+  });
+
   return { ok: true as const };
 }
 
