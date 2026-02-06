@@ -180,3 +180,19 @@ model GalleryItem {
   publicId  String   @unique
   createdAt DateTime @default(now())
 }
+
+model MusicItem {
+  id        String   @id @default(cuid())
+  title     String?
+  audioUrl  String
+  publicId  String   @unique
+  createdAt DateTime @default(now())
+}
+
+model VideoItem {
+  id        String   @id @default(cuid())
+  title     String?
+  videoUrl  String
+  publicId  String   @unique
+  createdAt DateTime @default(now())
+}

@@ -23,8 +23,13 @@ const baseNav = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Auditions", href: "/auditions" },
-  { label: "Gallery", href: "/gallery" },
   { label: "Contact", href: "/contact" },
+];
+
+const mediaNav = [
+  { label: "Gallery", href: "/gallery" },
+  { label: "Music", href: "/music" },
+  { label: "Videos", href: "/videos" },
 ];
 
 const userNav = [
@@ -78,6 +83,21 @@ export default function SiteNavbar() {
               {item.label}
             </Link>
           ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="text-sm text-white/80 hover:text-white transition"
+              suppressHydrationWarning
+            >
+              Media
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-black text-white border-white/10">
+              {mediaNav.map((item) => (
+                <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+                  <Link href={item.href}>{item.label}</Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           {isAuthed ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -151,6 +171,23 @@ export default function SiteNavbar() {
                       {item.label}
                     </Link>
                   ))}
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90">
+                    <div className="text-xs uppercase tracking-[0.2em] text-white/60">
+                      Media
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {mediaNav.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/85 hover:bg-white/10 transition"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                   {isAuthed ? (
                     <>
                       <Link

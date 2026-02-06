@@ -12,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/events",
     "/news",
     "/gallery",
+    "/music",
+    "/videos",
     "/contact",
     "/auth/login",
     "/auth/register",

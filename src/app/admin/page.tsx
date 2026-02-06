@@ -3,10 +3,12 @@ import AdminAuditionsClient from "./ui/admin-auditions-client";
 import AdminAnnouncementsClient from "./announcements/ui/admin-announcements-client";
 import AdminEventsClient from "./events/ui/admin-events-client";
 import AdminGalleryClient from "./gallery/ui/admin-gallery-client";
+import AdminMusicClient from "./music/ui/admin-music-client";
 import AdminUsersClient from "./users/ui/admin-users-client";
+import AdminVideosClient from "./videos/ui/admin-videos-client";
 
 export default async function AdminPage() {
-  const [rows, events, posts, items, users] = await Promise.all([
+  const [rows, events, posts, items, music, videos, users] = await Promise.all([
     prisma.auditionApplication.findMany({
       orderBy: { createdAt: "desc" },
       take: 300,
@@ -23,6 +25,14 @@ export default async function AdminPage() {
       orderBy: { createdAt: "desc" },
       take: 300,
     }),
+    prisma.musicItem.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 300,
+    }),
+    prisma.videoItem.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 300,
+    }),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
       take: 300,
@@ -34,6 +44,8 @@ export default async function AdminPage() {
     { label: "Events", href: "#events" },
     { label: "Announcements", href: "#announcements" },
     { label: "Gallery", href: "#gallery" },
+    { label: "Music", href: "#music" },
+    { label: "Videos", href: "#videos" },
     { label: "Users", href: "#users" },
   ];
 
@@ -124,6 +136,30 @@ export default async function AdminPage() {
             </p>
           </div>
           <AdminGalleryClient initialItems={items} />
+        </section>
+
+        <section id="music" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+              Music
+            </h2>
+            <p className="mt-2 text-sm text-white/70">
+              Upload audio tracks to publish on the public Music page.
+            </p>
+          </div>
+          <AdminMusicClient initialItems={music} />
+        </section>
+
+        <section id="videos" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+              Videos
+            </h2>
+            <p className="mt-2 text-sm text-white/70">
+              Upload performance videos to show on the public Videos page.
+            </p>
+          </div>
+          <AdminVideosClient initialItems={videos} />
         </section>
 
         <section id="users" className="space-y-6">
