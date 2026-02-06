@@ -74,3 +74,23 @@ export async function updateVideoTitleAction(input: unknown) {
 
   return { ok: true as const };
 }
+
+const UpdatePosterSchema = z.object({
+  id: z.string().min(1),
+  posterUrl: z.union([z.string().url(), z.null()]),
+});
+
+export async function updateVideoPosterAction(input: unknown) {
+  const session = await getServerSession(authOptions);
+  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+
+  const parsed = UpdatePosterSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: "Invalid data" };
+
+  await prisma.videoItem.update({
+    where: { id: parsed.data.id },
+    data: { posterUrl: parsed.data.posterUrl },
+  });
+
+  return { ok: true as const };
+}

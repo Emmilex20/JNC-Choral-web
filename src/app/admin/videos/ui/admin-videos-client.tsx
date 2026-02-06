@@ -7,12 +7,14 @@ import {
   createVideoItemAction,
   deleteVideoItemAction,
   updateVideoTitleAction,
+  updateVideoPosterAction,
 } from "../actions";
 
 type Item = {
   id: string;
   title: string | null;
   videoUrl: string;
+  posterUrl: string | null;
   publicId: string;
   createdAt: Date;
 };
@@ -50,6 +52,24 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
     return up.json();
   }
 
+  async function uploadPoster(file: File) {
+    setError(null);
+
+    const sig = await getSignature();
+    const url = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
+
+    const form = new FormData();
+    form.append("file", file);
+    form.append("api_key", sig.apiKey);
+    form.append("timestamp", String(sig.timestamp));
+    form.append("signature", sig.signature);
+    form.append("folder", sig.folder);
+
+    const up = await fetch(url, { method: "POST", body: form });
+    if (!up.ok) throw new Error("Upload failed");
+    return up.json();
+  }
+
   function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -75,6 +95,45 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
       } catch (err: any) {
         setError(err?.message ?? "Upload error");
       }
+    });
+  }
+
+  function onPickPoster(id: string) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      startTransition(async () => {
+        try {
+          const uploaded = await uploadPoster(file);
+          const posterUrl = uploaded.secure_url as string;
+
+          const res = await updateVideoPosterAction({ id, posterUrl });
+          if (!res.ok) {
+            setError(res.error);
+            return;
+          }
+
+          setItems((prev) =>
+            prev.map((x) => (x.id === id ? { ...x, posterUrl } : x))
+          );
+        } catch (err: any) {
+          setError(err?.message ?? "Upload error");
+        }
+      });
+    };
+  }
+
+  function clearPoster(id: string) {
+    startTransition(async () => {
+      const res = await updateVideoPosterAction({ id, posterUrl: null });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      setItems((prev) =>
+        prev.map((x) => (x.id === id ? { ...x, posterUrl: null } : x))
+      );
     });
   }
 
@@ -194,7 +253,38 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
                 </Button>
               </div>
             )}
-            <video className="mt-3 w-full rounded-xl" controls src={x.videoUrl} />
+            <video
+              className="mt-3 w-full rounded-xl"
+              controls
+              poster={x.posterUrl ?? undefined}
+              src={x.videoUrl}
+            />
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onPickPoster(x.id)}
+                  className="hidden"
+                  disabled={isPending}
+                />
+                <span className="rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-xs text-white hover:bg-white/10">
+                  {isPending ? "Uploading..." : "Upload Poster"}
+                </span>
+              </label>
+              {x.posterUrl ? (
+                <Button
+                  variant="outline"
+                  className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                  onClick={() => clearPoster(x.id)}
+                  disabled={isPending}
+                >
+                  Clear Poster
+                </Button>
+              ) : (
+                <span className="text-xs text-white/50">No poster set</span>
+              )}
+            </div>
             <div className="mt-3 flex items-center justify-between gap-2">
               <p className="text-xs text-white/60 line-clamp-1">{x.publicId}</p>
               <Button

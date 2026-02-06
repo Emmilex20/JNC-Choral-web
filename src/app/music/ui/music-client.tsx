@@ -8,6 +8,8 @@ type Item = {
   audioUrl: string;
 };
 
+const mediaPoster = "/hero/hero-1.png";
+
 const container = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.08 } },
@@ -79,6 +81,13 @@ export default function MusicClient({ items }: { items: Item[] }) {
               <p className="text-sm font-semibold text-white">
                 {track.title ?? "Untitled Track"}
               </p>
+              <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/50">
+                <img
+                  src={mediaPoster}
+                  alt="Track cover"
+                  className="h-40 w-full object-cover"
+                />
+              </div>
               <audio className="mt-3 w-full" controls src={track.audioUrl} />
             </motion.div>
           ))}

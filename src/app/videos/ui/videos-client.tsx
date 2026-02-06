@@ -6,7 +6,10 @@ type Item = {
   id: string;
   title: string | null;
   videoUrl: string;
+  posterUrl: string | null;
 };
+
+const mediaPoster = "/hero/hero-1.png";
 
 const container = {
   hidden: { opacity: 0 },
@@ -82,6 +85,7 @@ export default function VideosClient({ items }: { items: Item[] }) {
               <video
                 className="mt-3 w-full rounded-xl"
                 controls
+                poster={vid.posterUrl ?? mediaPoster}
                 src={vid.videoUrl}
               />
             </motion.div>

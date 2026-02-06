@@ -193,6 +193,7 @@ model VideoItem {
   id        String   @id @default(cuid())
   title     String?
   videoUrl  String
+  posterUrl String?
   publicId  String   @unique
   createdAt DateTime @default(now())
 }
