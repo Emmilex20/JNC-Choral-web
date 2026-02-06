@@ -45,3 +45,23 @@ export async function deleteVideoItemAction(input: unknown) {
   await prisma.videoItem.delete({ where: { id: parsed.data.id } });
   return { ok: true as const };
 }
+
+const UpdateSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().optional(),
+});
+
+export async function updateVideoTitleAction(input: unknown) {
+  const session = await getServerSession(authOptions);
+  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+
+  const parsed = UpdateSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: "Invalid data" };
+
+  await prisma.videoItem.update({
+    where: { id: parsed.data.id },
+    data: { title: parsed.data.title?.trim() || null },
+  });
+
+  return { ok: true as const };
+}

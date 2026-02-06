@@ -3,7 +3,11 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { createVideoItemAction, deleteVideoItemAction } from "../actions";
+import {
+  createVideoItemAction,
+  deleteVideoItemAction,
+  updateVideoTitleAction,
+} from "../actions";
 
 type Item = {
   id: string;
@@ -22,6 +26,8 @@ async function getSignature() {
 export default function AdminVideosClient({ initialItems }: { initialItems: Item[] }) {
   const [items, setItems] = useState<Item[]>(initialItems);
   const [title, setTitle] = useState("");
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -81,6 +87,33 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
     });
   }
 
+  function startEdit(item: Item) {
+    setEditId(item.id);
+    setEditTitle(item.title ?? "");
+  }
+
+  function cancelEdit() {
+    setEditId(null);
+    setEditTitle("");
+  }
+
+  function saveEdit(id: string) {
+    startTransition(async () => {
+      const res = await updateVideoTitleAction({
+        id,
+        title: editTitle.trim() || undefined,
+      });
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      setItems((prev) =>
+        prev.map((x) => (x.id === id ? { ...x, title: editTitle.trim() || null } : x))
+      );
+      cancelEdit();
+    });
+  }
+
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
       {error ? (
@@ -120,9 +153,47 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         {items.map((x) => (
           <div key={x.id} className="rounded-2xl border border-white/10 bg-black/30 p-4">
-            <p className="text-sm font-semibold text-white line-clamp-1">
-              {x.title ?? "Untitled Video"}
-            </p>
+            {editId === x.id ? (
+              <div className="flex flex-col gap-2">
+                <input
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Video title"
+                  className="w-full rounded-xl border border-white/10 bg-black/40 p-2 text-sm text-white outline-none focus:border-white/25"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    className="rounded-2xl"
+                    onClick={() => saveEdit(x.id)}
+                    disabled={isPending}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                    onClick={cancelEdit}
+                    disabled={isPending}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-white line-clamp-1">
+                  {x.title ?? "Untitled Video"}
+                </p>
+                <Button
+                  variant="outline"
+                  className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                  onClick={() => startEdit(x)}
+                  disabled={isPending}
+                >
+                  Edit
+                </Button>
+              </div>
+            )}
             <video className="mt-3 w-full rounded-xl" controls src={x.videoUrl} />
             <div className="mt-3 flex items-center justify-between gap-2">
               <p className="text-xs text-white/60 line-clamp-1">{x.publicId}</p>
