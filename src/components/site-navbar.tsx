@@ -156,75 +156,77 @@ export default function SiteNavbar() {
                   <Menu />
                 </Button>
               </SheetTrigger>
-              <SheetContent className="bg-black text-white border-white/10">
-                <SheetHeader>
-                  <SheetTitle className="text-white">Menu</SheetTitle>
-                </SheetHeader>
-                <div className="mt-6 grid gap-3">
-                  {nav.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90">
-                    <div className="text-xs uppercase tracking-[0.2em] text-white/60">
-                      Media
-                    </div>
-                    <div className="mt-3 grid gap-2">
-                      {mediaNav.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/85 hover:bg-white/10 transition"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                  {isAuthed ? (
-                    <>
+              <SheetContent className="bg-black text-white border-white/10 overflow-y-auto">
+                <div className="flex min-h-full flex-col">
+                  <SheetHeader>
+                    <SheetTitle className="text-white">Menu</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6 grid gap-3">
+                    {nav.map((item) => (
                       <Link
-                        href="/profile"
+                        key={item.href}
+                        href={item.href}
                         onClick={() => setOpen(false)}
                         className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
                       >
-                        Profile
+                        {item.label}
                       </Link>
-                      <Button
-                        className="rounded-2xl mt-2"
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                      >
-                        Logout
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        asChild
-                        variant="ghost"
-                        className="rounded-2xl mt-2 text-white hover:bg-white/10 hover:text-white"
-                      >
-                        <Link href="/auth/login" onClick={() => setOpen(false)}>
-                          Log in
-                        </Link>
-                      </Button>
-                      <Button asChild className="rounded-2xl">
+                    ))}
+                    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90">
+                      <div className="text-xs uppercase tracking-[0.2em] text-white/60">
+                        Media
+                      </div>
+                      <div className="mt-3 grid gap-2">
+                        {mediaNav.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setOpen(false)}
+                            className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/85 hover:bg-white/10 transition"
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                    {isAuthed ? (
+                      <>
                         <Link
-                          href="/auth/register"
+                          href="/profile"
                           onClick={() => setOpen(false)}
+                          className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
                         >
-                          Register
+                          Profile
                         </Link>
-                      </Button>
-                    </>
-                  )}
+                        <Button
+                          className="rounded-2xl mt-2"
+                          onClick={() => signOut({ callbackUrl: "/" })}
+                        >
+                          Logout
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          asChild
+                          variant="ghost"
+                          className="rounded-2xl mt-2 text-white hover:bg-white/10 hover:text-white"
+                        >
+                          <Link href="/auth/login" onClick={() => setOpen(false)}>
+                            Log in
+                          </Link>
+                        </Button>
+                        <Button asChild className="rounded-2xl">
+                          <Link
+                            href="/auth/register"
+                            onClick={() => setOpen(false)}
+                          >
+                            Register
+                          </Link>
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
