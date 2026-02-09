@@ -48,6 +48,7 @@ function RegisterForm() {
     email: "",
     password: "",
     confirm: "",
+    isChorister: false,
   });
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -64,6 +65,7 @@ function RegisterForm() {
         name: form.name,
         email: form.email,
         password: form.password,
+        isChorister: form.isChorister,
       });
       if (!res.ok) {
         setToast({ type: "error", message: res.error });
@@ -155,6 +157,17 @@ function RegisterForm() {
               {showConfirm ? "Hide" : "Show"}
             </button>
           </div>
+          <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85">
+            <input
+              type="checkbox"
+              checked={form.isChorister}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, isChorister: e.target.checked }))
+              }
+              className="h-4 w-4 accent-white"
+            />
+            I am a chorister in the choral group.
+          </label>
 
           <Button
             className="rounded-2xl bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-500 text-black shadow-[0_10px_30px_rgba(245,158,11,0.25)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(245,158,11,0.45)] cursor-pointer"

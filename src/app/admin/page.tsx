@@ -6,9 +6,26 @@ import AdminGalleryClient from "./gallery/ui/admin-gallery-client";
 import AdminMusicClient from "./music/ui/admin-music-client";
 import AdminUsersClient from "./users/ui/admin-users-client";
 import AdminVideosClient from "./videos/ui/admin-videos-client";
+import AdminChoristerNoticesClient from "./choristers/ui/admin-chorister-notices-client";
+import AdminRehearsalsClient from "./choristers/ui/admin-rehearsals-client";
+import AdminPendingChoristersClient from "./choristers/ui/admin-pending-choristers-client";
+import AdminChoristersClient from "./choristers/ui/admin-choristers-client";
 
 export default async function AdminPage() {
-  const [rows, events, posts, items, music, videos, users] = await Promise.all([
+  const [
+    rows,
+    events,
+    posts,
+    items,
+    music,
+    videos,
+    users,
+    choristers,
+    pendingChoristers,
+    choristerNotices,
+    rehearsals,
+    pendingAttendance,
+  ] = await Promise.all([
     prisma.auditionApplication.findMany({
       orderBy: { createdAt: "desc" },
       take: 300,
@@ -37,7 +54,60 @@ export default async function AdminPage() {
       orderBy: { createdAt: "desc" },
       take: 300,
     }),
+    prisma.user.findMany({
+      where: { isChorister: true, choristerVerified: true },
+      orderBy: { createdAt: "desc" },
+      take: 300,
+      include: {
+        choristerProfile: true,
+        choristerAttendances: {
+          include: {
+            rehearsal: true,
+          },
+        },
+      },
+    }),
+    prisma.user.findMany({
+      where: { isChorister: true, choristerVerified: false },
+      orderBy: { createdAt: "desc" },
+      take: 300,
+    }),
+    prisma.choristerNotice.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    }),
+    prisma.rehearsal.findMany({
+      orderBy: { startsAt: "desc" },
+      take: 200,
+      include: { attendance: true },
+    }),
+    prisma.attendanceRecord.findMany({
+      where: { confirmedAt: null },
+      orderBy: { markedAt: "desc" },
+      take: 300,
+      include: {
+        user: { select: { name: true, email: true } },
+        rehearsal: { select: { title: true, startsAt: true } },
+      },
+    }),
   ]);
+
+  const rehearsalRows = rehearsals.map((r) => ({
+    id: r.id,
+    title: r.title,
+    startsAt: r.startsAt.toISOString(),
+    attendanceCount: r.attendance.length,
+    confirmedCount: r.attendance.filter((a) => a.confirmedAt).length,
+  }));
+
+  const pendingAttendanceRows = pendingAttendance.map((p) => ({
+    id: p.id,
+    rehearsalTitle: p.rehearsal.title,
+    rehearsalDate: p.rehearsal.startsAt.toISOString(),
+    userName: p.user.name,
+    userEmail: p.user.email,
+    markedAt: p.markedAt.toISOString(),
+  }));
 
   const navItems = [
     { label: "Auditions", href: "#auditions" },
@@ -46,6 +116,10 @@ export default async function AdminPage() {
     { label: "Gallery", href: "#gallery" },
     { label: "Music", href: "#music" },
     { label: "Videos", href: "#videos" },
+    { label: "Chorister Notices", href: "#chorister-notices" },
+    { label: "Rehearsals", href: "#rehearsals" },
+    { label: "Pending Choristers", href: "#pending-choristers" },
+    { label: "Choristers", href: "#choristers" },
     { label: "Users", href: "#users" },
   ];
 
@@ -160,6 +234,101 @@ export default async function AdminPage() {
             </p>
           </div>
           <AdminVideosClient initialItems={videos} />
+        </section>
+
+        <section id="chorister-notices" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+              Chorister Notices
+            </h2>
+            <p className="mt-2 text-sm text-white/70">
+              Updates visible to verified choristers on their dashboard.
+            </p>
+          </div>
+          <AdminChoristerNoticesClient
+            initialNotices={choristerNotices.map((n) => ({
+              id: n.id,
+              title: n.title,
+              body: n.body,
+              attachmentUrl: n.attachmentUrl,
+              isPublished: n.isPublished,
+              createdAt: n.createdAt.toISOString(),
+            }))}
+          />
+        </section>
+
+        <section id="rehearsals" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+              Rehearsals & Attendance
+            </h2>
+            <p className="mt-2 text-sm text-white/70">
+              Create rehearsals and confirm chorister attendance.
+            </p>
+          </div>
+          <AdminRehearsalsClient
+            initialRehearsals={rehearsalRows}
+            initialPending={pendingAttendanceRows}
+          />
+        </section>
+
+        <section id="pending-choristers" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+              Pending Choristers
+            </h2>
+            <p className="mt-2 text-sm text-white/70">
+              Users awaiting chorister verification.
+            </p>
+          </div>
+          <AdminPendingChoristersClient
+            initialUsers={pendingChoristers.map((u) => ({
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              createdAt: u.createdAt.toISOString(),
+            }))}
+          />
+        </section>
+
+        <section id="choristers" className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+              Choristers
+            </h2>
+            <p className="mt-2 text-sm text-white/70">
+              Verified choristers only.
+            </p>
+          </div>
+          <AdminChoristersClient
+            initialChoristers={choristers.map((u) => ({
+              id: u.id,
+              name: u.name,
+              email: u.email,
+              adminNote: u.adminNote,
+              createdAt: u.createdAt.toISOString(),
+              profile: u.choristerProfile
+                ? {
+                    phone: u.choristerProfile.phone,
+                    address: u.choristerProfile.address,
+                    voicePart: u.choristerProfile.voicePart,
+                    dateOfBirth: u.choristerProfile.dateOfBirth
+                      ? u.choristerProfile.dateOfBirth.toISOString()
+                      : null,
+                    emergencyContact: u.choristerProfile.emergencyContact,
+                    stateOfOrigin: u.choristerProfile.stateOfOrigin,
+                    currentParish: u.choristerProfile.currentParish,
+                  }
+                : null,
+              attendance: u.choristerAttendances.map((a) => ({
+                id: a.id,
+                rehearsalTitle: a.rehearsal.title,
+                startsAt: a.rehearsal.startsAt.toISOString(),
+                markedAt: a.markedAt.toISOString(),
+                confirmedAt: a.confirmedAt ? a.confirmedAt.toISOString() : null,
+              })),
+            }))}
+          />
         </section>
 
         <section id="users" className="space-y-6">

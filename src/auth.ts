@@ -58,10 +58,22 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.email = user.email;
         token.picture = (user as any).image;
+        token.onboardingComplete = (user as any).onboardingComplete;
       }
       if (trigger === "update" && session?.user) {
         token.name = session.user.name;
         token.picture = (session.user as any).image ?? token.picture;
+        token.onboardingComplete =
+          (session.user as any).onboardingComplete ?? token.onboardingComplete;
+      }
+      if (token.id && token.onboardingComplete === false) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { onboardingComplete: true },
+        });
+        if (dbUser?.onboardingComplete) {
+          token.onboardingComplete = true;
+        }
       }
       return token;
     },
@@ -72,6 +84,8 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.name = token.name as string | undefined;
         session.user.image = (token.picture as string | undefined) ?? session.user.image;
+        session.user.onboardingComplete =
+          (token.onboardingComplete as boolean | undefined) ?? false;
       }
       return session;
     },

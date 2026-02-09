@@ -36,6 +36,10 @@ enum ApplicationStatus {
   REJECTED
 }
 
+enum AttendanceStatus {
+  PRESENT
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -47,10 +51,17 @@ model User {
   passwordHash  String?
 
   role          Role      @default(USER)
+  isChorister   Boolean   @default(false)
+  choristerVerified Boolean @default(false)
+  adminNote     String?
+  onboardingComplete Boolean @default(false)
 
   accounts      Account[]
   sessions      Session[]
   auditions     AuditionApplication[]
+  choristerProfile ChoristerProfile?
+  choristerAttendances AttendanceRecord[]
+  profile       UserProfile?
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -196,4 +207,73 @@ model VideoItem {
   posterUrl String?
   publicId  String   @unique
   createdAt DateTime @default(now())
+}
+
+model ChoristerProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  phone           String?
+  address         String?
+  voicePart       String?
+  dateOfBirth     DateTime?
+  emergencyContact String?
+  stateOfOrigin   String?
+  currentParish   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  phone         String?
+  address       String?
+  stateOfOrigin String?
+  currentParish String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ChoristerNotice {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  attachmentUrl String?
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Rehearsal {
+  id        String   @id @default(cuid())
+  title     String
+  startsAt  DateTime
+  createdAt DateTime @default(now())
+
+  attendance AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id           String           @id @default(cuid())
+  rehearsalId  String
+  userId       String
+  status       AttendanceStatus @default(PRESENT)
+  markedAt     DateTime         @default(now())
+  confirmedAt  DateTime?
+  confirmedBy  String?
+
+  rehearsal Rehearsal @relation(fields: [rehearsalId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([rehearsalId, userId])
+  @@index([userId])
+  @@index([rehearsalId])
 }

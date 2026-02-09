@@ -35,6 +35,7 @@ const mediaNav = [
 const userNav = [
   { label: "Events", href: "/events" },
   { label: "News", href: "/news" },
+  { label: "Choristers", href: "/choristers" },
 ];
 
 const adminNav = [
@@ -48,6 +49,9 @@ export default function SiteNavbar() {
   const isAuthed = status === "authenticated";
   const role = (session?.user as { role?: string } | null)?.role;
   const avatar = (session?.user as { image?: string } | null)?.image;
+  const onboardingComplete = Boolean(
+    (session?.user as { onboardingComplete?: boolean } | null)?.onboardingComplete
+  );
   const isAdmin = role === "ADMIN";
   const nav = [
     ...baseNav.slice(0, 3),
@@ -62,6 +66,19 @@ export default function SiteNavbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+      {isAuthed && !onboardingComplete ? (
+        <div className="border-b border-amber-500/20 bg-amber-500/10">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-xs text-amber-100 md:px-6">
+            <span>Complete your profile to finish onboarding.</span>
+            <Link
+              href="/onboarding"
+              className="rounded-full border border-amber-300/40 bg-amber-400/10 px-3 py-1 text-amber-100 hover:bg-amber-400/20"
+            >
+              Finish now
+            </Link>
+          </div>
+        </div>
+      ) : null}
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
           <div className="relative h-9 w-9 overflow-hidden rounded-xl bg-white/10">

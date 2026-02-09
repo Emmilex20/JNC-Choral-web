@@ -8,6 +8,7 @@ const RegisterSchema = z.object({
   name: z.string().min(2).max(80),
   email: z.string().email(),
   password: z.string().min(6).max(64),
+  isChorister: z.boolean().optional(),
 });
 
 export async function registerUserAction(input: unknown) {
@@ -16,7 +17,7 @@ export async function registerUserAction(input: unknown) {
     return { ok: false as const, error: "Invalid data" };
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, isChorister } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -31,6 +32,9 @@ export async function registerUserAction(input: unknown) {
       email: email.toLowerCase(),
       passwordHash,
       role: "USER",
+      isChorister: Boolean(isChorister),
+      choristerVerified: false,
+      onboardingComplete: false,
     },
   });
 

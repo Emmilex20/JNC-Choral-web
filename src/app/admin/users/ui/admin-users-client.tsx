@@ -10,6 +10,9 @@ type UserRow = {
   name: string | null;
   email: string | null;
   role: "USER" | "ADMIN";
+  isChorister: boolean;
+  choristerVerified: boolean;
+  adminNote: string | null;
   createdAt: Date;
 };
 
@@ -19,6 +22,9 @@ export default function AdminUsersClient({ initialUsers }: { initialUsers: UserR
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [editingRole, setEditingRole] = useState<"USER" | "ADMIN">("USER");
+  const [editingChorister, setEditingChorister] = useState(false);
+  const [editingVerified, setEditingVerified] = useState(false);
+  const [editingNote, setEditingNote] = useState("");
   const [isPending, startTransition] = useTransition();
 
   const filtered = useMemo(() => {
@@ -36,12 +42,18 @@ export default function AdminUsersClient({ initialUsers }: { initialUsers: UserR
     setEditingId(u.id);
     setEditingName(u.name ?? "");
     setEditingRole(u.role);
+    setEditingChorister(Boolean(u.isChorister));
+    setEditingVerified(Boolean(u.choristerVerified));
+    setEditingNote(u.adminNote ?? "");
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditingName("");
     setEditingRole("USER");
+    setEditingChorister(false);
+    setEditingVerified(false);
+    setEditingNote("");
   }
 
   function saveEdit() {
@@ -51,11 +63,23 @@ export default function AdminUsersClient({ initialUsers }: { initialUsers: UserR
         id: editingId,
         name: editingName,
         role: editingRole,
+        isChorister: editingChorister,
+        choristerVerified: editingVerified,
+        adminNote: editingNote,
       });
       if (!res.ok) return;
       setUsers((prev) =>
         prev.map((u) =>
-          u.id === editingId ? { ...u, name: editingName, role: editingRole } : u
+          u.id === editingId
+            ? {
+                ...u,
+                name: editingName,
+                role: editingRole,
+                isChorister: editingChorister,
+                choristerVerified: editingChorister ? editingVerified : false,
+                adminNote: editingNote.trim() || null,
+              }
+            : u
         )
       );
       cancelEdit();
@@ -106,6 +130,20 @@ export default function AdminUsersClient({ initialUsers }: { initialUsers: UserR
                   <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
                     {u.role}
                   </Badge>
+                  {u.isChorister ? (
+                    <Badge className="rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20">
+                      Chorister
+                    </Badge>
+                  ) : null}
+                  {u.isChorister && u.choristerVerified ? (
+                    <Badge className="rounded-full bg-sky-500/15 text-sky-100 hover:bg-sky-500/20">
+                      Verified
+                    </Badge>
+                  ) : u.isChorister ? (
+                    <Badge className="rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20">
+                      Pending
+                    </Badge>
+                  ) : null}
                   <Button
                     type="button"
                     variant="outline"
@@ -143,6 +181,36 @@ export default function AdminUsersClient({ initialUsers }: { initialUsers: UserR
                     <option value="USER">USER</option>
                     <option value="ADMIN">ADMIN</option>
                   </select>
+                  <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85 md:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={editingChorister}
+                      onChange={(e) => {
+                        const next = e.target.checked;
+                        setEditingChorister(next);
+                        if (!next) setEditingVerified(false);
+                      }}
+                      className="h-4 w-4 accent-white"
+                    />
+                    Chorister
+                  </label>
+                  <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85 md:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={editingVerified}
+                      onChange={(e) => setEditingVerified(e.target.checked)}
+                      className="h-4 w-4 accent-white"
+                      disabled={!editingChorister}
+                    />
+                    Verified chorister
+                  </label>
+                  <textarea
+                    value={editingNote}
+                    onChange={(e) => setEditingNote(e.target.value)}
+                    placeholder="Admin note for this chorister (visible to them)"
+                    rows={4}
+                    className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25 md:col-span-2"
+                  />
 
                   <div className="flex flex-wrap gap-2 md:col-span-2">
                     <Button
