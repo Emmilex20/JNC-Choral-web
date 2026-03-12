@@ -85,7 +85,7 @@ export default function AdminAuditionsClient({ initialRows }: { initialRows: Row
   }
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-5 md:p-8">
+    <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-5 md:p-8">
       {/* Controls */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
@@ -151,7 +151,118 @@ export default function AdminAuditionsClient({ initialRows }: { initialRows: Row
       </div>
 
       {/* Table */}
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-white/10">
+      <div className="mt-6 grid gap-3 lg:hidden">
+        {filtered.map((r) => (
+          <div key={r.id} className="rounded-2xl border border-white/10 bg-black/30 p-4">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-semibold text-white">{r.fullName}</div>
+                  <div className="text-xs text-white/60 break-all">{r.email}</div>
+                  <div className="text-xs text-white/60">{r.phone}</div>
+                  {r.city ? <div className="text-xs text-white/60">{r.city}</div> : null}
+                </div>
+                <div className="shrink-0">{statusBadge(r.status)}</div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
+                  {r.category}
+                </Badge>
+                <Badge className="rounded-full bg-white/10 text-white/80 hover:bg-white/10">
+                  {new Date(r.createdAt).toLocaleDateString()}
+                </Badge>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-white/70">
+                {r.category === "SINGER" ? (
+                  <div className="space-y-1">
+                    <div>
+                      Voice: <span className="text-white">{r.voicePart ?? "-"}</span>
+                    </div>
+                    {r.auditionSong ? (
+                      <div>
+                        Song: <span className="text-white">{r.auditionSong}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {r.category === "INSTRUMENTALIST" ? (
+                  <div className="space-y-1">
+                    <div>
+                      Instrument: <span className="text-white">{r.instrument ?? "-"}</span>
+                    </div>
+                    {r.instrumentLevel ? (
+                      <div>
+                        Level: <span className="text-white">{r.instrumentLevel}</span>
+                      </div>
+                    ) : null}
+                    <div>
+                      Sight-read:{" "}
+                      <span className="text-white">{r.canSightRead ? "Yes" : "No"}</span>
+                    </div>
+                  </div>
+                ) : null}
+
+                {r.category === "PRODUCTION" ? (
+                  <div className="space-y-1">
+                    <div>
+                      Role: <span className="text-white">{r.productionRole ?? "-"}</span>
+                    </div>
+                    {r.portfolioLink ? (
+                      <a
+                        className="text-white underline underline-offset-4"
+                        href={r.portfolioLink}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Portfolio
+                      </a>
+                    ) : (
+                      <div>Portfolio: -</div>
+                    )}
+                  </div>
+                ) : null}
+
+                {r.notes ? <div className="mt-2 line-clamp-3">{r.notes}</div> : null}
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                    disabled={isPending}
+                  >
+                    Change status <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent className="bg-black text-white border-white/10">
+                  {statusOptions.map((s) => (
+                    <DropdownMenuItem
+                      key={s}
+                      onClick={() => updateStatus(r.id, s)}
+                      className="cursor-pointer focus:bg-white/10"
+                    >
+                      {s}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        ))}
+
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-6 text-sm text-white/60">
+            No results found.
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-white/10 lg:block">
         <table className="w-full min-w-245 text-left text-sm">
           <thead className="bg-black/40 text-white/80">
             <tr>

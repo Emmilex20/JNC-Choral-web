@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
+import { getMusicSheetAccess, listVisibleMusicSheets } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth";
 import ChoristerClient from "./ui/chorister-client";
@@ -34,7 +35,9 @@ export default async function ChoristersPage() {
 
   if (!user || !canAccess(user)) redirect("/");
 
-  const [profile, notices, rehearsals, attendance] = await Promise.all([
+  const musicSheetAccess = await getMusicSheetAccess(session);
+
+  const [profile, notices, rehearsals, attendance, sheets] = await Promise.all([
     prisma.choristerProfile.findUnique({
       where: { userId: user.id },
     }),
@@ -53,6 +56,7 @@ export default async function ChoristersPage() {
         rehearsal: { select: { id: true, title: true, startsAt: true } },
       },
     }),
+    listVisibleMusicSheets(musicSheetAccess),
   ]);
 
   const now = new Date();
@@ -94,9 +98,13 @@ export default async function ChoristersPage() {
         address: profile.address,
         voicePart: profile.voicePart,
         dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.toISOString() : null,
+        gender: profile.gender,
+        maritalStatus: profile.maritalStatus,
         emergencyContact: profile.emergencyContact,
         stateOfOrigin: profile.stateOfOrigin,
         currentParish: profile.currentParish,
+        socialHandle: profile.socialHandle,
+        passportImageUrl: profile.passportImageUrl,
       }
     : null;
 
@@ -126,10 +134,24 @@ export default async function ChoristersPage() {
     },
   }));
 
+  const serializedSheets = sheets.map((sheet) => ({
+    id: sheet.id,
+    title: sheet.title,
+    fileName: sheet.fileName,
+    audience: sheet.audience,
+    createdAt: sheet.createdAt.toISOString(),
+    downloadUrl: `/api/music-sheets/${sheet.id}/download`,
+  }));
+
   return (
-    <main className="min-h-screen bg-black">
+    <main className="relative min-h-screen overflow-x-clip bg-[#02050d]">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute left-[-10rem] top-24 h-[28rem] w-[28rem] rounded-full bg-amber-300/10 blur-3xl" />
+        <div className="absolute right-[-12rem] top-20 h-[34rem] w-[34rem] rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.04),transparent_30%)]" />
+      </div>
       <SiteNavbar />
-      <section className="mx-auto max-w-6xl px-4 py-12 md:px-6">
+      <section className="relative mx-auto max-w-[90rem] px-4 py-10 md:px-6 xl:py-14">
         <ChoristerClient
           user={{
             id: user.id,
@@ -141,6 +163,7 @@ export default async function ChoristersPage() {
           notices={serializedNotices}
           rehearsals={serializedRehearsals}
           attendance={serializedAttendance}
+          sheets={serializedSheets}
           stats={{
             totalRehearsals,
             confirmedCount,

@@ -15,9 +15,13 @@ const ProfileSchema = z.object({
   address: z.string().max(200).optional(),
   voicePart: z.string().max(50).optional(),
   dateOfBirth: z.string().optional(),
+  gender: z.string().max(40).optional(),
+  maritalStatus: z.string().max(40).optional(),
   emergencyContact: z.string().max(120).optional(),
   stateOfOrigin: z.string().max(60).optional(),
   currentParish: z.string().max(120).optional(),
+  socialHandle: z.string().max(120).optional(),
+  passportImageUrl: z.string().url().max(500).optional().or(z.literal("")),
 });
 
 export async function upsertChoristerProfileAction(input: unknown) {
@@ -51,18 +55,26 @@ export async function upsertChoristerProfileAction(input: unknown) {
       address: parsed.data.address?.trim() || null,
       voicePart: parsed.data.voicePart?.trim() || null,
       dateOfBirth,
+      gender: parsed.data.gender?.trim() || null,
+      maritalStatus: parsed.data.maritalStatus?.trim() || null,
       emergencyContact: parsed.data.emergencyContact?.trim() || null,
       stateOfOrigin: parsed.data.stateOfOrigin?.trim() || null,
       currentParish: parsed.data.currentParish?.trim() || null,
+      socialHandle: parsed.data.socialHandle?.trim() || null,
+      passportImageUrl: parsed.data.passportImageUrl?.trim() || null,
     },
     update: {
       phone: parsed.data.phone?.trim() || null,
       address: parsed.data.address?.trim() || null,
       voicePart: parsed.data.voicePart?.trim() || null,
       dateOfBirth,
+      gender: parsed.data.gender?.trim() || null,
+      maritalStatus: parsed.data.maritalStatus?.trim() || null,
       emergencyContact: parsed.data.emergencyContact?.trim() || null,
       stateOfOrigin: parsed.data.stateOfOrigin?.trim() || null,
       currentParish: parsed.data.currentParish?.trim() || null,
+      socialHandle: parsed.data.socialHandle?.trim() || null,
+      passportImageUrl: parsed.data.passportImageUrl?.trim() || null,
     },
   });
 

@@ -79,10 +79,14 @@ export default function AdminAnnouncementsClient({ initialPosts }: { initialPost
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
       {/* Form */}
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6">
+        <p className="text-xs uppercase tracking-[0.22em] text-white/45">Editorial Desk</p>
         <h2 className="text-xl font-semibold text-white">
           {editingId ? "Edit Announcement" : "Create Announcement"}
         </h2>
+        <p className="mt-2 text-sm leading-6 text-white/60">
+          Write and revise public updates with a cleaner drafting surface.
+        </p>
 
         <div className="mt-6 grid gap-3">
           <div>
@@ -136,7 +140,8 @@ export default function AdminAnnouncementsClient({ initialPosts }: { initialPost
       </div>
 
       {/* List */}
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6">
+        <p className="text-xs uppercase tracking-[0.22em] text-white/45">Published Queue</p>
         <h2 className="text-xl font-semibold text-white">All Announcements</h2>
         <p className="mt-1 text-xs text-white/60">
           Public page shows only <b className="text-white">published</b> posts.
@@ -144,10 +149,12 @@ export default function AdminAnnouncementsClient({ initialPosts }: { initialPost
 
         <div className="mt-5 grid gap-3">
           {rows.length === 0 ? (
-            <p className="text-sm text-white/60">No announcements yet.</p>
+            <p className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/60">
+              No announcements yet.
+            </p>
           ) : (
             rows.map((r) => (
-              <div key={r.id} className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <div key={r.id} className="rounded-[1.75rem] border border-white/10 bg-black/30 p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-semibold text-white">{r.title}</p>

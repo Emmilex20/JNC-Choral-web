@@ -125,11 +125,12 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
   return (
     <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
       {/* Form */}
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6">
+        <p className="text-xs uppercase tracking-[0.22em] text-white/45">Programming Desk</p>
         <h2 className="text-xl font-semibold text-white">
           {editingId ? "Edit Event" : "Create Event"}
         </h2>
-        <p className="mt-1 text-xs text-white/60">
+        <p className="mt-2 text-sm leading-6 text-white/60">
           New events start unpublished. Publish when ready.
         </p>
 
@@ -216,7 +217,8 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
       </div>
 
       {/* List */}
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6">
+        <p className="text-xs uppercase tracking-[0.22em] text-white/45">Schedule Queue</p>
         <h2 className="text-xl font-semibold text-white">All Events</h2>
         <p className="mt-1 text-xs text-white/60">
           Public page shows only <b className="text-white">published</b> events.
@@ -224,10 +226,12 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
 
         <div className="mt-5 grid gap-3">
           {rows.length === 0 ? (
-            <p className="text-sm text-white/60">No events yet.</p>
+            <p className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/60">
+              No events yet.
+            </p>
           ) : (
             rows.map((r) => (
-              <div key={r.id} className="rounded-2xl border border-white/10 bg-black/30 p-4">
+              <div key={r.id} className="rounded-[1.75rem] border border-white/10 bg-black/30 p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-semibold text-white">{r.title}</p>

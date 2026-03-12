@@ -115,7 +115,7 @@ export default function AdminChoristerNoticesClient({
   }
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
+    <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
       {error ? (
         <div className="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
           {error}

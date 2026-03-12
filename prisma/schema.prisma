@@ -40,6 +40,11 @@ enum AttendanceStatus {
   PRESENT
 }
 
+enum MusicSheetAudience {
+  ALL_USERS
+  CHORISTERS_ONLY
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -200,6 +205,17 @@ model MusicItem {
   createdAt DateTime @default(now())
 }
 
+model MusicSheet {
+  id        String             @id @default(cuid())
+  title     String?
+  fileName  String
+  fileUrl   String
+  mimeType  String?
+  publicId  String             @unique
+  audience  MusicSheetAudience @default(ALL_USERS)
+  createdAt DateTime           @default(now())
+}
+
 model VideoItem {
   id        String   @id @default(cuid())
   title     String?
@@ -216,9 +232,13 @@ model ChoristerProfile {
   address         String?
   voicePart       String?
   dateOfBirth     DateTime?
+  gender          String?
+  maritalStatus   String?
   emergencyContact String?
   stateOfOrigin   String?
   currentParish   String?
+  socialHandle    String?
+  passportImageUrl String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

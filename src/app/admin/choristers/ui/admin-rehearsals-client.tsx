@@ -86,8 +86,12 @@ export default function AdminRehearsalsClient({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
-        <h3 className="text-lg font-semibold text-white">Create rehearsal</h3>
+      <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
+        <p className="text-xs uppercase tracking-[0.22em] text-white/45">Scheduling</p>
+        <h3 className="mt-2 text-xl font-semibold text-white">Create rehearsal</h3>
+        <p className="mt-2 text-sm leading-6 text-white/60">
+          Add a session and keep confirmation progress visible at a glance.
+        </p>
         <div className="mt-4 grid gap-3">
           <input
             value={title}
@@ -106,19 +110,28 @@ export default function AdminRehearsalsClient({
           </Button>
         </div>
 
-        <div className="mt-6 grid gap-3">
+        <div className="mt-6 flex items-center justify-between gap-3">
+          <p className="text-sm text-white/70">Recent rehearsals</p>
+          <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
+            {rehearsals.length} total
+          </Badge>
+        </div>
+
+        <div className="mt-4 grid gap-3">
           {rehearsals.length === 0 ? (
-            <p className="text-sm text-white/60">No rehearsals yet.</p>
+            <p className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/60">
+              No rehearsals yet.
+            </p>
           ) : (
             rehearsals.map((r) => (
               <div
                 key={r.id}
-                className="rounded-2xl border border-white/10 bg-black/30 p-4"
+                className="rounded-[1.75rem] border border-white/10 bg-black/30 p-5"
               >
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div>
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="min-w-0">
                     <p className="font-semibold text-white">{r.title}</p>
-                    <p className="text-xs text-white/60">
+                    <p className="mt-1 text-xs text-white/60">
                       {new Date(r.startsAt).toLocaleString()}
                     </p>
                   </div>
@@ -142,45 +155,52 @@ export default function AdminRehearsalsClient({
         </div>
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
-        <h3 className="text-lg font-semibold text-white">Pending confirmations</h3>
+      <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
+        <p className="text-xs uppercase tracking-[0.22em] text-white/45">Attendance Queue</p>
+        <h3 className="mt-2 text-xl font-semibold text-white">Pending confirmations</h3>
         <p className="mt-2 text-sm text-white/60">
           Choristers have marked themselves present. Confirm or reject below.
         </p>
         <div className="mt-4 grid gap-3">
           {pending.length === 0 ? (
-            <p className="text-sm text-white/60">No pending attendance.</p>
+            <p className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/60">
+              No pending attendance.
+            </p>
           ) : (
             pending.map((p) => (
               <div
                 key={p.id}
-                className="rounded-2xl border border-white/10 bg-black/30 p-4"
+                className="rounded-[1.75rem] border border-white/10 bg-black/30 p-5"
               >
-                <p className="font-semibold text-white">{p.userName ?? "Unnamed user"}</p>
-                <p className="text-xs text-white/60">{p.userEmail ?? "-"}</p>
-                <p className="mt-2 text-sm text-white/80">{p.rehearsalTitle}</p>
-                <p className="text-xs text-white/60">
-                  {new Date(p.rehearsalDate).toLocaleString()}
-                </p>
-                <p className="mt-2 text-xs text-white/50">
-                  Marked: {new Date(p.markedAt).toLocaleString()}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button
-                    className="rounded-2xl"
-                    onClick={() => confirmAttendance(p.id)}
-                    disabled={isPending}
-                  >
-                    Confirm
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="rounded-2xl border-red-500/30 bg-red-500/10 text-red-200 hover:bg-red-500/20"
-                    onClick={() => rejectAttendance(p.id)}
-                    disabled={isPending}
-                  >
-                    Reject
-                  </Button>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white">{p.userName ?? "Unnamed user"}</p>
+                    <p className="mt-1 break-all text-xs text-white/60">{p.userEmail ?? "-"}</p>
+                    <p className="mt-4 text-sm text-white/80">{p.rehearsalTitle}</p>
+                    <p className="text-xs text-white/60">
+                      {new Date(p.rehearsalDate).toLocaleString()}
+                    </p>
+                    <p className="mt-3 text-xs uppercase tracking-[0.18em] text-white/45">
+                      Marked {new Date(p.markedAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 lg:justify-end">
+                    <Button
+                      className="rounded-2xl"
+                      onClick={() => confirmAttendance(p.id)}
+                      disabled={isPending}
+                    >
+                      Confirm
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl border-red-500/30 bg-red-500/10 text-red-200 hover:bg-red-500/20"
+                      onClick={() => rejectAttendance(p.id)}
+                      disabled={isPending}
+                    >
+                      Reject
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))

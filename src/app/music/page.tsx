@@ -1,13 +1,23 @@
+import { getServerSession } from "next-auth";
+
+import { authOptions } from "@/auth";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
+import { getMusicSheetAccess, listVisibleMusicSheets } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
 import MusicClient from "./ui/music-client";
 
 export default async function MusicPage() {
-  const items = await prisma.musicItem.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  });
+  const session = await getServerSession(authOptions);
+  const access = await getMusicSheetAccess(session);
+
+  const [items, sheets] = await Promise.all([
+    prisma.musicItem.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+    }),
+    listVisibleMusicSheets(access),
+  ]);
 
   return (
     <main className="min-h-screen bg-black">
@@ -29,10 +39,23 @@ export default async function MusicPage() {
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
             {items.length} track{items.length === 1 ? "" : "s"} available
+            {access.isSignedIn ? ` • ${sheets.length} sheet file${sheets.length === 1 ? "" : "s"}` : ""}
           </div>
         </div>
 
-        <MusicClient items={items} />
+        <MusicClient
+          items={items}
+          sheets={sheets.map((sheet) => ({
+            id: sheet.id,
+            title: sheet.title,
+            fileName: sheet.fileName,
+            audience: sheet.audience,
+            createdAt: sheet.createdAt.toISOString(),
+            downloadUrl: `/api/music-sheets/${sheet.id}/download`,
+          }))}
+          isSignedIn={access.isSignedIn}
+          canAccessChoristerSheets={access.canAccessChoristerSheets}
+        />
       </section>
 
       <SiteFooter />

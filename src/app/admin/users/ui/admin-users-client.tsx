@@ -96,37 +96,51 @@ export default function AdminUsersClient({ initialUsers }: { initialUsers: UserR
   }
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name, email, or role..."
-          className="w-full md:w-80 rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
-        />
-        <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
-          Total: {filtered.length}
-        </Badge>
+    <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-white/45">Accounts</p>
+          <h3 className="mt-2 text-xl font-semibold text-white">User directory</h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
+            Search accounts, review roles, and expand a record only when you need to edit it.
+          </p>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name, email, or role..."
+            className="w-full min-w-0 rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25 sm:w-80"
+          />
+          <Badge className="rounded-full bg-white/10 px-4 py-2 text-white hover:bg-white/10">
+            {filtered.length} visible
+          </Badge>
+        </div>
       </div>
 
       <div className="mt-6 grid gap-3">
         {filtered.length === 0 ? (
-          <p className="text-sm text-white/60">No users found.</p>
+          <p className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/60">
+            No users found.
+          </p>
         ) : (
           filtered.map((u) => (
             <div
               key={u.id}
-              className="rounded-2xl border border-white/10 bg-black/30 p-4"
+              className="rounded-[1.75rem] border border-white/10 bg-black/30 p-5"
             >
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0">
                   <p className="font-semibold text-white">
                     {u.name ?? "Unnamed user"}
                   </p>
-                  <p className="text-xs text-white/70">{u.email ?? "-"}</p>
+                  <p className="mt-1 break-all text-xs text-white/70">{u.email ?? "-"}</p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/40">
+                    Joined {new Date(u.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                   <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
                     {u.role}
                   </Badge>
@@ -166,70 +180,72 @@ export default function AdminUsersClient({ initialUsers }: { initialUsers: UserR
               </div>
 
               {editingId === u.id ? (
-                <div className="mt-4 grid gap-3 md:grid-cols-[1fr_180px]">
-                  <input
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                    placeholder="Full name"
-                    className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
-                  />
-                  <select
-                    value={editingRole}
-                    onChange={(e) => setEditingRole(e.target.value as "USER" | "ADMIN")}
-                    className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
-                  >
-                    <option value="USER">USER</option>
-                    <option value="ADMIN">ADMIN</option>
-                  </select>
-                  <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85 md:col-span-2">
+                <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                  <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
                     <input
-                      type="checkbox"
-                      checked={editingChorister}
-                      onChange={(e) => {
-                        const next = e.target.checked;
-                        setEditingChorister(next);
-                        if (!next) setEditingVerified(false);
-                      }}
-                      className="h-4 w-4 accent-white"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      placeholder="Full name"
+                      className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
                     />
-                    Chorister
-                  </label>
-                  <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85 md:col-span-2">
-                    <input
-                      type="checkbox"
-                      checked={editingVerified}
-                      onChange={(e) => setEditingVerified(e.target.checked)}
-                      className="h-4 w-4 accent-white"
-                      disabled={!editingChorister}
+                    <select
+                      value={editingRole}
+                      onChange={(e) => setEditingRole(e.target.value as "USER" | "ADMIN")}
+                      className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                    >
+                      <option value="USER">USER</option>
+                      <option value="ADMIN">ADMIN</option>
+                    </select>
+                    <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85 md:col-span-2">
+                      <input
+                        type="checkbox"
+                        checked={editingChorister}
+                        onChange={(e) => {
+                          const next = e.target.checked;
+                          setEditingChorister(next);
+                          if (!next) setEditingVerified(false);
+                        }}
+                        className="h-4 w-4 accent-white"
+                      />
+                      Chorister
+                    </label>
+                    <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85 md:col-span-2">
+                      <input
+                        type="checkbox"
+                        checked={editingVerified}
+                        onChange={(e) => setEditingVerified(e.target.checked)}
+                        className="h-4 w-4 accent-white"
+                        disabled={!editingChorister}
+                      />
+                      Verified chorister
+                    </label>
+                    <textarea
+                      value={editingNote}
+                      onChange={(e) => setEditingNote(e.target.value)}
+                      placeholder="Admin note for this chorister (visible to them)"
+                      rows={4}
+                      className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25 md:col-span-2"
                     />
-                    Verified chorister
-                  </label>
-                  <textarea
-                    value={editingNote}
-                    onChange={(e) => setEditingNote(e.target.value)}
-                    placeholder="Admin note for this chorister (visible to them)"
-                    rows={4}
-                    className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25 md:col-span-2"
-                  />
 
-                  <div className="flex flex-wrap gap-2 md:col-span-2">
-                    <Button
-                      type="button"
-                      className="rounded-2xl"
-                      onClick={saveEdit}
-                      disabled={isPending}
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
-                      onClick={cancelEdit}
-                      disabled={isPending}
-                    >
-                      Cancel
-                    </Button>
+                    <div className="flex flex-wrap gap-2 md:col-span-2">
+                      <Button
+                        type="button"
+                        className="rounded-2xl"
+                        onClick={saveEdit}
+                        disabled={isPending}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                        onClick={cancelEdit}
+                        disabled={isPending}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : null}
