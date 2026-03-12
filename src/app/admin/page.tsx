@@ -15,6 +15,8 @@ import AdminAuditionsClient from "./ui/admin-auditions-client";
 import AdminUsersClient from "./users/ui/admin-users-client";
 import AdminVideosClient from "./videos/ui/admin-videos-client";
 
+export const dynamic = "force-dynamic";
+
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("en-US", {
     notation: "compact",

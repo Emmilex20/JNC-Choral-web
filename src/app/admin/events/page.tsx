@@ -2,6 +2,8 @@ import { getEventResponseRowsMap } from "@/lib/event-responses";
 import { prisma } from "@/lib/prisma";
 import AdminEventsClient from "./ui/admin-events-client";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminEventsPage() {
   const events = await prisma.event.findMany({
     orderBy: { startsAt: "desc" },
