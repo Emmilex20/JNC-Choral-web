@@ -1,5 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 
+import { getEventResponseRowsMap } from "@/lib/event-responses";
 import { listMusicSheetsForAdmin } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
 import AdminAnnouncementsClient from "./announcements/ui/admin-announcements-client";
@@ -153,6 +154,8 @@ export default async function AdminPage() {
     }),
   ]);
 
+  const eventResponseMap = await getEventResponseRowsMap(events.map((event) => event.id));
+
   const rehearsalRows = rehearsals.map((r) => ({
     id: r.id,
     title: r.title,
@@ -218,7 +221,14 @@ export default async function AdminPage() {
       eyebrow: "Programming",
       description: "Schedule rehearsals, performances, and public appearances with cleaner publishing control and sharper visibility.",
       countLabel: formatCountLabel(events.length, "events"),
-      content: <AdminEventsClient initialEvents={events} />,
+      content: (
+        <AdminEventsClient
+          initialEvents={events.map((event) => ({
+            ...event,
+            responses: eventResponseMap.get(event.id) ?? [],
+          }))}
+        />
+      ),
     },
     {
       id: "announcements",

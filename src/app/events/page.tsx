@@ -1,38 +1,38 @@
 import type { Metadata } from "next";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
+import { getEventResponseSummaryMap } from "@/lib/event-responses";
 import { prisma } from "@/lib/prisma";
+import EventsClient from "./ui/events-client";
 
 export const metadata: Metadata = {
   title: "Events",
   description:
-    "Explore upcoming and past Jude Nnam Choral events, rehearsals, and performances in Abuja.",
+    "Explore upcoming and past Jude Nnam Choral events, rehearsals, performances, and RSVP interest.",
   alternates: {
     canonical: "https://www.jnc-choral.vercel.app/events",
   },
 };
 
-function fmt(d: Date) {
-  return new Intl.DateTimeFormat("en-NG", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(d);
-}
-
 export default async function EventsPage() {
   const now = new Date();
 
-  const upcoming = await prisma.event.findMany({
-    where: { isPublished: true, startsAt: { gte: now } },
-    orderBy: { startsAt: "asc" },
-    take: 50,
-  });
+  const [upcoming, past] = await Promise.all([
+    prisma.event.findMany({
+      where: { isPublished: true, startsAt: { gte: now } },
+      orderBy: { startsAt: "asc" },
+      take: 50,
+    }),
+    prisma.event.findMany({
+      where: { isPublished: true, startsAt: { lt: now } },
+      orderBy: { startsAt: "desc" },
+      take: 50,
+    }),
+  ]);
 
-  const past = await prisma.event.findMany({
-    where: { isPublished: true, startsAt: { lt: now } },
-    orderBy: { startsAt: "desc" },
-    take: 50,
-  });
+  const summaryMap = await getEventResponseSummaryMap(
+    [...upcoming, ...past].map((event) => event.id)
+  );
 
   return (
     <main className="min-h-screen bg-black">
@@ -44,77 +44,40 @@ export default async function EventsPage() {
           Rehearsals, performances, auditions, and special gatherings.
         </p>
 
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-xl font-semibold text-white">Upcoming</h2>
-            <div className="mt-4 grid gap-3">
-              {upcoming.length === 0 ? (
-                <p className="text-sm text-white/60">No upcoming events yet.</p>
-              ) : (
-                upcoming.map(
-                  (e: {
-                    id: string;
-                    title: string;
-                    description: string | null;
-                    location: string | null;
-                    startsAt: Date;
-                    endsAt: Date | null;
-                  }) => (
-                  <div
-                    key={e.id}
-                    className="rounded-2xl border border-white/10 bg-black/30 p-4"
-                  >
-                    <p className="font-semibold text-white">{e.title}</p>
-                    <p className="mt-1 text-xs text-white/70">
-                      {fmt(e.startsAt)}
-                      {e.endsAt ? ` - ${fmt(e.endsAt)}` : ""}
-                    </p>
-                    {e.location ? (
-                      <p className="mt-1 text-xs text-white/70">{e.location}</p>
-                    ) : null}
-                    {e.description ? (
-                      <p className="mt-2 text-sm text-white/75">{e.description}</p>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <h2 className="text-xl font-semibold text-white">Past</h2>
-            <div className="mt-4 grid gap-3">
-              {past.length === 0 ? (
-                <p className="text-sm text-white/60">No past events yet.</p>
-              ) : (
-                past.map(
-                  (e: {
-                    id: string;
-                    title: string;
-                    description: string | null;
-                    location: string | null;
-                    startsAt: Date;
-                  }) => (
-                  <div
-                    key={e.id}
-                    className="rounded-2xl border border-white/10 bg-black/30 p-4"
-                  >
-                    <p className="font-semibold text-white">{e.title}</p>
-                    <p className="mt-1 text-xs text-white/70">
-                      {fmt(e.startsAt)}
-                    </p>
-                    {e.location ? (
-                      <p className="mt-1 text-xs text-white/70">{e.location}</p>
-                    ) : null}
-                    {e.description ? (
-                      <p className="mt-2 text-sm text-white/75">{e.description}</p>
-                    ) : null}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+        <EventsClient
+          upcoming={upcoming.map((event) => ({
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            location: event.location,
+            imageUrl: event.imageUrl,
+            videoUrl: event.videoUrl,
+            startsAt: event.startsAt.toISOString(),
+            endsAt: event.endsAt ? event.endsAt.toISOString() : null,
+            summary: summaryMap.get(event.id) ?? {
+              attending: 0,
+              maybe: 0,
+              notAttending: 0,
+              total: 0,
+            },
+          }))}
+          past={past.map((event) => ({
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            location: event.location,
+            imageUrl: event.imageUrl,
+            videoUrl: event.videoUrl,
+            startsAt: event.startsAt.toISOString(),
+            endsAt: event.endsAt ? event.endsAt.toISOString() : null,
+            summary: summaryMap.get(event.id) ?? {
+              attending: 0,
+              maybe: 0,
+              notAttending: 0,
+              total: 0,
+            },
+          }))}
+        />
       </section>
 
       <SiteFooter />

@@ -12,29 +12,96 @@ function fmt(d: Date) {
   }).format(d);
 }
 
+function HomeEventCard({
+  event,
+}: {
+  event: {
+    id: string;
+    title: string;
+    description: string | null;
+    location: string | null;
+    imageUrl: string | null;
+    videoUrl: string | null;
+    startsAt: Date;
+    endsAt: Date | null;
+  };
+}) {
+  return (
+    <div className="group overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]">
+      <div className="relative">
+        {event.imageUrl ? (
+          <img
+            src={event.imageUrl}
+            alt={event.title}
+            className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+          />
+        ) : event.videoUrl ? (
+          <video
+            src={event.videoUrl}
+            controls
+            className="h-64 w-full bg-black object-cover"
+          />
+        ) : (
+          <div className="h-64 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.24),rgba(15,23,42,0.85)_48%,rgba(2,6,23,1))]" />
+        )}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.65))]" />
+        <div className="absolute left-5 top-5">
+          <span className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-white/80">
+            Event
+          </span>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <p className="text-lg font-semibold text-white">{event.title}</p>
+        <p className="mt-2 text-xs uppercase tracking-[0.18em] text-white/45">
+          {fmt(event.startsAt)}
+          {event.endsAt ? ` - ${fmt(event.endsAt)}` : ""}
+        </p>
+        {event.location ? (
+          <p className="mt-2 text-sm text-white/65">{event.location}</p>
+        ) : null}
+        {event.description ? (
+          <p className="mt-4 line-clamp-4 text-sm leading-7 text-white/74">
+            {event.description}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default async function HomePage() {
   const now = new Date();
 
-  const featuredEvent = await prisma.event.findFirst({
-    where: { isPublished: true, startsAt: { gte: now } },
-    orderBy: { startsAt: "asc" },
-  });
+  const [upcomingEvents, recentPastEvents, latestAnnouncement, latestNews, latestGallery] =
+    await Promise.all([
+      prisma.event.findMany({
+        where: { isPublished: true, startsAt: { gte: now } },
+        orderBy: { startsAt: "asc" },
+        take: 2,
+      }),
+      prisma.event.findMany({
+        where: { isPublished: true, startsAt: { lt: now } },
+        orderBy: { startsAt: "desc" },
+        take: 2,
+      }),
+      prisma.announcement.findFirst({
+        where: { isPublished: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.announcement.findMany({
+        where: { isPublished: true },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+      }),
+      prisma.galleryItem.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 6,
+      }),
+    ]);
 
-  const latestAnnouncement = await prisma.announcement.findFirst({
-    where: { isPublished: true },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const latestNews = await prisma.announcement.findMany({
-    where: { isPublished: true },
-    orderBy: { createdAt: "desc" },
-    take: 3,
-  });
-
-  const latestGallery = await prisma.galleryItem.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 6,
-  });
+  const homeEvents = [...upcomingEvents, ...recentPastEvents].slice(0, 2);
 
   const featureCards = [
     {
@@ -148,50 +215,40 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-20 pt-12 md:px-6 md:pt-16 md:pb-28">
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Featured Event */}
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-10">
-            <h2 className="text-2xl font-semibold text-white">Featured Event</h2>
-            {featuredEvent ? (
-              <>
-                <p className="mt-3 text-lg font-semibold text-white">
-                  {featuredEvent.title}
-                </p>
-                <p className="mt-1 text-sm text-white/70">{fmt(featuredEvent.startsAt)}</p>
-                {featuredEvent.location ? (
-                  <p className="mt-1 text-sm text-white/70">{featuredEvent.location}</p>
-                ) : null}
-                {featuredEvent.description ? (
-                  <p className="mt-3 text-white/75">{featuredEvent.description}</p>
-                ) : null}
-                <div className="mt-6">
-                  <Button
-                    variant="outline"
-                    className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
-                    asChild
-                  >
-                    <Link href="/events">View all events</Link>
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <p className="mt-3 text-white/70">
-                  No upcoming event published yet. Admin can publish events in the dashboard.
-                </p>
-                <div className="mt-6">
-                  <Button
-                    variant="outline"
-                    className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
-                    asChild
-                  >
-                    <Link href="/events">Events page</Link>
-                  </Button>
-                </div>
-              </>
-            )}
+        <div className="rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.14),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] p-6 md:p-10">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.22em] text-white/50">
+                Events
+              </p>
+              <h2 className="mt-2 text-3xl font-semibold text-white">
+                Where the choir meets the moment
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-white/68">
+                Rehearsals, performances, and special gatherings from the public calendar.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+              asChild
+            >
+              <Link href="/events">See more events</Link>
+            </Button>
           </div>
 
+          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+            {homeEvents.length > 0 ? (
+              homeEvents.map((event) => <HomeEventCard key={event.id} event={event} />)
+            ) : (
+              <div className="rounded-[1.75rem] border border-white/10 bg-black/25 p-6 text-sm text-white/60 lg:col-span-2">
+                No published events yet. Once events are published from admin, they will appear here.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
           {/* Latest Announcement */}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-10">
             <h2 className="text-2xl font-semibold text-white">Latest Announcement</h2>

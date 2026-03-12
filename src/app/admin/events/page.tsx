@@ -1,3 +1,4 @@
+import { getEventResponseRowsMap } from "@/lib/event-responses";
 import { prisma } from "@/lib/prisma";
 import AdminEventsClient from "./ui/admin-events-client";
 
@@ -6,6 +7,8 @@ export default async function AdminEventsPage() {
     orderBy: { startsAt: "desc" },
     take: 200,
   });
+
+  const responseMap = await getEventResponseRowsMap(events.map((event) => event.id));
 
   return (
     <div className="space-y-6">
@@ -16,7 +19,12 @@ export default async function AdminEventsPage() {
         </p>
       </div>
 
-      <AdminEventsClient initialEvents={events} />
+      <AdminEventsClient
+        initialEvents={events.map((event) => ({
+          ...event,
+          responses: responseMap.get(event.id) ?? [],
+        }))}
+      />
     </div>
   );
 }

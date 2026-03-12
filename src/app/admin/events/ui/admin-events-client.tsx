@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { ImageIcon, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,12 +16,31 @@ type EventRow = {
   title: string;
   description: string | null;
   location: string | null;
+  imageUrl: string | null;
+  imagePublicId: string | null;
+  videoUrl: string | null;
+  videoPublicId: string | null;
   startsAt: Date;
   endsAt: Date | null;
   isPublished: boolean;
+  responses: {
+    id: string;
+    status: "ATTENDING" | "MAYBE" | "NOT_ATTENDING";
+    fullName: string;
+    email: string;
+    phone: string;
+    note: string | null;
+    createdAt: Date;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 };
+
+async function getSignature() {
+  const res = await fetch("/api/admin/cloudinary-signature?folderSuffix=event-media");
+  if (!res.ok) throw new Error("Failed to get upload signature");
+  return res.json();
+}
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -32,15 +52,40 @@ function toLocalInputValue(d: Date) {
   return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
 }
 
+function summarizeResponses(
+  responses: { status: "ATTENDING" | "MAYBE" | "NOT_ATTENDING" }[]
+) {
+  const summary = {
+    attending: 0,
+    maybe: 0,
+    notAttending: 0,
+  };
+
+  responses.forEach((response) => {
+    if (response.status === "ATTENDING") summary.attending += 1;
+    if (response.status === "MAYBE") summary.maybe += 1;
+    if (response.status === "NOT_ATTENDING") summary.notAttending += 1;
+  });
+
+  return summary;
+}
+
 export default function AdminEventsClient({ initialEvents }: { initialEvents: EventRow[] }) {
   const [rows, setRows] = useState<EventRow[]>(initialEvents);
   const [isPending, startTransition] = useTransition();
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     title: "",
     description: "",
     location: "",
+    imageUrl: "",
+    imagePublicId: "",
+    videoUrl: "",
+    videoPublicId: "",
     startsAt: "",
     endsAt: "",
   });
@@ -52,18 +97,109 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
 
   function resetForm() {
     setEditingId(null);
-    setForm({ title: "", description: "", location: "", startsAt: "", endsAt: "" });
+    setError(null);
+    setForm({
+      title: "",
+      description: "",
+      location: "",
+      imageUrl: "",
+      imagePublicId: "",
+      videoUrl: "",
+      videoPublicId: "",
+      startsAt: "",
+      endsAt: "",
+    });
   }
 
   function beginEdit(r: EventRow) {
     setEditingId(r.id);
+    setError(null);
     setForm({
       title: r.title,
       description: r.description ?? "",
       location: r.location ?? "",
+      imageUrl: r.imageUrl ?? "",
+      imagePublicId: r.imagePublicId ?? "",
+      videoUrl: r.videoUrl ?? "",
+      videoPublicId: r.videoPublicId ?? "",
       startsAt: toLocalInputValue(new Date(r.startsAt)),
       endsAt: r.endsAt ? toLocalInputValue(new Date(r.endsAt)) : "",
     });
+  }
+
+  async function uploadImage(file: File) {
+    const sig = await getSignature();
+    const url = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
+
+    const data = new FormData();
+    data.append("file", file);
+    data.append("api_key", sig.apiKey);
+    data.append("timestamp", String(sig.timestamp));
+    data.append("signature", sig.signature);
+    data.append("folder", sig.folder);
+
+    const res = await fetch(url, { method: "POST", body: data });
+    if (!res.ok) throw new Error("Image upload failed");
+    return res.json();
+  }
+
+  async function uploadVideo(file: File) {
+    const sig = await getSignature();
+    const url = `https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`;
+
+    const data = new FormData();
+    data.append("file", file);
+    data.append("api_key", sig.apiKey);
+    data.append("timestamp", String(sig.timestamp));
+    data.append("signature", sig.signature);
+    data.append("folder", sig.folder);
+    data.append("resource_type", "video");
+
+    const res = await fetch(url, { method: "POST", body: data });
+    if (!res.ok) throw new Error("Video upload failed");
+    return res.json();
+  }
+
+  async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    setError(null);
+    try {
+      const uploaded = await uploadImage(file);
+      setForm((current) => ({
+        ...current,
+        imageUrl: uploaded.secure_url as string,
+        imagePublicId: uploaded.public_id as string,
+      }));
+    } catch (err: any) {
+      setError(err?.message ?? "Image upload failed");
+    } finally {
+      setUploadingImage(false);
+      e.target.value = "";
+    }
+  }
+
+  async function onPickVideo(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingVideo(true);
+    setError(null);
+    try {
+      const uploaded = await uploadVideo(file);
+      setForm((current) => ({
+        ...current,
+        videoUrl: uploaded.secure_url as string,
+        videoPublicId: uploaded.public_id as string,
+      }));
+    } catch (err: any) {
+      setError(err?.message ?? "Video upload failed");
+    } finally {
+      setUploadingVideo(false);
+      e.target.value = "";
+    }
   }
 
   async function submit() {
@@ -71,14 +207,22 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
       title: form.title,
       description: form.description || undefined,
       location: form.location || undefined,
+      imageUrl: form.imageUrl || undefined,
+      imagePublicId: form.imagePublicId || undefined,
+      videoUrl: form.videoUrl || undefined,
+      videoPublicId: form.videoPublicId || undefined,
       startsAt: form.startsAt,
       endsAt: form.endsAt || undefined,
     };
 
+    setError(null);
     startTransition(async () => {
       if (editingId) {
         const res = await updateEventAction({ id: editingId, ...payload });
-        if (!res.ok) return;
+        if (!res.ok) {
+          setError(res.error);
+          return;
+        }
 
         setRows((prev) =>
           prev.map((r) =>
@@ -88,8 +232,13 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
                   title: payload.title,
                   description: payload.description ?? null,
                   location: payload.location ?? null,
+                  imageUrl: payload.imageUrl ?? null,
+                  imagePublicId: payload.imagePublicId ?? null,
+                  videoUrl: payload.videoUrl ?? null,
+                  videoPublicId: payload.videoPublicId ?? null,
                   startsAt: new Date(payload.startsAt),
                   endsAt: payload.endsAt ? new Date(payload.endsAt) : null,
+                  responses: r.responses,
                 }
               : r
           )
@@ -97,8 +246,10 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
         resetForm();
       } else {
         const res = await createEventAction(payload);
-        if (!res.ok) return;
-        // refresh strategy: simplest is reload
+        if (!res.ok) {
+          setError(res.error);
+          return;
+        }
         window.location.reload();
       }
     });
@@ -123,8 +274,7 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-      {/* Form */}
+    <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
       <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6">
         <p className="text-xs uppercase tracking-[0.22em] text-white/45">Programming Desk</p>
         <h2 className="text-xl font-semibold text-white">
@@ -133,6 +283,12 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
         <p className="mt-2 text-sm leading-6 text-white/60">
           New events start unpublished. Publish when ready.
         </p>
+
+        {error ? (
+          <div className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+            {error}
+          </div>
+        ) : null}
 
         <div className="mt-6 grid gap-3">
           <div>
@@ -181,15 +337,120 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
             <textarea
               value={form.description}
               onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              className="mt-1 min-h-27.5 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-white outline-none focus:border-white/25"
+              className="mt-1 min-h-28 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-white outline-none focus:border-white/25"
               placeholder="Short details about the event..."
             />
+          </div>
+
+          <div className="rounded-[1.5rem] border border-white/10 bg-black/25 p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+                  Event Media
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/60">
+                  Add an optional image, video, or both for the public event page.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onPickImage}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <span className="rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10">
+                    {uploadingImage ? "Uploading image..." : "Upload Image"}
+                  </span>
+                </label>
+                <label className="inline-flex cursor-pointer items-center gap-2">
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={onPickVideo}
+                    className="hidden"
+                    disabled={uploadingVideo}
+                  />
+                  <span className="rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10">
+                    {uploadingVideo ? "Uploading video..." : "Upload Video"}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4">
+              <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm text-white/70">
+                    <ImageIcon className="h-4 w-4" />
+                    Event image
+                  </div>
+                  {form.imageUrl ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                      onClick={() =>
+                        setForm((current) => ({
+                          ...current,
+                          imageUrl: "",
+                          imagePublicId: "",
+                        }))
+                      }
+                    >
+                      Remove
+                    </Button>
+                  ) : null}
+                </div>
+                {form.imageUrl ? (
+                  <img
+                    src={form.imageUrl}
+                    alt="Event preview"
+                    className="mt-4 h-40 w-full rounded-2xl object-cover"
+                  />
+                ) : (
+                  <p className="mt-3 text-sm text-white/55">No image uploaded yet.</p>
+                )}
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm text-white/70">
+                    <Video className="h-4 w-4" />
+                    Event video
+                  </div>
+                  {form.videoUrl ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+                      onClick={() =>
+                        setForm((current) => ({
+                          ...current,
+                          videoUrl: "",
+                          videoPublicId: "",
+                        }))
+                      }
+                    >
+                      Remove
+                    </Button>
+                  ) : null}
+                </div>
+                {form.videoUrl ? (
+                  <video src={form.videoUrl} controls className="mt-4 w-full rounded-2xl" />
+                ) : (
+                  <p className="mt-3 text-sm text-white/55">No video uploaded yet.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <Button
               className="w-full rounded-2xl sm:w-auto"
-              disabled={isPending}
+              disabled={isPending || uploadingImage || uploadingVideo}
               onClick={submit}
               type="button"
             >
@@ -201,7 +462,7 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
                 variant="outline"
                 className="w-full rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10 sm:w-auto"
                 onClick={resetForm}
-                disabled={isPending}
+                disabled={isPending || uploadingImage || uploadingVideo}
               >
                 Cancel
               </Button>
@@ -216,7 +477,6 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
         </div>
       </div>
 
-      {/* List */}
       <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6">
         <p className="text-xs uppercase tracking-[0.22em] text-white/45">Schedule Queue</p>
         <h2 className="text-xl font-semibold text-white">All Events</h2>
@@ -231,19 +491,45 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
             </p>
           ) : (
             rows.map((r) => (
-              <div key={r.id} className="rounded-[1.75rem] border border-white/10 bg-black/30 p-5">
+              <div
+                key={r.id}
+                className="rounded-[1.75rem] border border-white/10 bg-black/30 p-5"
+              >
+                {(() => {
+                  const summary = summarizeResponses(r.responses);
+                  return (
+                    <>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-semibold text-white">{r.title}</p>
                     <p className="mt-1 text-xs text-white/70">
                       {new Date(r.startsAt).toLocaleString()}
-                      {r.location ? ` • ${r.location}` : ""}
+                      {r.location ? ` - ${r.location}` : ""}
                     </p>
                   </div>
 
                   <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                     <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
                       {r.isPublished ? "PUBLISHED" : "DRAFT"}
+                    </Badge>
+                    {r.imageUrl ? (
+                      <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
+                        Image
+                      </Badge>
+                    ) : null}
+                    {r.videoUrl ? (
+                      <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
+                        Video
+                      </Badge>
+                    ) : null}
+                    <Badge className="rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20">
+                      {summary.attending} attending
+                    </Badge>
+                    <Badge className="rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20">
+                      {summary.maybe} maybe
+                    </Badge>
+                    <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
+                      {summary.notAttending} can&apos;t go
                     </Badge>
 
                     <Button
@@ -281,6 +567,76 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
                 {r.description ? (
                   <p className="mt-3 text-sm text-white/75">{r.description}</p>
                 ) : null}
+                {r.imageUrl ? (
+                  <img
+                    src={r.imageUrl}
+                    alt={r.title}
+                    className="mt-4 h-44 w-full rounded-2xl object-cover"
+                  />
+                ) : null}
+                {r.videoUrl ? (
+                  <video src={r.videoUrl} controls className="mt-4 w-full rounded-2xl" />
+                ) : null}
+
+                <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+                        Event RSVPs
+                      </p>
+                      <p className="mt-2 text-sm text-white/60">
+                        Submissions from the public event page for this event.
+                      </p>
+                    </div>
+                    <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
+                      {r.responses.length} total
+                    </Badge>
+                  </div>
+                  <div className="mt-4 grid gap-3">
+                    {r.responses.length === 0 ? (
+                      <p className="rounded-2xl border border-white/10 bg-black/25 p-4 text-sm text-white/60">
+                        No RSVP submissions yet.
+                      </p>
+                    ) : (
+                      r.responses.map((response) => (
+                        <div
+                          key={response.id}
+                          className="rounded-2xl border border-white/10 bg-black/25 p-4"
+                        >
+                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-white">{response.fullName}</p>
+                              <p className="mt-1 break-all text-xs text-white/65">
+                                {response.email}
+                              </p>
+                              <p className="mt-1 text-xs text-white/65">{response.phone}</p>
+                              <p className="mt-3 text-xs uppercase tracking-[0.18em] text-white/40">
+                                Submitted {new Date(response.createdAt).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
+                                {response.status === "ATTENDING"
+                                  ? "Attending"
+                                  : response.status === "MAYBE"
+                                    ? "Maybe"
+                                    : "Can't make it"}
+                              </Badge>
+                            </div>
+                          </div>
+                          {response.note ? (
+                            <p className="mt-4 text-sm leading-6 text-white/72">
+                              {response.note}
+                            </p>
+                          ) : null}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                    </>
+                  );
+                })()}
               </div>
             ))
           )}

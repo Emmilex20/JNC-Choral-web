@@ -45,6 +45,12 @@ enum MusicSheetAudience {
   CHORISTERS_ONLY
 }
 
+enum EventResponseStatus {
+  ATTENDING
+  MAYBE
+  NOT_ATTENDING
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -171,12 +177,35 @@ model Event {
   title       String
   description String?
   location    String?
+  imageUrl    String?
+  imagePublicId String?
+  videoUrl    String?
+  videoPublicId String?
   startsAt    DateTime
   endsAt      DateTime?
   isPublished Boolean  @default(false)
+  responses   EventResponse[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model EventResponse {
+  id        String              @id @default(cuid())
+  eventId   String
+  status    EventResponseStatus
+  fullName  String
+  email     String
+  phone     String
+  note      String?
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  event     Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, email])
+  @@index([eventId])
+  @@index([email])
 }
 
 model Announcement {
