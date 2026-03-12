@@ -121,7 +121,7 @@ export async function confirmAttendanceAction(input: unknown) {
     where: { id: parsed.data.id },
     data: {
       confirmedAt: new Date(),
-      confirmedBy: session.user?.id ?? null,
+      confirmedBy: session?.user?.id ?? null,
     },
   });
 

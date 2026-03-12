@@ -5,8 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean } | null) {
-  if (!user) return false;
+function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean }) {
   if (user.role === "ADMIN") return true;
   return Boolean(user.isChorister && user.choristerVerified);
 }
@@ -29,7 +28,7 @@ export async function upsertChoristerProfileAction(input: unknown) {
     where: { id: session.user.id },
     select: { id: true, role: true, isChorister: true, choristerVerified: true },
   });
-  if (!canAccess(user)) return { ok: false as const, error: "Unauthorized" };
+  if (!user || !canAccess(user)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = ProfileSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -82,7 +81,7 @@ export async function markAttendanceAction(input: unknown) {
     where: { id: session.user.id },
     select: { id: true, role: true, isChorister: true, choristerVerified: true },
   });
-  if (!canAccess(user)) return { ok: false as const, error: "Unauthorized" };
+  if (!user || !canAccess(user)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = MarkAttendanceSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };

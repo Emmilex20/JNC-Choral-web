@@ -6,8 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth";
 import ChoristerClient from "./ui/chorister-client";
 
-function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean } | null) {
-  if (!user) return false;
+function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean }) {
   if (user.role === "ADMIN") return true;
   return Boolean(user.isChorister && user.choristerVerified);
 }
@@ -33,7 +32,7 @@ export default async function ChoristersPage() {
     },
   });
 
-  if (!canAccess(user)) redirect("/");
+  if (!user || !canAccess(user)) redirect("/");
 
   const [profile, notices, rehearsals, attendance] = await Promise.all([
     prisma.choristerProfile.findUnique({
