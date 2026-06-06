@@ -600,8 +600,12 @@ export default function AdminAcademyClient({
                     }
                     rows={9}
                     className={inputClass}
-                    placeholder="Write the full lesson. Use blank lines for paragraphs."
+                    placeholder="Write the full lesson. Use blank lines for paragraphs. Try ## Heading, - bullet points, > quotes, and **bold** emphasis."
                   />
+                  <p className="mt-2 text-xs leading-5 text-white/45">
+                    Formatting supported: short section titles, markdown headings, bullet lists,
+                    numbered lists, quotes, callouts like Tip:, and **bold** or *italic* emphasis.
+                  </p>
                 </div>
                 <div>
                   <label className={labelClass}>Tags</label>

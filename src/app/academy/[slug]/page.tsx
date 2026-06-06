@@ -12,6 +12,7 @@ import {
   getAcademyArticleBySlug,
   getReadingMinutes,
 } from "@/lib/academy";
+import RichArticleContent from "./article-content";
 
 const siteUrl = "https://www.jnc.vercel.app";
 
@@ -103,10 +104,6 @@ export default async function AcademyArticlePage({
   if (!data) notFound();
 
   const { article, related } = data;
-  const paragraphs = article.body
-    .split(/\n{2,}/)
-    .map((part) => part.trim())
-    .filter(Boolean);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -191,16 +188,10 @@ export default async function AcademyArticlePage({
             />
           </div>
 
-          <div className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 md:p-9">
-            <div className="prose prose-invert max-w-none">
-              {paragraphs.map((paragraph) => (
-                <p key={paragraph} className="mb-6 text-lg leading-9 text-white/76">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+          <div>
+            <RichArticleContent body={article.body} />
             {article.tags.length > 0 ? (
-              <div className="mt-8 flex flex-wrap gap-2 border-t border-white/10 pt-6">
+              <div className="mt-8 flex flex-wrap gap-2 rounded-[1.5rem] border border-white/10 bg-white/[0.035] p-5">
                 {article.tags.map((tag) => (
                   <span
                     key={tag}
