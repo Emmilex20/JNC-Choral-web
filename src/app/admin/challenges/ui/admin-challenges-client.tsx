@@ -475,24 +475,24 @@ export default function AdminChallengesClient({
             />
           </div>
           <div className="rounded-2xl border border-cyan-200/14 bg-cyan-200/[0.045] p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-3">
               <div className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cyan-200/16 bg-black/30 text-cyan-100">
                   <Music2 className="h-4 w-4" />
                 </span>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-semibold text-white">Sight-singing sheet</p>
-                  <p className="mt-1 text-xs leading-5 text-white/58">
+                  <p className="mt-1 max-w-[34rem] text-xs leading-5 text-white/58">
                     Add notation for users to sing with the beat. The checker ignores
                     starting key and scores interval/rhythm accuracy.
                   </p>
                 </div>
               </div>
-              <div className="flex shrink-0 flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-2xl border-cyan-200/25 bg-black/20 text-white hover:bg-white/10"
+                  className="min-w-[150px] justify-center rounded-2xl border-cyan-200/25 bg-black/20 text-white hover:bg-white/10"
                   onClick={generateSightReadingSheet}
                   disabled={isPending || aiGenerating || sightGenerating}
                 >
@@ -507,7 +507,7 @@ export default function AdminChallengesClient({
                   <Button
                     type="button"
                     variant="outline"
-                    className="rounded-2xl border-red-500/30 bg-red-500/10 text-red-100 hover:bg-red-500/20"
+                    className="justify-center rounded-2xl border-red-500/30 bg-red-500/10 text-red-100 hover:bg-red-500/20"
                     disabled={isPending}
                     onClick={() =>
                       setForm((current) => ({ ...current, sightReadingExercise: null }))

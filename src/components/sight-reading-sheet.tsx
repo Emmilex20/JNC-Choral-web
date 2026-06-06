@@ -50,8 +50,12 @@ export function SightReadingSheet({ exercise, compact = false }: SightReadingShe
 
   return (
     <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.035]">
-      <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div
+        className={`flex flex-col gap-3 border-b border-white/10 px-4 py-4 ${
+          compact ? "" : "sm:flex-row sm:items-center sm:justify-between"
+        }`}
+      >
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-100/62">
             Sight-singing sheet
           </p>

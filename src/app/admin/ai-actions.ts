@@ -14,6 +14,7 @@ import {
 } from "@/lib/ear-training";
 import { quizCategories } from "@/lib/music-hub";
 import {
+  createFallbackSightReadingExercise,
   normalizeSightReadingExercise,
   sightReadingPitches,
   type SightReadingExercise,
@@ -51,6 +52,28 @@ function readString(record: Record<string, unknown>, keys: string[]) {
     if (typeof value === "string" && value.trim()) return value.trim();
   }
   return undefined;
+}
+
+function readText(record: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (Array.isArray(value)) {
+      const lines = value
+        .filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
+        .map((item) => item.trim());
+      if (lines.length) return lines.join("\n");
+    }
+  }
+  return undefined;
+}
+
+function ensureDraftText(value: string | undefined, fallback: string, minLength: number, maxLength: number) {
+  const clean = value?.trim();
+  const base = clean || fallback;
+  if (base.length >= minLength) return base.slice(0, maxLength);
+
+  return `${base} ${fallback}`.trim().slice(0, maxLength);
 }
 
 function readOptions(record: Record<string, unknown>) {
@@ -128,6 +151,55 @@ function normalizeDailyChallengeDraft(value: unknown) {
   };
 }
 
+function shouldIncludeSightReading(topic: string, type: string) {
+  return /sight|sheet|notation|melody|notes?|sing|solfege|staff/i.test(`${topic} ${type}`);
+}
+
+function normalizeMusicChallengeDraft(value: unknown, topic: string, type: string) {
+  const record = isRecord(value) ? value : {};
+  const wantsSightReading = shouldIncludeSightReading(topic, type);
+  const sightReadingExercise = normalizeSightReadingExercise(
+    record.sightReadingExercise ??
+      record.sheetMusic ??
+      record.sightSingingExercise ??
+      record.sightReading ??
+      record.notation ??
+      record.exercise
+  );
+  const titleFallback = `${type}: ${topic}`;
+  const descriptionFallback =
+    `A JNC ${type.toLowerCase()} focused on ${topic}, built for clear public participation and musical growth.`;
+  const promptFallback =
+    "Record a clear audio or video submission, follow the provided musical task, and share your best performance for review.";
+  const rulesFallback =
+    "Submit original work, use a quiet recording space, keep files appropriate for public review, and note that entries may be moderated before voting.";
+
+  return {
+    ...record,
+    title: ensureDraftText(readText(record, ["title", "name", "headline"]), titleFallback, 4, 140),
+    description: ensureDraftText(
+      readText(record, ["description", "summary", "excerpt"]),
+      descriptionFallback,
+      40,
+      700
+    ),
+    prompt: ensureDraftText(
+      readText(record, ["prompt", "task", "challenge", "instructions", "brief"]),
+      promptFallback,
+      40,
+      900
+    ),
+    rules: ensureDraftText(
+      readText(record, ["rules", "guidelines", "requirements", "criteria"]),
+      rulesFallback,
+      40,
+      1400
+    ),
+    sightReadingExercise:
+      sightReadingExercise ?? (wantsSightReading ? createFallbackSightReadingExercise(topic) : null),
+  };
+}
+
 const QuizQuestionDraftSchema = z.preprocess(normalizeQuestionDraft, z.object({
   prompt: z.string().min(8).max(500),
   options: z.array(z.string().min(1).max(180)).length(4),
@@ -175,7 +247,7 @@ const SightReadingExerciseDraftSchema = z.preprocess(
     tempoBpm: z.number().int().min(56).max(112),
     timeSignature: z.enum(["2/4", "3/4", "4/4"]),
     keySignature: z.string().min(1).max(80),
-    notes: z.array(SightReadingNoteDraftSchema).min(12).max(28),
+    notes: z.array(SightReadingNoteDraftSchema).min(8).max(28),
   })
 ) satisfies z.ZodType<SightReadingExercise>;
 
@@ -189,13 +261,18 @@ const DailyChallengeDraftSchema = z.preprocess(normalizeDailyChallengeDraft, z.o
   sightReadingExercise: SightReadingExerciseDraftSchema.optional().nullable(),
 }));
 
-const MusicChallengeDraftSchema = z.object({
-  title: z.string().min(4).max(140),
-  description: z.string().min(40).max(700),
-  prompt: z.string().min(40).max(900),
-  rules: z.string().min(40).max(1400),
-  sightReadingExercise: SightReadingExerciseDraftSchema.optional().nullable(),
-});
+function createMusicChallengeDraftSchema(topic: string, type: string) {
+  return z.preprocess(
+    (value) => normalizeMusicChallengeDraft(value, topic, type),
+    z.object({
+      title: z.string().min(4).max(140),
+      description: z.string().min(40).max(700),
+      prompt: z.string().min(40).max(900),
+      rules: z.string().min(40).max(1400),
+      sightReadingExercise: SightReadingExerciseDraftSchema.optional().nullable(),
+    })
+  );
+}
 
 const TopicSchema = z.object({
   topic: z.string().trim().max(240).optional(),
@@ -431,7 +508,7 @@ export async function generateMusicChallengeDraftAction(input: unknown) {
 
   return adminGenerate(() =>
     generateOpenAIJson({
-      schema: MusicChallengeDraftSchema,
+      schema: createMusicChallengeDraftSchema(topic, type),
       system:
         "You create public music challenge prompts for Jude Nnam Choral Platform. Return valid JSON only.",
       prompt: `Create a public JNC music challenge draft.
