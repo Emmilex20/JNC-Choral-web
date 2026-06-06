@@ -6,6 +6,10 @@ import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ProfileForm from "./ui/profile-form";
 
+export const metadata = {
+  title: "Profile",
+};
+
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -14,7 +18,17 @@ export default async function ProfilePage() {
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { name: true, email: true, image: true },
+    select: {
+      name: true,
+      email: true,
+      image: true,
+      role: true,
+      isChorister: true,
+      choristerVerified: true,
+      onboardingComplete: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 
   if (!user?.email) {
@@ -22,15 +36,19 @@ export default async function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black">
+    <main className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
-      <section className="mx-auto max-w-3xl px-4 py-16 md:px-6">
-        <ProfileForm
-          name={user.name ?? ""}
-          email={user.email}
-          image={user.image}
-        />
-      </section>
+      <ProfileForm
+        name={user.name ?? ""}
+        email={user.email}
+        image={user.image}
+        role={user.role}
+        isChorister={user.isChorister}
+        choristerVerified={user.choristerVerified}
+        onboardingComplete={user.onboardingComplete}
+        joinedAt={user.createdAt.toISOString()}
+        updatedAt={user.updatedAt.toISOString()}
+      />
       <SiteFooter />
     </main>
   );
