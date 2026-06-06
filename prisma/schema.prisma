@@ -169,6 +169,17 @@ model AuditionApplication {
   @@index([category])
 }
 
+model AuditionSetting {
+  id               String    @id @default("current")
+  startsAt         DateTime?
+  venue            String?
+  note             String?
+  anticipationText String?
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
 /**
  * OPTIONAL: EVENTS + ANNOUNCEMENTS (nice for the website)
  */

@@ -1,5 +1,9 @@
 import { ArrowUpRight } from "lucide-react";
 
+import {
+  DEFAULT_AUDITION_ANTICIPATION_TEXT,
+  getCurrentAuditionSetting,
+} from "@/lib/audition-settings";
 import { getEventResponseRowsMap } from "@/lib/event-responses";
 import { listMusicSheetsForAdmin } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
@@ -88,6 +92,7 @@ export default async function AdminPage() {
     choristerNotices,
     rehearsals,
     pendingAttendance,
+    auditionSetting,
   ] = await Promise.all([
     prisma.auditionApplication.findMany({
       orderBy: { createdAt: "desc" },
@@ -154,6 +159,7 @@ export default async function AdminPage() {
         rehearsal: { select: { title: true, startsAt: true } },
       },
     }),
+    getCurrentAuditionSetting(),
   ]);
 
   const eventResponseMap = await getEventResponseRowsMap(events.map((event) => event.id));
@@ -213,9 +219,22 @@ export default async function AdminPage() {
       id: "auditions",
       title: "Auditions",
       eyebrow: "Talent Pipeline",
-      description: "Review incoming applicants, refine filters, and move strong candidates through the pipeline without losing context.",
+      description: "Set the public audition date, time, and venue, then review incoming applicants without losing context.",
       countLabel: formatCountLabel(rows.length, "applications"),
-      content: <AdminAuditionsClient initialRows={rows} />,
+      content: (
+        <AdminAuditionsClient
+          initialRows={rows}
+          initialSetting={{
+            startsAt: auditionSetting?.startsAt
+              ? auditionSetting.startsAt.toISOString()
+              : "",
+            venue: auditionSetting?.venue ?? "",
+            note: auditionSetting?.note ?? "",
+            anticipationText:
+              auditionSetting?.anticipationText ?? DEFAULT_AUDITION_ANTICIPATION_TEXT,
+          }}
+        />
+      ),
     },
     {
       id: "events",

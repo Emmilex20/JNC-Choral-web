@@ -9,8 +9,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Download } from "lucide-react";
-import { updateAuditionStatusAction } from "../actions.ts";
+import { CalendarClock, ChevronDown, Download, MapPin, Save } from "lucide-react";
+import {
+  updateAuditionSettingAction,
+  updateAuditionStatusAction,
+} from "../actions";
 
 type Row = {
   id: string;
@@ -31,6 +34,13 @@ type Row = {
   createdAt: Date;
 };
 
+type AuditionSettingRow = {
+  startsAt: string;
+  venue: string;
+  note: string;
+  anticipationText: string;
+};
+
 const statusOptions = ["PENDING", "SHORTLISTED", "ACCEPTED", "REJECTED"] as const;
 const statusFilterOptions = ["ALL", ...statusOptions] as const;
 const categoryOptions = ["ALL", "SINGER", "INSTRUMENTALIST", "PRODUCTION"] as const;
@@ -46,6 +56,33 @@ function isCategoryFilter(value: string): value is CategoryFilter {
   return categoryOptions.some((option) => option === value);
 }
 
+function toLocalInputValue(value: string) {
+  if (!value) return "";
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const mm = pad(d.getMonth() + 1);
+  const dd = pad(d.getDate());
+  const hh = pad(d.getHours());
+  const min = pad(d.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+}
+
+function formatSchedule(value: string) {
+  if (!value) return "No active audition date";
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "No active audition date";
+
+  return new Intl.DateTimeFormat("en-NG", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(d);
+}
+
 function statusBadge(status: Row["status"]) {
   const base = "rounded-full bg-white/10 text-white hover:bg-white/10";
   if (status === "ACCEPTED") return <Badge className={base}>ACCEPTED</Badge>;
@@ -54,12 +91,31 @@ function statusBadge(status: Row["status"]) {
   return <Badge className={base}>PENDING</Badge>;
 }
 
-export default function AdminAuditionsClient({ initialRows }: { initialRows: Row[] }) {
+export default function AdminAuditionsClient({
+  initialRows,
+  initialSetting,
+}: {
+  initialRows: Row[];
+  initialSetting: AuditionSettingRow;
+}) {
   const [rows, setRows] = useState<Row[]>(initialRows);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
   const [q, setQ] = useState("");
+  const [setting, setSetting] = useState({
+    startsAt: toLocalInputValue(initialSetting.startsAt),
+    venue: initialSetting.venue,
+    note: initialSetting.note,
+    anticipationText: initialSetting.anticipationText,
+  });
+  const [settingError, setSettingError] = useState<string | null>(null);
+  const [settingMessage, setSettingMessage] = useState<string | null>(null);
+  const [nowMs] = useState(() => Date.now());
   const [isPending, startTransition] = useTransition();
+
+  const settingIsPast = setting.startsAt
+    ? new Date(setting.startsAt).getTime() <= nowMs
+    : true;
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -94,10 +150,170 @@ export default function AdminAuditionsClient({ initialRows }: { initialRows: Row
     });
   }
 
+  function saveSetting() {
+    setSettingError(null);
+    setSettingMessage(null);
+
+    startTransition(async () => {
+      const res = await updateAuditionSettingAction(setting);
+      if (!res.ok) {
+        setSettingError(res.error);
+        return;
+      }
+
+      setSetting({
+        startsAt: toLocalInputValue(res.setting.startsAt),
+        venue: res.setting.venue,
+        note: res.setting.note,
+        anticipationText: res.setting.anticipationText,
+      });
+      setSettingMessage("Audition schedule updated.");
+    });
+  }
+
   return (
     <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-5 md:p-8">
+      <div className="grid gap-5 rounded-[1.75rem] border border-white/10 bg-black/25 p-5 lg:grid-cols-[1fr_0.85fr] lg:items-start">
+        <div>
+          <p className="text-xs uppercase tracking-[0.22em] text-white/45">
+            Public Audition Schedule
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold text-white">
+            Date, time, and venue
+          </h3>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-white/60">
+            This controls the schedule card on the public auditions page. If the
+            date has passed, visitors will see the anticipation message instead
+            of an old date.
+          </p>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-xs text-white/70">Audition date and time</label>
+              <input
+                type="datetime-local"
+                value={setting.startsAt}
+                onChange={(e) =>
+                  setSetting((current) => ({
+                    ...current,
+                    startsAt: e.target.value,
+                  }))
+                }
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-white/70">Venue</label>
+              <input
+                value={setting.venue}
+                onChange={(e) =>
+                  setSetting((current) => ({ ...current, venue: e.target.value }))
+                }
+                className="mt-1 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                placeholder="Catholic Secretariat, Durumi, Abuja"
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+            <div>
+              <label className="text-xs text-white/70">Schedule note</label>
+              <textarea
+                value={setting.note}
+                onChange={(e) =>
+                  setSetting((current) => ({ ...current, note: e.target.value }))
+                }
+                className="mt-1 min-h-24 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                placeholder="Come prepared with your song, instrument, or portfolio."
+              />
+            </div>
+            <div>
+              <label className="text-xs text-white/70">Anticipation text</label>
+              <textarea
+                value={setting.anticipationText}
+                onChange={(e) =>
+                  setSetting((current) => ({
+                    ...current,
+                    anticipationText: e.target.value,
+                  }))
+                }
+                className="mt-1 min-h-24 w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                placeholder="Audition dates are being prepared..."
+              />
+            </div>
+          </div>
+
+          {settingError ? (
+            <div className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
+              {settingError}
+            </div>
+          ) : null}
+          {settingMessage ? (
+            <div className="mt-4 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 p-4 text-sm text-emerald-100">
+              {settingMessage}
+            </div>
+          ) : null}
+
+          <Button
+            type="button"
+            className="mt-5 w-full rounded-2xl sm:w-auto"
+            onClick={saveSetting}
+            disabled={isPending}
+          >
+            <Save className="h-4 w-4" />
+            {isPending ? "Saving..." : "Save schedule"}
+          </Button>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/45">
+            Public preview
+          </p>
+          <div className="mt-5 grid gap-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-amber-100">
+                <CalendarClock className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+                  {settingIsPast ? "Anticipating" : "Next audition"}
+                </p>
+                <p className="mt-1 text-lg font-semibold text-white">
+                  {settingIsPast
+                    ? "Next date coming soon"
+                    : formatSchedule(setting.startsAt)}
+                </p>
+              </div>
+            </div>
+
+            {!settingIsPast && setting.venue ? (
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-cyan-100">
+                  <MapPin className="h-5 w-5" />
+                </span>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/45">
+                    Venue
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-white/76">
+                    {setting.venue}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            <p className="rounded-2xl border border-white/10 bg-black/30 p-4 text-sm leading-6 text-white/70">
+              {settingIsPast
+                ? setting.anticipationText ||
+                  "Audition dates are being prepared. Keep rehearsing and watch this space."
+                : setting.note || "Come prepared, confident, and ready to grow."}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Controls */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="mt-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <input
             value={q}
