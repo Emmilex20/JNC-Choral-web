@@ -90,6 +90,29 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatEntryDate(value: string) {
+  return new Intl.DateTimeFormat("en-NG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function getEntryWindowMessage(challenge: ChallengeForClient) {
+  const now = Date.now();
+  const startsAt = challenge.startsAt ? new Date(challenge.startsAt).getTime() : null;
+  const endsAt = challenge.endsAt ? new Date(challenge.endsAt).getTime() : null;
+
+  if (startsAt && startsAt > now) {
+    return `Entries open on ${formatEntryDate(challenge.startsAt!)}. You can still read and share the challenge now.`;
+  }
+
+  if (endsAt && endsAt < now) {
+    return `Entries closed on ${formatEntryDate(challenge.endsAt!)}. This challenge remains available for viewing and sharing.`;
+  }
+
+  return "Entries are not currently open, but this challenge remains available for viewing and sharing.";
+}
+
 function getMediaType(file?: File | null): MediaType {
   if (!file) return "TEXT";
   return file.type.startsWith("video/") ? "VIDEO" : "AUDIO";
@@ -127,12 +150,14 @@ export default function ChallengeDetailClient({
   challenge,
   submissions,
   isSignedIn,
+  isAcceptingEntries,
   currentUserId,
   currentVoteSubmissionId,
 }: {
   challenge: ChallengeForClient;
   submissions: SubmissionForClient[];
   isSignedIn: boolean;
+  isAcceptingEntries: boolean;
   currentUserId: string | null;
   currentVoteSubmissionId: string | null;
 }) {
@@ -148,6 +173,10 @@ export default function ChallengeDetailClient({
     e.preventDefault();
     if (!isSignedIn) {
       setNotice({ type: "error", message: "Sign in to submit your entry." });
+      return;
+    }
+    if (!isAcceptingEntries) {
+      setNotice({ type: "error", message: getEntryWindowMessage(challenge) });
       return;
     }
 
@@ -221,6 +250,8 @@ export default function ChallengeDetailClient({
     }
   }
 
+  const canSubmit = isSignedIn && isAcceptingEntries && !pending;
+
   return (
     <section className="mx-auto grid max-w-7xl gap-6 px-4 py-10 md:px-6 lg:grid-cols-[420px_minmax(0,1fr)] lg:py-14">
       <aside className="h-fit rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.22)]">
@@ -292,7 +323,11 @@ export default function ChallengeDetailClient({
             </span>
           </div>
 
-          {!isSignedIn ? (
+          {!isAcceptingEntries ? (
+            <div className="mt-5 rounded-2xl border border-amber-200/20 bg-amber-200/10 p-4 text-sm leading-7 text-amber-50">
+              {getEntryWindowMessage(challenge)}
+            </div>
+          ) : !isSignedIn ? (
             <div className="mt-5 rounded-2xl border border-amber-200/20 bg-amber-200/10 p-4 text-sm leading-7 text-amber-50">
               Sign in to upload a challenge entry and vote for other performers.{" "}
               <Link href="/auth/login" className="font-semibold underline">
@@ -328,14 +363,14 @@ export default function ChallengeDetailClient({
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              disabled={!isSignedIn || pending}
+              disabled={!canSubmit}
               className="w-full rounded-2xl border border-white/10 bg-black/34 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/28 focus:border-amber-200/40"
               placeholder="Optional title for your entry"
             />
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              disabled={!isSignedIn || pending}
+              disabled={!canSubmit}
               rows={5}
               className="w-full rounded-2xl border border-white/10 bg-black/34 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/28 focus:border-amber-200/40"
               placeholder="Describe your entry, arrangement idea, or performance approach."
@@ -345,7 +380,7 @@ export default function ChallengeDetailClient({
                 type="file"
                 accept="audio/*,video/*"
                 className="hidden"
-                disabled={!isSignedIn || pending}
+                disabled={!canSubmit}
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />
               <span className="inline-flex items-center gap-2 font-semibold text-white">
@@ -358,7 +393,7 @@ export default function ChallengeDetailClient({
 
           <Button
             type="submit"
-            disabled={!isSignedIn || pending}
+            disabled={!canSubmit}
             className="mt-5 min-h-12 rounded-2xl bg-amber-200 px-6 text-black hover:bg-amber-100"
           >
             {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}

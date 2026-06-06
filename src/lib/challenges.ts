@@ -72,7 +72,7 @@ export type PublicChallengeSubmission = Prisma.ChallengeSubmissionGetPayload<{
   select: typeof publicSubmissionSelect;
 }>;
 
-function activeChallengeWhere(now = new Date()): Prisma.ChallengeWhereInput {
+export function acceptingChallengeWhere(now = new Date()): Prisma.ChallengeWhereInput {
   return {
     isPublished: true,
     AND: [
@@ -80,6 +80,19 @@ function activeChallengeWhere(now = new Date()): Prisma.ChallengeWhereInput {
       { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
     ],
   };
+}
+
+export function isChallengeAcceptingEntries(
+  challenge: { startsAt: Date | null; endsAt: Date | null },
+  now = new Date()
+) {
+  const hasStarted = !challenge.startsAt || challenge.startsAt <= now;
+  const hasNotEnded = !challenge.endsAt || challenge.endsAt >= now;
+  return hasStarted && hasNotEnded;
+}
+
+function publishedChallengeWhere(): Prisma.ChallengeWhereInput {
+  return { isPublished: true };
 }
 
 export function formatChallengeWindow(challenge: {
@@ -132,13 +145,11 @@ export async function getUniqueChallengeSlug(title: string, id?: string) {
 }
 
 export async function getChallengesIndexData(userId?: string | null) {
-  const now = new Date();
-
   try {
     const [challenges, topSubmissions, performerPool, currentUserVotes] =
       await Promise.all([
         prisma.challenge.findMany({
-          where: activeChallengeWhere(now),
+          where: publishedChallengeWhere(),
           orderBy: [{ startsAt: "desc" }, { createdAt: "desc" }],
           take: 24,
           select: publicChallengeSelect,
@@ -146,7 +157,7 @@ export async function getChallengesIndexData(userId?: string | null) {
         prisma.challengeSubmission.findMany({
           where: {
             status: "APPROVED",
-            challenge: activeChallengeWhere(now),
+            challenge: publishedChallengeWhere(),
           },
           orderBy: [{ votes: { _count: "desc" } }, { createdAt: "desc" }],
           take: 8,
@@ -246,13 +257,11 @@ export async function getChallengesIndexData(userId?: string | null) {
 }
 
 export async function getChallengeBySlug(slug: string, userId?: string | null) {
-  const now = new Date();
-
   try {
     const challenge = await prisma.challenge.findFirst({
       where: {
         slug,
-        ...activeChallengeWhere(now),
+        ...publishedChallengeWhere(),
       },
       select: {
         ...publicChallengeSelect,

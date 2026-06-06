@@ -64,16 +64,17 @@ export default async function MusicChallengesPage() {
               Music Challenges
             </div>
             <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-              Record, submit, vote, and rise through the JNC challenge board.
+              Discover JNC challenges, submit when open, and rise through the board.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
-              Take on vocal, instrumental, harmony, and sight-reading prompts. Upload audio or
-              video, add your performance note, and let the community recognize standout work.
+              Explore published vocal, instrumental, harmony, and sight-reading prompts.
+              When entries are open, upload audio or video and let the community recognize
+              standout work.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button className="rounded-2xl bg-amber-200 px-6 py-6 text-black hover:bg-amber-100" asChild>
                 <a href="#open-challenges">
-                  View open challenges
+                  Browse challenges
                   <ArrowUpRight className="h-4 w-4" />
                 </a>
               </Button>
@@ -107,14 +108,14 @@ export default async function MusicChallengesPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/62">
-              Open Challenges
+              Published Challenges
             </p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
               Choose your next prompt
             </h2>
           </div>
           <Badge className="w-fit rounded-full bg-white/10 text-white hover:bg-white/10">
-            {challenges.length} active
+            {challenges.length} published
           </Badge>
         </div>
 
@@ -169,7 +170,7 @@ export default async function MusicChallengesPage() {
           {challenges.length === 0 ? (
             <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-8 text-center md:col-span-2 xl:col-span-3">
               <Trophy className="mx-auto h-9 w-9 text-amber-100" />
-              <h3 className="mt-4 text-2xl font-semibold text-white">No active challenges yet.</h3>
+              <h3 className="mt-4 text-2xl font-semibold text-white">No published challenges yet.</h3>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/62">
                 New music challenges will appear here when the admin team publishes them.
               </p>

@@ -8,7 +8,11 @@ import { authOptions } from "@/auth";
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { Badge } from "@/components/ui/badge";
-import { formatChallengeWindow, getChallengeBySlug } from "@/lib/challenges";
+import {
+  formatChallengeWindow,
+  getChallengeBySlug,
+  isChallengeAcceptingEntries,
+} from "@/lib/challenges";
 import { normalizeSightReadingExercise } from "@/lib/sight-reading";
 import ChallengeDetailClient from "../ui/challenge-detail-client";
 
@@ -114,6 +118,7 @@ export default async function ChallengeDetailPage({
           user: submission.user,
         }))}
         isSignedIn={Boolean(session?.user?.id)}
+        isAcceptingEntries={isChallengeAcceptingEntries(challenge)}
         currentUserId={session?.user?.id ?? null}
         currentVoteSubmissionId={currentVote?.submissionId ?? null}
       />
