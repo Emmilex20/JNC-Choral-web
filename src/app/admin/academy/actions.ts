@@ -18,6 +18,10 @@ import {
 import { normalizeTags } from "@/lib/learning-errors";
 import { dateKeyToUtcDate, getUniqueQuizSlug, quizCategories } from "@/lib/music-hub";
 import { prisma } from "@/lib/prisma";
+import {
+  normalizeSightReadingExercise,
+  type SightReadingExercise,
+} from "@/lib/sight-reading";
 
 const ArticleStatusSchema = z.enum(["DRAFT", "PUBLISHED"]);
 const publishedStatus = "PUBLISHED";
@@ -79,6 +83,10 @@ const DailyChallengeSchema = z.object({
     .unknown()
     .optional()
     .transform((value) => normalizeEarTrainingSoundConfig(value)),
+  sightReadingExercise: z
+    .unknown()
+    .optional()
+    .transform((value) => normalizeSightReadingExercise(value)),
   isPublished: z.boolean(),
 });
 
@@ -115,6 +123,10 @@ function revalidateLearningRoutes() {
 
 function toPrismaSoundConfig(soundConfig: EarTrainingSoundConfig | null) {
   return soundConfig ? (soundConfig as Prisma.InputJsonValue) : Prisma.DbNull;
+}
+
+function toPrismaSightReadingExercise(exercise: SightReadingExercise | null) {
+  return exercise ? (exercise as Prisma.InputJsonValue) : Prisma.DbNull;
 }
 
 export async function createAcademyCategoryAction(input: unknown) {
@@ -357,6 +369,7 @@ export async function createDailyChallengeAction(input: unknown) {
         correctIndex: parsed.data.correctIndex,
         explanation: parsed.data.explanation?.trim() || null,
         soundConfig: toPrismaSoundConfig(parsed.data.soundConfig),
+        sightReadingExercise: toPrismaSightReadingExercise(parsed.data.sightReadingExercise),
         isPublished: parsed.data.isPublished,
       },
       update: {
@@ -366,6 +379,7 @@ export async function createDailyChallengeAction(input: unknown) {
         correctIndex: parsed.data.correctIndex,
         explanation: parsed.data.explanation?.trim() || null,
         soundConfig: toPrismaSoundConfig(parsed.data.soundConfig),
+        sightReadingExercise: toPrismaSightReadingExercise(parsed.data.sightReadingExercise),
         isPublished: parsed.data.isPublished,
       },
     });
@@ -395,6 +409,7 @@ export async function updateDailyChallengeAction(input: unknown) {
         correctIndex: parsed.data.correctIndex,
         explanation: parsed.data.explanation?.trim() || null,
         soundConfig: toPrismaSoundConfig(parsed.data.soundConfig),
+        sightReadingExercise: toPrismaSightReadingExercise(parsed.data.sightReadingExercise),
         isPublished: parsed.data.isPublished,
       },
     });

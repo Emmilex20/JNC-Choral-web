@@ -13,6 +13,11 @@ import {
   normalizeEarTrainingSoundConfig,
 } from "@/lib/ear-training";
 import { quizCategories } from "@/lib/music-hub";
+import {
+  normalizeSightReadingExercise,
+  sightReadingPitches,
+  type SightReadingExercise,
+} from "@/lib/sight-reading";
 
 type ChatCompletionResponse = {
   choices?: {
@@ -110,10 +115,16 @@ function normalizeDailyChallengeDraft(value: unknown) {
       normalized.sound ??
       normalized.earTraining
   );
+  const sightReadingExercise = normalizeSightReadingExercise(
+    normalized.sightReadingExercise ??
+      normalized.sheetMusic ??
+      normalized.sightSingingExercise
+  );
 
   return {
     ...normalized,
     soundConfig,
+    sightReadingExercise,
   };
 }
 
@@ -150,6 +161,24 @@ const DailySoundConfigSchema = z.preprocess(
     .nullable()
 );
 
+const SightReadingNoteDraftSchema = z.object({
+  pitch: z.enum(sightReadingPitches),
+  beats: z.union([z.literal(0.5), z.literal(1), z.literal(1.5), z.literal(2)]),
+  syllable: z.string().min(1).max(24).optional(),
+});
+
+const SightReadingExerciseDraftSchema = z.preprocess(
+  normalizeSightReadingExercise,
+  z.object({
+    title: z.string().min(4).max(120),
+    instruction: z.string().min(20).max(420),
+    tempoBpm: z.number().int().min(56).max(112),
+    timeSignature: z.enum(["2/4", "3/4", "4/4"]),
+    keySignature: z.string().min(1).max(80),
+    notes: z.array(SightReadingNoteDraftSchema).min(12).max(28),
+  })
+) satisfies z.ZodType<SightReadingExercise>;
+
 const DailyChallengeDraftSchema = z.preprocess(normalizeDailyChallengeDraft, z.object({
   title: z.string().min(4).max(120),
   prompt: z.string().min(8).max(500),
@@ -157,6 +186,7 @@ const DailyChallengeDraftSchema = z.preprocess(normalizeDailyChallengeDraft, z.o
   correctIndex: z.number().int().min(0).max(3),
   explanation: z.string().min(10).max(500),
   soundConfig: DailySoundConfigSchema.optional().nullable(),
+  sightReadingExercise: SightReadingExerciseDraftSchema.optional().nullable(),
 }));
 
 const MusicChallengeDraftSchema = z.object({
@@ -164,6 +194,7 @@ const MusicChallengeDraftSchema = z.object({
   description: z.string().min(40).max(700),
   prompt: z.string().min(40).max(900),
   rules: z.string().min(40).max(1400),
+  sightReadingExercise: SightReadingExerciseDraftSchema.optional().nullable(),
 });
 
 const TopicSchema = z.object({
@@ -182,6 +213,10 @@ const DailyChallengeInputSchema = TopicSchema;
 
 const MusicChallengeInputSchema = TopicSchema.extend({
   type: z.enum(challengeTypes),
+});
+
+const SightReadingInputSchema = TopicSchema.extend({
+  source: z.enum(["daily-challenge", "challenge"]).optional(),
 });
 
 async function requireAdmin() {
@@ -360,6 +395,7 @@ Return JSON with:
 - correctIndex from 0 to 3
 - explanation
 - soundConfig: null for text-only reading/theory prompts, or a generated listening config when the prompt asks the user to hear a sound.
+- sightReadingExercise: null unless the topic asks for sight-singing, vocal note reading, singing written notes, or sheet music.
 
 For listening prompts, soundConfig must be one of:
 - interval: {"mode":"interval","rootNote":"C4","interval":"major-third","playback":"melodic"}
@@ -372,6 +408,14 @@ Allowed interval playback values: melodic, harmonic
 Allowed chord playback values: blocked, broken
 
 If soundConfig is null, do not tell the user to listen to a chord, interval, or sound.
+
+If sightReadingExercise is present, it must contain:
+- title
+- instruction mentioning that key is not judged
+- tempoBpm from 56 to 112
+- timeSignature: 2/4, 3/4, or 4/4
+- keySignature
+- notes: 16-24 notes using pitch values from ${sightReadingPitches.join(", ")} and beats from 0.5, 1, 1.5, 2.
 
 Make it quick, clear, and educational. Avoid trick wording.`,
     })
@@ -400,8 +444,44 @@ Return JSON with:
 - description: public summary
 - prompt: what participants should submit
 - rules: clear rules, eligibility, media guidance, voting note, and moderation note
+- sightReadingExercise: include a 2-3 line sight-singing exercise if the challenge type is Sight Reading Challenge or the topic asks for sheet music; otherwise null.
+
+For sightReadingExercise, use 16-24 notes, pitch values from ${sightReadingPitches.join(", ")}, beats from 0.5, 1, 1.5, 2, tempoBpm 56-112, timeSignature 2/4, 3/4, or 4/4. Mention that key is not judged.
 
 Keep it inspiring, safe, practical, and suitable for audio, video, or text submissions.`,
+    })
+  );
+}
+
+export async function generateSightReadingExerciseDraftAction(input: unknown) {
+  const parsed = SightReadingInputSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: "Invalid sight-reading prompt." };
+
+  const topic = normalizeTopic(parsed.data.topic, "short choral sight-singing");
+  const source = parsed.data.source ?? "challenge";
+
+  return adminGenerate(() =>
+    generateOpenAIJson({
+      schema: SightReadingExerciseDraftSchema,
+      system:
+        "You create short, practical sight-singing exercises for Jude Nnam Choral Platform. Return valid JSON only.",
+      prompt: `Create a 2-3 line sight-singing sheet music exercise.
+
+Use case: ${source}
+Topic or focus: ${topic}
+
+Return JSON with:
+- title
+- instruction: include that singers may start in any comfortable key and key is not judged
+- tempoBpm: 56-112
+- timeSignature: 2/4, 3/4, or 4/4
+- keySignature
+- notes: 16-24 note objects. Each note must use pitch and beats. Optional syllable should be "la" or solfege.
+
+Allowed pitches: ${sightReadingPitches.join(", ")}
+Allowed beats: 0.5, 1, 1.5, 2
+
+Keep it singable for choristers, mostly stepwise with a few small leaps. Do not use accidentals.`,
     })
   );
 }

@@ -9,6 +9,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { Badge } from "@/components/ui/badge";
 import { formatChallengeWindow, getChallengeBySlug } from "@/lib/challenges";
+import { normalizeSightReadingExercise } from "@/lib/sight-reading";
 import ChallengeDetailClient from "../ui/challenge-detail-client";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,7 @@ export default async function ChallengeDetailPage({
           prompt: challenge.prompt,
           rules: challenge.rules,
           coverImageUrl: challenge.coverImageUrl,
+          sightReadingExercise: normalizeSightReadingExercise(challenge.sightReadingExercise),
           startsAt: challenge.startsAt?.toISOString() ?? null,
           endsAt: challenge.endsAt?.toISOString() ?? null,
         }}

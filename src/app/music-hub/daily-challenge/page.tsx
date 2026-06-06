@@ -6,6 +6,7 @@ import { ArrowUpRight, CalendarDays, Lightbulb, Sparkles } from "lucide-react";
 import { authOptions } from "@/auth";
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
+import { SightSingingPractice } from "@/components/sight-singing-practice";
 import {
   inferEarTrainingSoundConfigFromAnswer,
   normalizeEarTrainingSoundConfig,
@@ -16,6 +17,7 @@ import {
   getTodayDailyChallenge,
   parseOptions,
 } from "@/lib/music-hub";
+import { normalizeSightReadingExercise } from "@/lib/sight-reading";
 import DailyChallengeClient from "./ui/daily-challenge-client";
 
 export const metadata: Metadata = {
@@ -62,6 +64,9 @@ export default async function DailyChallengePage() {
         prompt: challenge.prompt,
         answer: options[challenge.correctIndex],
       })
+    : null;
+  const sightReadingExercise = challenge
+    ? normalizeSightReadingExercise(challenge.sightReadingExercise)
     : null;
 
   return (
@@ -118,26 +123,36 @@ export default async function DailyChallengePage() {
 
       <section id="challenge" className="mx-auto max-w-5xl px-4 py-10 md:px-6 lg:py-14">
         {challenge && options.length >= 2 ? (
-          <DailyChallengeClient
-            challenge={{
-              id: challenge.id,
-              title: challenge.title,
-              prompt: challenge.prompt,
-              options,
-              explanation: challenge.explanation,
-              soundConfig,
-            }}
-            existingAttempt={
-              existingAttempt
-                ? {
-                    id: existingAttempt.id,
-                    selectedIndex: existingAttempt.selectedIndex,
-                    isCorrect: existingAttempt.isCorrect,
-                    completionTimeSeconds: existingAttempt.completionTimeSeconds,
-                  }
-                : null
-            }
-          />
+          <div className="grid gap-6">
+            <DailyChallengeClient
+              challenge={{
+                id: challenge.id,
+                title: challenge.title,
+                prompt: challenge.prompt,
+                options,
+                explanation: challenge.explanation,
+                soundConfig,
+              }}
+              existingAttempt={
+                existingAttempt
+                  ? {
+                      id: existingAttempt.id,
+                      selectedIndex: existingAttempt.selectedIndex,
+                      isCorrect: existingAttempt.isCorrect,
+                      completionTimeSeconds: existingAttempt.completionTimeSeconds,
+                    }
+                  : null
+              }
+            />
+            {sightReadingExercise ? (
+              <SightSingingPractice
+                exercise={sightReadingExercise}
+                sourceType="daily-challenge"
+                sourceId={challenge.id}
+                isSignedIn={Boolean(session?.user?.id)}
+              />
+            ) : null}
+          </div>
         ) : (
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 text-center md:p-10">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-200/15 bg-amber-200/8 text-amber-100">

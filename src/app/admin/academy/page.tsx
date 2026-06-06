@@ -4,6 +4,7 @@ import { ensureAcademyCategories } from "@/lib/academy";
 import { normalizeEarTrainingSoundConfig } from "@/lib/ear-training";
 import { dateToDateInputValue, getLagosDateKey, parseOptions } from "@/lib/music-hub";
 import { prisma } from "@/lib/prisma";
+import { normalizeSightReadingExercise } from "@/lib/sight-reading";
 import { AdminPageHeader } from "../_components/admin-page-header";
 import AdminAcademyClient from "./ui/admin-academy-client";
 
@@ -144,6 +145,7 @@ export default async function AdminAcademyPage() {
           correctIndex: challenge.correctIndex,
           explanation: challenge.explanation,
           soundConfig: normalizeEarTrainingSoundConfig(challenge.soundConfig),
+          sightReadingExercise: normalizeSightReadingExercise(challenge.sightReadingExercise),
           isPublished: challenge.isPublished,
           attemptCount: challenge._count.attempts,
           createdAt: challenge.createdAt.toISOString(),

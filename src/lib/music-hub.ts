@@ -58,6 +58,7 @@ export const dailyChallengeSelect = {
   correctIndex: true,
   explanation: true,
   soundConfig: true,
+  sightReadingExercise: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.DailyChallengeSelect;

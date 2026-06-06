@@ -21,7 +21,12 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SightReadingSheet } from "@/components/sight-reading-sheet";
 import { getErrorMessage } from "@/lib/errors";
+import {
+  normalizeSightReadingExercise,
+  type SightReadingExercise,
+} from "@/lib/sight-reading";
 import {
   createChallengeAction,
   deleteChallengeAction,
@@ -30,7 +35,10 @@ import {
   setChallengeSubmissionWinnerAction,
   updateChallengeAction,
 } from "../actions";
-import { generateMusicChallengeDraftAction } from "../../ai-actions";
+import {
+  generateMusicChallengeDraftAction,
+  generateSightReadingExerciseDraftAction,
+} from "../../ai-actions";
 
 const adminChallengeTypes = [
   "Vocal Challenge",
@@ -49,6 +57,7 @@ type ChallengeRow = {
   rules: string | null;
   coverImageUrl: string | null;
   coverImagePublicId: string | null;
+  sightReadingExercise: SightReadingExercise | null;
   startsAt: string;
   endsAt: string;
   isPublished: boolean;
@@ -91,6 +100,7 @@ type ChallengeForm = {
   rules: string;
   coverImageUrl: string;
   coverImagePublicId: string;
+  sightReadingExercise: SightReadingExercise | null;
   startsAt: string;
   endsAt: string;
   isPublished: boolean;
@@ -122,6 +132,7 @@ function emptyForm(): ChallengeForm {
     rules: "",
     coverImageUrl: "",
     coverImagePublicId: "",
+    sightReadingExercise: null,
     startsAt: "",
     endsAt: "",
     isPublished: false,
@@ -179,6 +190,7 @@ export default function AdminChallengesClient({
   const [error, setError] = useState<string | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
+  const [sightGenerating, setSightGenerating] = useState(false);
 
   function reloadOnSuccess(result: { ok: boolean; error?: string }) {
     if (!result.ok) {
@@ -207,6 +219,7 @@ export default function AdminChallengesClient({
       rules: challenge.rules ?? "",
       coverImageUrl: challenge.coverImageUrl ?? "",
       coverImagePublicId: challenge.coverImagePublicId ?? "",
+      sightReadingExercise: challenge.sightReadingExercise,
       startsAt: challenge.startsAt,
       endsAt: challenge.endsAt,
       isPublished: challenge.isPublished,
@@ -225,6 +238,7 @@ export default function AdminChallengesClient({
         rules: form.rules,
         coverImageUrl: form.coverImageUrl,
         coverImagePublicId: form.coverImagePublicId,
+        sightReadingExercise: form.sightReadingExercise,
         startsAt: form.startsAt,
         endsAt: form.endsAt,
         isPublished: form.isPublished,
@@ -289,9 +303,33 @@ export default function AdminChallengesClient({
         description: res.data.description,
         prompt: res.data.prompt,
         rules: res.data.rules,
+        sightReadingExercise: normalizeSightReadingExercise(res.data.sightReadingExercise),
         isPublished: false,
       }));
       setAiGenerating(false);
+    });
+  }
+
+  function generateSightReadingSheet() {
+    setError(null);
+    setSightGenerating(true);
+    startTransition(async () => {
+      const res = await generateSightReadingExerciseDraftAction({
+        topic: aiPrompt || form.title || form.type,
+        source: "challenge",
+      });
+
+      if (!res.ok) {
+        setError(res.error);
+        setSightGenerating(false);
+        return;
+      }
+
+      setForm((current) => ({
+        ...current,
+        sightReadingExercise: normalizeSightReadingExercise(res.data),
+      }));
+      setSightGenerating(false);
     });
   }
 
@@ -436,6 +474,57 @@ export default function AdminChallengesClient({
               placeholder="What should participants submit?"
             />
           </div>
+          <div className="rounded-2xl border border-cyan-200/14 bg-cyan-200/[0.045] p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cyan-200/16 bg-black/30 text-cyan-100">
+                  <Music2 className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-white">Sight-singing sheet</p>
+                  <p className="mt-1 text-xs leading-5 text-white/58">
+                    Add notation for users to sing with the beat. The checker ignores
+                    starting key and scores interval/rhythm accuracy.
+                  </p>
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-2xl border-cyan-200/25 bg-black/20 text-white hover:bg-white/10"
+                  onClick={generateSightReadingSheet}
+                  disabled={isPending || aiGenerating || sightGenerating}
+                >
+                  {sightGenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <WandSparkles className="h-4 w-4" />
+                  )}
+                  {sightGenerating ? "Generating..." : "Generate sheet"}
+                </Button>
+                {form.sightReadingExercise ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-2xl border-red-500/30 bg-red-500/10 text-red-100 hover:bg-red-500/20"
+                    disabled={isPending}
+                    onClick={() =>
+                      setForm((current) => ({ ...current, sightReadingExercise: null }))
+                    }
+                  >
+                    Remove
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+
+            {form.sightReadingExercise ? (
+              <div className="mt-4">
+                <SightReadingSheet exercise={form.sightReadingExercise} compact />
+              </div>
+            ) : null}
+          </div>
           <div>
             <label className={labelClass}>Rules</label>
             <textarea
@@ -554,6 +643,11 @@ export default function AdminChallengesClient({
                   >
                     {challenge.isPublished ? "Published" : "Draft"}
                   </Badge>
+                  {challenge.sightReadingExercise ? (
+                    <Badge className="rounded-full bg-cyan-500/15 text-cyan-100 hover:bg-cyan-500/20">
+                      Sight sheet
+                    </Badge>
+                  ) : null}
                 </div>
                 <h3 className="mt-3 text-lg font-semibold text-white">{challenge.title}</h3>
                 <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/58">

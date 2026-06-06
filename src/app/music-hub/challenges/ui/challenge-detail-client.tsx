@@ -16,7 +16,9 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SightSingingPractice } from "@/components/sight-singing-practice";
 import { getErrorMessage } from "@/lib/errors";
+import type { SightReadingExercise } from "@/lib/sight-reading";
 import {
   submitChallengeSubmissionAction,
   voteChallengeSubmissionAction,
@@ -33,6 +35,7 @@ type ChallengeForClient = {
   prompt: string | null;
   rules: string | null;
   coverImageUrl: string | null;
+  sightReadingExercise: SightReadingExercise | null;
   startsAt: string | null;
   endsAt: string | null;
 };
@@ -260,6 +263,15 @@ export default function ChallengeDetailClient({
       </aside>
 
       <div className="grid gap-6">
+        {challenge.sightReadingExercise ? (
+          <SightSingingPractice
+            exercise={challenge.sightReadingExercise}
+            sourceType="challenge"
+            sourceId={challenge.id}
+            isSignedIn={isSignedIn}
+          />
+        ) : null}
+
         <form
           onSubmit={submit}
           className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.2)] md:p-7"

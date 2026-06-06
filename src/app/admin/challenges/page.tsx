@@ -1,6 +1,7 @@
 import { Music2, Trophy, Upload, Vote } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
+import { normalizeSightReadingExercise } from "@/lib/sight-reading";
 import { AdminPageHeader } from "../_components/admin-page-header";
 import AdminChallengesClient from "./ui/admin-challenges-client";
 
@@ -114,6 +115,7 @@ export default async function AdminChallengesPage() {
           rules: challenge.rules,
           coverImageUrl: challenge.coverImageUrl,
           coverImagePublicId: challenge.coverImagePublicId,
+          sightReadingExercise: normalizeSightReadingExercise(challenge.sightReadingExercise),
           startsAt: toDateTimeInputValue(challenge.startsAt),
           endsAt: toDateTimeInputValue(challenge.endsAt),
           isPublished: challenge.isPublished,

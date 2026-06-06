@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { EarTrainingPlayer } from "@/components/ear-training-player";
+import { SightReadingSheet } from "@/components/sight-reading-sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,10 @@ import {
 } from "@/lib/ear-training";
 import { getErrorMessage } from "@/lib/errors";
 import {
+  normalizeSightReadingExercise,
+  type SightReadingExercise,
+} from "@/lib/sight-reading";
+import {
   createAcademyArticleAction,
   createAcademyCategoryAction,
   createDailyChallengeAction,
@@ -50,6 +55,7 @@ import {
   generateAcademyArticleDraftAction,
   generateDailyChallengeDraftAction,
   generateQuizDraftAction,
+  generateSightReadingExerciseDraftAction,
 } from "../../ai-actions";
 
 const adminQuizCategories = [
@@ -118,6 +124,7 @@ type ChallengeRow = {
   correctIndex: number;
   explanation: string | null;
   soundConfig: EarTrainingSoundConfig | null;
+  sightReadingExercise: SightReadingExercise | null;
   isPublished: boolean;
   attemptCount: number;
   createdAt: string;
@@ -153,6 +160,7 @@ type ChallengeForm = {
   correctIndex: number;
   explanation: string;
   soundConfig: EarTrainingSoundConfig | null;
+  sightReadingExercise: SightReadingExercise | null;
   isPublished: boolean;
 };
 
@@ -236,7 +244,7 @@ export default function AdminAcademyClient({
   const [activeTab, setActiveTab] = useState<TabId>("articles");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [aiTask, setAiTask] = useState<"article" | "quiz" | "daily" | null>(null);
+  const [aiTask, setAiTask] = useState<"article" | "quiz" | "daily" | "sight-daily" | null>(null);
   const [categories] = useState<CategoryRow[]>(initialCategories);
   const [articles] = useState<ArticleRow[]>(initialArticles);
   const [quizzes] = useState<QuizRow[]>(initialQuizzes);
@@ -280,6 +288,7 @@ export default function AdminAcademyClient({
     correctIndex: 0,
     explanation: "",
     soundConfig: null,
+    sightReadingExercise: null,
     isPublished: true,
   });
   const [dailyAiPrompt, setDailyAiPrompt] = useState("");
@@ -549,6 +558,7 @@ export default function AdminAcademyClient({
       correctIndex: 0,
       explanation: "",
       soundConfig: null,
+      sightReadingExercise: null,
       isPublished: true,
     });
   }
@@ -564,6 +574,7 @@ export default function AdminAcademyClient({
       correctIndex: challenge.correctIndex,
       explanation: challenge.explanation ?? "",
       soundConfig: challenge.soundConfig,
+      sightReadingExercise: challenge.sightReadingExercise,
       isPublished: challenge.isPublished,
     });
   }
@@ -677,7 +688,31 @@ export default function AdminAcademyClient({
         correctIndex: res.data.correctIndex,
         explanation: res.data.explanation,
         soundConfig: normalizeEarTrainingSoundConfig(res.data.soundConfig),
+        sightReadingExercise: normalizeSightReadingExercise(res.data.sightReadingExercise),
         isPublished: false,
+      }));
+      setAiTask(null);
+    });
+  }
+
+  function generateDailySightReadingExercise() {
+    setError(null);
+    setAiTask("sight-daily");
+    startTransition(async () => {
+      const res = await generateSightReadingExerciseDraftAction({
+        topic: dailyAiPrompt || challengeForm.title || "daily sight-singing",
+        source: "daily-challenge",
+      });
+
+      if (!res.ok) {
+        setError(res.error);
+        setAiTask(null);
+        return;
+      }
+
+      setChallengeForm((prev) => ({
+        ...prev,
+        sightReadingExercise: normalizeSightReadingExercise(res.data),
       }));
       setAiTask(null);
     });
@@ -1546,6 +1581,62 @@ export default function AdminAcademyClient({
                   ) : null}
                 </div>
               </div>
+              <div className="rounded-2xl border border-cyan-200/14 bg-cyan-200/[0.045] p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-cyan-200/16 bg-black/30 text-cyan-100">
+                      <Music2 className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        AI sight-singing sheet
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-white/58">
+                        Generate a 2-3 line sheet for users to sing. The checker ignores
+                        absolute key and scores relative pitch plus beat coverage.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-2xl border-cyan-200/25 bg-black/20 text-white hover:bg-white/10"
+                      disabled={isPending || aiTask !== null}
+                      onClick={generateDailySightReadingExercise}
+                    >
+                      {aiTask === "sight-daily" ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <WandSparkles className="h-4 w-4" />
+                      )}
+                      {aiTask === "sight-daily" ? "Generating..." : "Generate sheet"}
+                    </Button>
+                    {challengeForm.sightReadingExercise ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-2xl border-red-500/30 bg-red-500/10 text-red-100 hover:bg-red-500/20"
+                        disabled={isPending}
+                        onClick={() =>
+                          setChallengeForm((prev) => ({
+                            ...prev,
+                            sightReadingExercise: null,
+                          }))
+                        }
+                      >
+                        Remove
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+
+                {challengeForm.sightReadingExercise ? (
+                  <div className="mt-4">
+                    <SightReadingSheet exercise={challengeForm.sightReadingExercise} compact />
+                  </div>
+                ) : null}
+              </div>
               <div className="grid gap-2">
                 {normalizeFourOptions(challengeForm.options).map((option, index) => (
                   <div key={index} className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -1651,6 +1742,11 @@ export default function AdminAcademyClient({
                         {challenge.soundConfig ? (
                           <Badge className="rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20">
                             {getEarTrainingSoundLabel(challenge.soundConfig)}
+                          </Badge>
+                        ) : null}
+                        {challenge.sightReadingExercise ? (
+                          <Badge className="rounded-full bg-cyan-500/15 text-cyan-100 hover:bg-cyan-500/20">
+                            Sight sheet
                           </Badge>
                         ) : null}
                       </div>

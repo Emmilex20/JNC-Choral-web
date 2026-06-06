@@ -13,6 +13,10 @@ import {
 } from "@/lib/challenges";
 import { isAdminSession } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import {
+  normalizeSightReadingExercise,
+  type SightReadingExercise,
+} from "@/lib/sight-reading";
 
 const ChallengeTypeSchema = z.enum(challengeTypes);
 const SubmissionStatusSchema = z.enum(challengeSubmissionStatuses);
@@ -25,6 +29,10 @@ const ChallengeSchema = z.object({
   rules: z.string().max(1400).optional(),
   coverImageUrl: z.string().url().optional().or(z.literal("")),
   coverImagePublicId: z.string().max(220).optional(),
+  sightReadingExercise: z
+    .unknown()
+    .optional()
+    .transform((value) => normalizeSightReadingExercise(value)),
   startsAt: z.string().optional(),
   endsAt: z.string().optional(),
   isPublished: z.boolean(),
@@ -77,6 +85,10 @@ function revalidateChallengeRoutes(slug?: string | null) {
   if (slug) revalidatePath(`/music-hub/challenges/${slug}`);
 }
 
+function toPrismaSightReadingExercise(exercise: SightReadingExercise | null) {
+  return exercise ? (exercise as Prisma.InputJsonValue) : Prisma.DbNull;
+}
+
 export async function createChallengeAction(input: unknown) {
   const session = await requireAdmin();
   if (!session) return { ok: false as const, error: "Unauthorized" };
@@ -96,6 +108,7 @@ export async function createChallengeAction(input: unknown) {
         rules: parsed.data.rules?.trim() || null,
         coverImageUrl: parsed.data.coverImageUrl?.trim() || null,
         coverImagePublicId: parsed.data.coverImagePublicId?.trim() || null,
+        sightReadingExercise: toPrismaSightReadingExercise(parsed.data.sightReadingExercise),
         startsAt: toDate(parsed.data.startsAt),
         endsAt: toDate(parsed.data.endsAt),
         isPublished: parsed.data.isPublished,
@@ -137,6 +150,7 @@ export async function updateChallengeAction(input: unknown) {
         rules: parsed.data.rules?.trim() || null,
         coverImageUrl: parsed.data.coverImageUrl?.trim() || null,
         coverImagePublicId: parsed.data.coverImagePublicId?.trim() || null,
+        sightReadingExercise: toPrismaSightReadingExercise(parsed.data.sightReadingExercise),
         startsAt: toDate(parsed.data.startsAt),
         endsAt: toDate(parsed.data.endsAt),
         isPublished: parsed.data.isPublished,

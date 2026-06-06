@@ -103,6 +103,7 @@ model User {
   featuredSpotlights     ChoristerSpotlight[]    @relation("SpotlightFeaturedUser")
   challengeSubmissions   ChallengeSubmission[]
   challengeVotes         ChallengeVote[]
+  sightReadingAttempts   SightReadingAttempt[]
   profile                UserProfile?
 
   createdAt DateTime @default(now())
@@ -502,18 +503,20 @@ model QuizAttempt {
 }
 
 model DailyChallenge {
-  id            String                  @id @default(cuid())
-  challengeDate DateTime                @unique
-  title         String
-  prompt        String
-  options       Json
-  correctIndex  Int
-  explanation   String?
-  soundConfig   Json?
-  isPublished   Boolean                 @default(true)
-  attempts      DailyChallengeAttempt[]
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
+  id                   String                  @id @default(cuid())
+  challengeDate        DateTime                @unique
+  title                String
+  prompt               String
+  options              Json
+  correctIndex         Int
+  explanation          String?
+  soundConfig          Json?
+  sightReadingExercise Json?
+  isPublished          Boolean                 @default(true)
+  attempts             DailyChallengeAttempt[]
+  sightReadingAttempts SightReadingAttempt[]
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
 
   @@index([isPublished, challengeDate])
 }
@@ -607,22 +610,24 @@ model ChoristerSpotlight {
 }
 
 model Challenge {
-  id                 String                @id @default(cuid())
-  title              String
-  slug               String                @unique
-  type               String
-  description        String?
-  prompt             String?
-  rules              String?
-  coverImageUrl      String?
-  coverImagePublicId String?
-  startsAt           DateTime?
-  endsAt             DateTime?
-  isPublished        Boolean               @default(false)
-  submissions        ChallengeSubmission[]
-  votes              ChallengeVote[]
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
+  id                   String                @id @default(cuid())
+  title                String
+  slug                 String                @unique
+  type                 String
+  description          String?
+  prompt               String?
+  rules                String?
+  coverImageUrl        String?
+  coverImagePublicId   String?
+  sightReadingExercise Json?
+  startsAt             DateTime?
+  endsAt               DateTime?
+  isPublished          Boolean               @default(false)
+  submissions          ChallengeSubmission[]
+  votes                ChallengeVote[]
+  sightReadingAttempts SightReadingAttempt[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 
   @@index([isPublished, startsAt, endsAt])
   @@index([type])
@@ -671,4 +676,30 @@ model ChallengeVote {
   @@index([challengeId, createdAt])
   @@index([submissionId])
   @@index([userId])
+}
+
+model SightReadingAttempt {
+  id                     String   @id @default(cuid())
+  userId                 String?
+  dailyChallengeId       String?
+  challengeId            String?
+  sourceType             String
+  exerciseTitle          String
+  score                  Int
+  pitchScore             Int
+  rhythmScore            Int
+  stabilityScore         Int
+  transpositionSemitones Float?
+  metrics                Json?
+  feedback               Json?
+  createdAt              DateTime @default(now())
+
+  user           User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  dailyChallenge DailyChallenge? @relation(fields: [dailyChallengeId], references: [id], onDelete: Cascade)
+  challenge      Challenge?      @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([dailyChallengeId, createdAt])
+  @@index([challengeId, createdAt])
+  @@index([sourceType, score])
 }

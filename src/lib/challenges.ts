@@ -26,6 +26,7 @@ export const publicChallengeSelect = {
   prompt: true,
   rules: true,
   coverImageUrl: true,
+  sightReadingExercise: true,
   startsAt: true,
   endsAt: true,
   createdAt: true,
