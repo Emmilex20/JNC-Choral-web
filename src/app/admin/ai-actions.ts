@@ -30,12 +30,76 @@ const ArticleDraftSchema = z.object({
   tags: z.array(z.string().min(2).max(32)).min(3).max(8),
 });
 
-const QuizQuestionDraftSchema = z.object({
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function readString(record: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return undefined;
+}
+
+function readOptions(record: Record<string, unknown>) {
+  const raw = record.options ?? record.choices ?? record.answers;
+  if (!Array.isArray(raw)) return undefined;
+  const options = raw.filter((item): item is string => typeof item === "string").map((item) => item.trim());
+  return options.length === 4 ? options : undefined;
+}
+
+function readCorrectIndex(record: Record<string, unknown>, options: string[]) {
+  const direct =
+    record.correctIndex ??
+    record.correctAnswerIndex ??
+    record.answerIndex ??
+    record.correctOptionIndex;
+
+  if (typeof direct === "number" && Number.isInteger(direct)) {
+    return direct >= 0 && direct <= 3 ? direct : undefined;
+  }
+
+  if (typeof direct === "string") {
+    const numeric = Number(direct);
+    if (Number.isInteger(numeric) && numeric >= 0 && numeric <= 3) return numeric;
+
+    const letterIndex = "abcd".indexOf(direct.trim().toLowerCase());
+    if (letterIndex >= 0) return letterIndex;
+  }
+
+  const answer = readString(record, ["correctAnswer", "answer", "correctOption"]);
+  if (!answer) return undefined;
+
+  const normalizedAnswer = answer.toLowerCase();
+  const answerIndex = options.findIndex((option) => option.toLowerCase() === normalizedAnswer);
+  return answerIndex >= 0 ? answerIndex : undefined;
+}
+
+function normalizeQuestionDraft(value: unknown) {
+  if (!isRecord(value)) return value;
+
+  const options = readOptions(value);
+  const prompt = readString(value, ["prompt", "question", "text", "title"]);
+  const explanation = readString(value, ["explanation", "rationale", "feedback", "note"]);
+
+  if (!options || !prompt) return value;
+
+  return {
+    ...value,
+    prompt,
+    options,
+    correctIndex: readCorrectIndex(value, options),
+    explanation: explanation ?? "Review the correct option and connect it to the lesson.",
+  };
+}
+
+const QuizQuestionDraftSchema = z.preprocess(normalizeQuestionDraft, z.object({
   prompt: z.string().min(8).max(500),
   options: z.array(z.string().min(1).max(180)).length(4),
   correctIndex: z.number().int().min(0).max(3),
   explanation: z.string().min(10).max(500),
-});
+}));
 
 const QuizDraftSchema = z.object({
   title: z.string().min(4).max(120),
@@ -43,13 +107,13 @@ const QuizDraftSchema = z.object({
   questions: z.array(QuizQuestionDraftSchema).min(5).max(10),
 });
 
-const DailyChallengeDraftSchema = z.object({
+const DailyChallengeDraftSchema = z.preprocess(normalizeQuestionDraft, z.object({
   title: z.string().min(4).max(120),
   prompt: z.string().min(8).max(500),
   options: z.array(z.string().min(1).max(180)).length(4),
   correctIndex: z.number().int().min(0).max(3),
   explanation: z.string().min(10).max(500),
-});
+}));
 
 const MusicChallengeDraftSchema = z.object({
   title: z.string().min(4).max(140),
@@ -105,6 +169,9 @@ function normalizeTopic(topic: string | undefined, fallback: string) {
 }
 
 function getAiError(error: unknown) {
+  if (error instanceof z.ZodError) {
+    return "OpenAI returned a draft in an unexpected shape. Please generate again.";
+  }
   if (error instanceof Error) return error.message;
   return "Unable to generate AI draft.";
 }
@@ -217,9 +284,9 @@ Topic or focus: ${topic}
 Return JSON with:
 - title
 - description
-- questions: exactly 8 multiple-choice questions
+- questions: exactly 8 multiple-choice questions. Each question object must use these exact keys: prompt, options, correctIndex, explanation.
 
-Each question must have exactly 4 options, correctIndex from 0 to 3, and a short explanation. Keep questions practical for choristers, instrumentalists, and worship musicians.`,
+Do not use the key "question"; use "prompt". Each question must have exactly 4 options, correctIndex from 0 to 3, and a short explanation. Keep questions practical for choristers, instrumentalists, and worship musicians.`,
     })
   );
 }
@@ -241,7 +308,7 @@ Topic or focus: ${topic}
 
 Return JSON with:
 - title
-- prompt
+- prompt. Use this exact key, not "question".
 - options: exactly 4 options
 - correctIndex from 0 to 3
 - explanation
