@@ -363,12 +363,12 @@ export default async function HomePage() {
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-white/56">
-              Fresh academy writing, today&apos;s theory challenge, and a quiz to sharpen your
-              choir instincts.
+              Fresh academy writing, today&apos;s theory challenge, public challenges, and a quiz
+              to sharpen your choir instincts.
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Link
               href={featuredAcademyArticle ? `/academy/${featuredAcademyArticle.slug}` : "/academy"}
               className="group rounded-3xl border border-white/10 bg-white/4.5 p-5 transition hover:border-amber-200/28 hover:bg-white/[0.07]"
@@ -405,6 +405,25 @@ export default async function HomePage() {
               <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
                 {todayChallenge?.prompt ??
                   "Create today&apos;s challenge in admin so visitors can practice."}
+              </p>
+            </Link>
+
+            <Link
+              href="/music-hub/challenges"
+              className="group rounded-3xl border border-white/10 bg-white/4.5 p-5 transition hover:border-violet-200/28 hover:bg-white/[0.07]"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-violet-200/15 bg-violet-200/8 text-violet-100">
+                <Trophy className="h-5 w-5" />
+              </span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/42">
+                Music Challenges
+              </p>
+              <h3 className="mt-3 line-clamp-2 text-xl font-semibold text-white">
+                Submit, vote, and climb the challenge board
+              </h3>
+              <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
+                Join vocal, instrumental, harmony, and sight-reading prompts from the JNC
+                community.
               </p>
             </Link>
 

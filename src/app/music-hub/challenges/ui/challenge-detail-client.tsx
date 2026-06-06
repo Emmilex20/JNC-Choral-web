@@ -16,6 +16,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ShareActions } from "@/components/share-actions";
 import { SightSingingPractice } from "@/components/sight-singing-practice";
 import { getErrorMessage } from "@/lib/errors";
 import type { SightReadingExercise } from "@/lib/sight-reading";
@@ -310,6 +311,17 @@ export default function ChallengeDetailClient({
             >
               {notice.message}
             </div>
+          ) : null}
+
+          {notice?.type === "success" ? (
+            <ShareActions
+              className="mt-4"
+              title={`JNC Challenge: ${challenge.title}`}
+              text={`I just submitted an entry for ${challenge.title} on JNC. Join the challenge or share your vote.`}
+              path={`/music-hub/challenges/${challenge.slug}`}
+              shareLabel="Share challenge"
+              copyLabel="Copy challenge link"
+            />
           ) : null}
 
           <div className="mt-5 grid gap-4">

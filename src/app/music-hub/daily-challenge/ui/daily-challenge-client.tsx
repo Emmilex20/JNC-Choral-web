@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
 import { EarTrainingPlayer } from "@/components/ear-training-player";
+import { ShareActions } from "@/components/share-actions";
 import { Button } from "@/components/ui/button";
 import type { EarTrainingSoundConfig } from "@/lib/ear-training";
 import { submitDailyChallengeAttemptAction } from "../actions";
@@ -163,12 +164,26 @@ export default function DailyChallengeClient({
       ) : null}
 
       {result ? (
-        <div className="mt-6 rounded-2xl border border-amber-200/12 bg-amber-200/8 p-5 text-sm leading-7 text-amber-50/84">
-          {result.alreadyAnswered ? (
-            <p className="font-semibold text-white">Your saved answer has already been recorded.</p>
-          ) : null}
-          {result.explanation ? <p className="mt-2">{result.explanation}</p> : null}
-        </div>
+        <>
+          <div className="mt-6 rounded-2xl border border-amber-200/12 bg-amber-200/8 p-5 text-sm leading-7 text-amber-50/84">
+            {result.alreadyAnswered ? (
+              <p className="font-semibold text-white">Your saved answer has already been recorded.</p>
+            ) : null}
+            {result.explanation ? <p className="mt-2">{result.explanation}</p> : null}
+          </div>
+          <ShareActions
+            className="mt-4"
+            title={`JNC Daily Challenge: ${challenge.title}`}
+            text={
+              result.isCorrect
+                ? "I completed today's JNC Daily Theory Challenge correctly."
+                : "I just practiced with today's JNC Daily Theory Challenge."
+            }
+            path="/music-hub/daily-challenge"
+            shareLabel="Share challenge"
+            copyLabel="Copy challenge link"
+          />
+        </>
       ) : (
         <Button
           type="button"

@@ -5,6 +5,7 @@ import { ArrowLeft, CheckCircle2, Clock3, RotateCcw, XCircle } from "lucide-reac
 
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
+import { ShareActions } from "@/components/share-actions";
 import { Button } from "@/components/ui/button";
 import { getQuizAttemptForResults, parseOptions } from "@/lib/music-hub";
 
@@ -116,6 +117,21 @@ export default async function QuizResultsPage({
               {formatDuration(attempt.completionTimeSeconds)}
             </p>
           </div>
+        </div>
+
+        <div className="mt-6 rounded-[1.5rem] border border-amber-200/12 bg-amber-200/[0.065] p-5">
+          <p className="text-sm font-semibold text-white">Share this quiz</p>
+          <p className="mt-2 text-sm leading-6 text-white/60">
+            Invite another chorister to try the same quiz.
+          </p>
+          <ShareActions
+            className="mt-4"
+            title={`JNC Quiz: ${attempt.quiz.title}`}
+            text={`I scored ${attempt.score}/${attempt.totalQuestions} on ${attempt.quiz.title}. Try the quiz on JNC.`}
+            path={`/music-hub/quizzes/${attempt.quiz.slug}`}
+            shareLabel="Share quiz"
+            copyLabel="Copy quiz link"
+          />
         </div>
 
         <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 md:p-8">

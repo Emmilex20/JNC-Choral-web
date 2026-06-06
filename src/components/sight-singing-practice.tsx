@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Loader2, Mic, RotateCcw, Timer, Volume2 } from "lucide-react";
 
 import { submitSightReadingAttemptAction } from "@/app/music-hub/sight-reading/actions";
+import { ShareActions } from "@/components/share-actions";
 import { Button } from "@/components/ui/button";
 import { SightReadingSheet } from "@/components/sight-reading-sheet";
 import {
@@ -239,6 +240,7 @@ export function SightSingingPractice({
 
   const durationMs = useMemo(() => getExerciseDurationMs(exercise), [exercise]);
   const beatMs = 60_000 / exercise.tempoBpm;
+  const sharePath = sourceType === "daily-challenge" ? "/music-hub/daily-challenge" : undefined;
 
   function cleanupAudio() {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -508,6 +510,21 @@ export function SightSingingPractice({
                 Preparing feedback...
               </div>
             )}
+          </div>
+
+          <div className="rounded-[1.5rem] border border-amber-200/12 bg-amber-200/[0.065] p-5 lg:col-span-2">
+            <p className="text-sm font-semibold text-white">Share this challenge</p>
+            <p className="mt-2 text-sm leading-6 text-white/60">
+              Invite another singer to try the sheet and compare practice results.
+            </p>
+            <ShareActions
+              className="mt-4"
+              title={`JNC Sight-Singing Challenge: ${exercise.title}`}
+              text={`I scored ${result.score} on a JNC sight-singing challenge. Try it too.`}
+              path={sharePath}
+              shareLabel="Share challenge"
+              copyLabel="Copy challenge link"
+            />
           </div>
         </div>
       ) : null}
