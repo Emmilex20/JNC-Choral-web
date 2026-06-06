@@ -6,6 +6,12 @@ import { z } from "zod";
 import { authOptions } from "@/auth";
 import { isAdminSession } from "@/lib/authz";
 import { challengeTypes } from "@/lib/challenges";
+import {
+  earTrainingChords,
+  earTrainingIntervals,
+  earTrainingRootNotes,
+  normalizeEarTrainingSoundConfig,
+} from "@/lib/ear-training";
 import { quizCategories } from "@/lib/music-hub";
 
 type ChatCompletionResponse = {
@@ -94,6 +100,23 @@ function normalizeQuestionDraft(value: unknown) {
   };
 }
 
+function normalizeDailyChallengeDraft(value: unknown) {
+  const normalized = normalizeQuestionDraft(value);
+  if (!isRecord(normalized)) return normalized;
+
+  const soundConfig = normalizeEarTrainingSoundConfig(
+    normalized.soundConfig ??
+      normalized.audioConfig ??
+      normalized.sound ??
+      normalized.earTraining
+  );
+
+  return {
+    ...normalized,
+    soundConfig,
+  };
+}
+
 const QuizQuestionDraftSchema = z.preprocess(normalizeQuestionDraft, z.object({
   prompt: z.string().min(8).max(500),
   options: z.array(z.string().min(1).max(180)).length(4),
@@ -107,12 +130,33 @@ const QuizDraftSchema = z.object({
   questions: z.array(QuizQuestionDraftSchema).min(5).max(10),
 });
 
-const DailyChallengeDraftSchema = z.preprocess(normalizeQuestionDraft, z.object({
+const DailySoundConfigSchema = z.preprocess(
+  normalizeEarTrainingSoundConfig,
+  z
+    .union([
+      z.object({
+        mode: z.literal("interval"),
+        rootNote: z.string(),
+        interval: z.string(),
+        playback: z.enum(["melodic", "harmonic"]),
+      }),
+      z.object({
+        mode: z.literal("chord"),
+        rootNote: z.string(),
+        chord: z.string(),
+        playback: z.enum(["blocked", "broken"]),
+      }),
+    ])
+    .nullable()
+);
+
+const DailyChallengeDraftSchema = z.preprocess(normalizeDailyChallengeDraft, z.object({
   title: z.string().min(4).max(120),
   prompt: z.string().min(8).max(500),
   options: z.array(z.string().min(1).max(180)).length(4),
   correctIndex: z.number().int().min(0).max(3),
   explanation: z.string().min(10).max(500),
+  soundConfig: DailySoundConfigSchema.optional().nullable(),
 }));
 
 const MusicChallengeDraftSchema = z.object({
@@ -296,6 +340,9 @@ export async function generateDailyChallengeDraftAction(input: unknown) {
   if (!parsed.success) return { ok: false as const, error: "Invalid daily challenge prompt." };
 
   const topic = normalizeTopic(parsed.data.topic, "music theory listening and reading");
+  const intervalIds = earTrainingIntervals.map((interval) => interval.value).join(", ");
+  const chordIds = earTrainingChords.map((chord) => chord.value).join(", ");
+  const rootNotes = earTrainingRootNotes.map((note) => note.value).join(", ");
 
   return adminGenerate(() =>
     generateOpenAIJson({
@@ -312,6 +359,19 @@ Return JSON with:
 - options: exactly 4 options
 - correctIndex from 0 to 3
 - explanation
+- soundConfig: null for text-only reading/theory prompts, or a generated listening config when the prompt asks the user to hear a sound.
+
+For listening prompts, soundConfig must be one of:
+- interval: {"mode":"interval","rootNote":"C4","interval":"major-third","playback":"melodic"}
+- chord: {"mode":"chord","rootNote":"C4","chord":"major-triad","playback":"blocked"}
+
+Allowed rootNote values: ${rootNotes}
+Allowed interval values: ${intervalIds}
+Allowed chord values: ${chordIds}
+Allowed interval playback values: melodic, harmonic
+Allowed chord playback values: blocked, broken
+
+If soundConfig is null, do not tell the user to listen to a chord, interval, or sound.
 
 Make it quick, clear, and educational. Avoid trick wording.`,
     })

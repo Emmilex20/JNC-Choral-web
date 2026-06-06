@@ -1,6 +1,7 @@
 import { BookOpenText, Brain, Lightbulb } from "lucide-react";
 
 import { ensureAcademyCategories } from "@/lib/academy";
+import { normalizeEarTrainingSoundConfig } from "@/lib/ear-training";
 import { dateToDateInputValue, getLagosDateKey, parseOptions } from "@/lib/music-hub";
 import { prisma } from "@/lib/prisma";
 import { AdminPageHeader } from "../_components/admin-page-header";
@@ -142,6 +143,7 @@ export default async function AdminAcademyPage() {
           options: parseOptions(challenge.options),
           correctIndex: challenge.correctIndex,
           explanation: challenge.explanation,
+          soundConfig: normalizeEarTrainingSoundConfig(challenge.soundConfig),
           isPublished: challenge.isPublished,
           attemptCount: challenge._count.attempts,
           createdAt: challenge.createdAt.toISOString(),

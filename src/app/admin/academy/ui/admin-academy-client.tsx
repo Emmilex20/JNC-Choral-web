@@ -10,13 +10,28 @@ import {
   ImagePlus,
   Lightbulb,
   Loader2,
+  Music2,
   Plus,
   Trash2,
   WandSparkles,
 } from "lucide-react";
 
+import { EarTrainingPlayer } from "@/components/ear-training-player";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  earTrainingChords,
+  earTrainingIntervals,
+  earTrainingRootNotes,
+  getEarTrainingSoundLabel,
+  normalizeEarTrainingSoundConfig,
+  type EarTrainingChordId,
+  type EarTrainingChordPlayback,
+  type EarTrainingIntervalId,
+  type EarTrainingIntervalPlayback,
+  type EarTrainingRootNote,
+  type EarTrainingSoundConfig,
+} from "@/lib/ear-training";
 import { getErrorMessage } from "@/lib/errors";
 import {
   createAcademyArticleAction,
@@ -102,6 +117,7 @@ type ChallengeRow = {
   options: string[];
   correctIndex: number;
   explanation: string | null;
+  soundConfig: EarTrainingSoundConfig | null;
   isPublished: boolean;
   attemptCount: number;
   createdAt: string;
@@ -136,6 +152,7 @@ type ChallengeForm = {
   options: string[];
   correctIndex: number;
   explanation: string;
+  soundConfig: EarTrainingSoundConfig | null;
   isPublished: boolean;
 };
 
@@ -262,6 +279,7 @@ export default function AdminAcademyClient({
     options: ["", "", "", ""],
     correctIndex: 0,
     explanation: "",
+    soundConfig: null,
     isPublished: true,
   });
   const [dailyAiPrompt, setDailyAiPrompt] = useState("");
@@ -530,6 +548,7 @@ export default function AdminAcademyClient({
       options: ["", "", "", ""],
       correctIndex: 0,
       explanation: "",
+      soundConfig: null,
       isPublished: true,
     });
   }
@@ -544,6 +563,7 @@ export default function AdminAcademyClient({
       options: normalizeFourOptions(challenge.options),
       correctIndex: challenge.correctIndex,
       explanation: challenge.explanation ?? "",
+      soundConfig: challenge.soundConfig,
       isPublished: challenge.isPublished,
     });
   }
@@ -554,6 +574,72 @@ export default function AdminAcademyClient({
       options[index] = value;
       return { ...prev, options };
     });
+  }
+
+  function setChallengeSoundMode(mode: "none" | "interval" | "chord") {
+    setChallengeForm((prev) => {
+      if (mode === "none") return { ...prev, soundConfig: null };
+
+      const rootNote = prev.soundConfig?.rootNote ?? "C4";
+      const soundConfig: EarTrainingSoundConfig =
+        mode === "interval"
+          ? {
+              mode: "interval",
+              rootNote,
+              interval:
+                prev.soundConfig?.mode === "interval"
+                  ? prev.soundConfig.interval
+                  : "major-third",
+              playback:
+                prev.soundConfig?.mode === "interval"
+                  ? prev.soundConfig.playback
+                  : "melodic",
+            }
+          : {
+              mode: "chord",
+              rootNote,
+              chord:
+                prev.soundConfig?.mode === "chord"
+                  ? prev.soundConfig.chord
+                  : "major-triad",
+              playback:
+                prev.soundConfig?.mode === "chord"
+                  ? prev.soundConfig.playback
+                  : "blocked",
+            };
+
+      return { ...prev, soundConfig };
+    });
+  }
+
+  function updateSoundRootNote(rootNote: EarTrainingRootNote) {
+    setChallengeForm((prev) =>
+      prev.soundConfig
+        ? { ...prev, soundConfig: { ...prev.soundConfig, rootNote } }
+        : prev
+    );
+  }
+
+  function updateIntervalSound(patch: {
+    interval?: EarTrainingIntervalId;
+    playback?: EarTrainingIntervalPlayback;
+  }) {
+    setChallengeForm((prev) =>
+      prev.soundConfig?.mode === "interval"
+        ? { ...prev, soundConfig: { ...prev.soundConfig, ...patch } }
+        : prev
+    );
+  }
+
+  function updateChordSound(patch: {
+    chord?: EarTrainingChordId;
+    playback?: EarTrainingChordPlayback;
+  }) {
+    setChallengeForm((prev) =>
+      prev.soundConfig?.mode === "chord"
+        ? { ...prev, soundConfig: { ...prev.soundConfig, ...patch } }
+        : prev
+    );
   }
 
   function submitChallenge() {
@@ -590,6 +676,7 @@ export default function AdminAcademyClient({
         options: normalizeFourOptions(res.data.options),
         correctIndex: res.data.correctIndex,
         explanation: res.data.explanation,
+        soundConfig: normalizeEarTrainingSoundConfig(res.data.soundConfig),
         isPublished: false,
       }));
       setAiTask(null);
@@ -1323,6 +1410,142 @@ export default function AdminAcademyClient({
                 className={inputClass}
                 placeholder="Multiple-choice prompt"
               />
+              <div className="rounded-2xl border border-amber-200/14 bg-amber-200/[0.045] p-4">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-amber-200/16 bg-black/30 text-amber-100">
+                    <Music2 className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      Generated listening sound
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-white/58">
+                      No upload needed. Choose an interval or chord and the public challenge will
+                      play it in the browser.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3">
+                  <div>
+                    <label className={labelClass}>Sound type</label>
+                    <select
+                      value={challengeForm.soundConfig?.mode ?? "none"}
+                      onChange={(e) =>
+                        setChallengeSoundMode(
+                          e.target.value as "none" | "interval" | "chord"
+                        )
+                      }
+                      className={inputClass}
+                    >
+                      <option value="none">No generated sound</option>
+                      <option value="interval">Interval</option>
+                      <option value="chord">Chord</option>
+                    </select>
+                  </div>
+
+                  {challengeForm.soundConfig ? (
+                    <>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div>
+                          <label className={labelClass}>Root note</label>
+                          <select
+                            value={challengeForm.soundConfig.rootNote}
+                            onChange={(e) =>
+                              updateSoundRootNote(e.target.value as EarTrainingRootNote)
+                            }
+                            className={inputClass}
+                          >
+                            {earTrainingRootNotes.map((note) => (
+                              <option key={note.value} value={note.value}>
+                                {note.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {challengeForm.soundConfig.mode === "interval" ? (
+                          <div>
+                            <label className={labelClass}>Interval</label>
+                            <select
+                              value={challengeForm.soundConfig.interval}
+                              onChange={(e) =>
+                                updateIntervalSound({
+                                  interval: e.target.value as EarTrainingIntervalId,
+                                })
+                              }
+                              className={inputClass}
+                            >
+                              {earTrainingIntervals.map((interval) => (
+                                <option key={interval.value} value={interval.value}>
+                                  {interval.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <div>
+                            <label className={labelClass}>Chord</label>
+                            <select
+                              value={challengeForm.soundConfig.chord}
+                              onChange={(e) =>
+                                updateChordSound({
+                                  chord: e.target.value as EarTrainingChordId,
+                                })
+                              }
+                              className={inputClass}
+                            >
+                              {earTrainingChords.map((chord) => (
+                                <option key={chord.value} value={chord.value}>
+                                  {chord.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className={labelClass}>Playback</label>
+                        {challengeForm.soundConfig.mode === "interval" ? (
+                          <select
+                            value={challengeForm.soundConfig.playback}
+                            onChange={(e) =>
+                              updateIntervalSound({
+                                playback: e.target.value as EarTrainingIntervalPlayback,
+                              })
+                            }
+                            className={inputClass}
+                          >
+                            <option value="melodic">Melodic</option>
+                            <option value="harmonic">Harmonic</option>
+                          </select>
+                        ) : (
+                          <select
+                            value={challengeForm.soundConfig.playback}
+                            onChange={(e) =>
+                              updateChordSound({
+                                playback: e.target.value as EarTrainingChordPlayback,
+                              })
+                            }
+                            className={inputClass}
+                          >
+                            <option value="blocked">Blocked</option>
+                            <option value="broken">Broken / arpeggiated</option>
+                          </select>
+                        )}
+                      </div>
+
+                      <EarTrainingPlayer
+                        config={challengeForm.soundConfig}
+                        compact
+                        title="Preview generated sound"
+                        description={getEarTrainingSoundLabel(challengeForm.soundConfig)}
+                      />
+                    </>
+                  ) : null}
+                </div>
+              </div>
               <div className="grid gap-2">
                 {normalizeFourOptions(challengeForm.options).map((option, index) => (
                   <div key={index} className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -1425,6 +1648,11 @@ export default function AdminAcademyClient({
                         >
                           {challenge.isPublished ? "Published" : "Draft"}
                         </Badge>
+                        {challenge.soundConfig ? (
+                          <Badge className="rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20">
+                            {getEarTrainingSoundLabel(challenge.soundConfig)}
+                          </Badge>
+                        ) : null}
                       </div>
                       <h3 className="mt-3 text-lg font-semibold text-white">
                         {challenge.title}

@@ -509,6 +509,7 @@ model DailyChallenge {
   options       Json
   correctIndex  Int
   explanation   String?
+  soundConfig   Json?
   isPublished   Boolean                 @default(true)
   attempts      DailyChallengeAttempt[]
   createdAt     DateTime                @default(now())

@@ -11,6 +11,10 @@ import {
   getUniqueAcademyCategorySlug,
 } from "@/lib/academy";
 import { isAdminSession } from "@/lib/authz";
+import {
+  normalizeEarTrainingSoundConfig,
+  type EarTrainingSoundConfig,
+} from "@/lib/ear-training";
 import { normalizeTags } from "@/lib/learning-errors";
 import { dateKeyToUtcDate, getUniqueQuizSlug, quizCategories } from "@/lib/music-hub";
 import { prisma } from "@/lib/prisma";
@@ -71,6 +75,10 @@ const DailyChallengeSchema = z.object({
   options: z.array(z.string().min(1).max(180)).length(4),
   correctIndex: z.number().int().min(0).max(3),
   explanation: z.string().max(500).optional(),
+  soundConfig: z
+    .unknown()
+    .optional()
+    .transform((value) => normalizeEarTrainingSoundConfig(value)),
   isPublished: z.boolean(),
 });
 
@@ -103,6 +111,10 @@ function revalidateLearningRoutes() {
   revalidatePath("/music-hub/quizzes");
   revalidatePath("/music-hub/daily-challenge");
   revalidatePath("/sitemap.xml");
+}
+
+function toPrismaSoundConfig(soundConfig: EarTrainingSoundConfig | null) {
+  return soundConfig ? (soundConfig as Prisma.InputJsonValue) : Prisma.DbNull;
 }
 
 export async function createAcademyCategoryAction(input: unknown) {
@@ -344,6 +356,7 @@ export async function createDailyChallengeAction(input: unknown) {
         options: parsed.data.options.map((option) => option.trim()),
         correctIndex: parsed.data.correctIndex,
         explanation: parsed.data.explanation?.trim() || null,
+        soundConfig: toPrismaSoundConfig(parsed.data.soundConfig),
         isPublished: parsed.data.isPublished,
       },
       update: {
@@ -352,6 +365,7 @@ export async function createDailyChallengeAction(input: unknown) {
         options: parsed.data.options.map((option) => option.trim()),
         correctIndex: parsed.data.correctIndex,
         explanation: parsed.data.explanation?.trim() || null,
+        soundConfig: toPrismaSoundConfig(parsed.data.soundConfig),
         isPublished: parsed.data.isPublished,
       },
     });
@@ -380,6 +394,7 @@ export async function updateDailyChallengeAction(input: unknown) {
         options: parsed.data.options.map((option) => option.trim()),
         correctIndex: parsed.data.correctIndex,
         explanation: parsed.data.explanation?.trim() || null,
+        soundConfig: toPrismaSoundConfig(parsed.data.soundConfig),
         isPublished: parsed.data.isPublished,
       },
     });

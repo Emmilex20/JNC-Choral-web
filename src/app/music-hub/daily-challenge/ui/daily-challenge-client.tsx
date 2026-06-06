@@ -3,7 +3,9 @@
 import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
+import { EarTrainingPlayer } from "@/components/ear-training-player";
 import { Button } from "@/components/ui/button";
+import type { EarTrainingSoundConfig } from "@/lib/ear-training";
 import { submitDailyChallengeAttemptAction } from "../actions";
 
 type ExistingAttempt = {
@@ -20,6 +22,7 @@ type DailyChallengeClientProps = {
     prompt: string;
     options: string[];
     explanation: string | null;
+    soundConfig: EarTrainingSoundConfig | null;
   };
   existingAttempt: ExistingAttempt;
 };
@@ -115,6 +118,12 @@ export default function DailyChallengeClient({
       <h3 className="mt-8 text-2xl font-semibold leading-tight text-white">
         {challenge.prompt}
       </h3>
+
+      <EarTrainingPlayer
+        config={challenge.soundConfig}
+        className="mt-6"
+        description="Play the generated chord or interval before choosing your answer."
+      />
 
       <div className="mt-6 grid gap-3">
         {challenge.options.map((option, index) => {

@@ -55,7 +55,9 @@ export const dailyChallengeSelect = {
   title: true,
   prompt: true,
   options: true,
+  correctIndex: true,
   explanation: true,
+  soundConfig: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.DailyChallengeSelect;

@@ -7,6 +7,10 @@ import { authOptions } from "@/auth";
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import {
+  inferEarTrainingSoundConfigFromAnswer,
+  normalizeEarTrainingSoundConfig,
+} from "@/lib/ear-training";
+import {
   getDailyChallengeAttemptForUser,
   getLagosDateKey,
   getTodayDailyChallenge,
@@ -51,6 +55,14 @@ export default async function DailyChallengePage() {
     ? await getDailyChallengeAttemptForUser(challenge.id, session?.user?.id)
     : null;
   const options = challenge ? parseOptions(challenge.options) : [];
+  const soundConfig = challenge
+    ? normalizeEarTrainingSoundConfig(challenge.soundConfig) ??
+      inferEarTrainingSoundConfigFromAnswer({
+        title: challenge.title,
+        prompt: challenge.prompt,
+        answer: options[challenge.correctIndex],
+      })
+    : null;
 
   return (
     <main className="min-h-screen bg-[#02040a] text-white">
@@ -113,6 +125,7 @@ export default async function DailyChallengePage() {
               prompt: challenge.prompt,
               options,
               explanation: challenge.explanation,
+              soundConfig,
             }}
             existingAttempt={
               existingAttempt
