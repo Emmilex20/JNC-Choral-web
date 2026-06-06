@@ -21,9 +21,10 @@ import {
   listVisibleMusicSheets,
 } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
+import { versionedHeroAsset } from "@/lib/site-assets";
 import MusicClient from "./ui/music-client";
 
-const siteUrl = "https://www.jnc-choral.vercel.app";
+const siteUrl = "https://www.jnc.vercel.app";
 const description =
   "Listen to Jude Nnam Choral music, live recordings, worship sessions, and access available JNC scores and choir sheets.";
 
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
     description,
     url: "/music",
     type: "music.playlist",
-    images: ["/hero/hero-1.png"],
+    images: [versionedHeroAsset("/hero/hero-1.png")],
   },
 };
 
@@ -123,7 +124,7 @@ export default async function MusicPage() {
               </Button>
               <Button
                 variant="outline"
-                className="rounded-2xl border-white/15 bg-white/[0.05] px-6 py-6 text-white hover:bg-white/[0.09]"
+                className="rounded-2xl border-white/15 bg-white/5 px-6 py-6 text-white hover:bg-white/9"
                 asChild
               >
                 <Link href="/scores">
@@ -134,10 +135,10 @@ export default async function MusicPage() {
             </div>
           </div>
 
-          <aside className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.045] shadow-[0_26px_80px_rgba(0,0,0,0.32)]">
-            <div className="relative aspect-[4/3]">
+          <aside className="overflow-hidden rounded-4xl border border-white/10 bg-white/4.5 shadow-[0_26px_80px_rgba(0,0,0,0.32)]">
+            <div className="relative aspect-4/3">
               <Image
-                src="/hero/hero-1.png"
+                src={versionedHeroAsset("/hero/hero-1.png")}
                 alt="Jude Nnam Choral music library"
                 fill
                 priority

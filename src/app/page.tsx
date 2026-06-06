@@ -24,6 +24,7 @@ import {
   getBestVideoPosterUrl,
   getOptimizedCloudinaryVideoUrl,
 } from "@/lib/cloudinary-media";
+import { versionedHeroAsset } from "@/lib/site-assets";
 
 type IconComponent = ComponentType<{ className?: string }>;
 
@@ -49,7 +50,7 @@ function HomeEventCard({
   };
 }) {
   return (
-    <article className="group overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.04] transition hover:border-amber-200/30 hover:bg-white/[0.06]">
+    <article className="group overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/4 transition hover:border-amber-200/30 hover:bg-white/6">
       <div className="relative h-64">
         {event.imageUrl ? (
           <Image
@@ -192,10 +193,10 @@ const testimonials = [
 ];
 
 const fallbackGallery = [
-  { id: "director-welcome", imageUrl: "/hero/hero-1.png", title: "Sir Jude with the choir" },
-  { id: "instrumentalists", imageUrl: "/hero/hero-2.png", title: "Instrumental session" },
-  { id: "auditions", imageUrl: "/hero/hero-3.png", title: "Audition season" },
-  { id: "stage", imageUrl: "/hero/hero1.jpg", title: "Performance stage" },
+  { id: "director-welcome", imageUrl: versionedHeroAsset("/hero/hero-1.png"), title: "Sir Jude with the choir" },
+  { id: "instrumentalists", imageUrl: versionedHeroAsset("/hero/hero-2.png"), title: "Instrumental session" },
+  { id: "auditions", imageUrl: versionedHeroAsset("/hero/hero-1.png"), title: "Audition season" },
+  { id: "stage", imageUrl: versionedHeroAsset("/hero/hero1.jpg"), title: "Performance stage" },
 ];
 
 const galleryLayout = [
@@ -254,7 +255,7 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "MusicGroup",
     name: "Jude Nnam Choral",
-    url: "https://www.jnc-choral.vercel.app",
+    url: "https://www.jnc.vercel.app",
     description:
       "Jude Nnam Choral is a vibrant choir in Abuja, Nigeria. Auditions, events, and uplifting choral performances.",
     areaServed: "Nigeria",
@@ -286,7 +287,7 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <section className="border-y border-white/10 bg-white/[0.03]">
+      <section className="border-y border-white/10 bg-white/3">
         <div className="mx-auto grid max-w-7xl gap-4 px-4 py-8 sm:grid-cols-2 md:px-6 lg:grid-cols-4">
           {socialStats.map((stat) => (
             <div key={stat.label} className="py-4">
@@ -322,7 +323,7 @@ export default async function HomePage() {
             return (
               <article
                 key={reason.title}
-                className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6 transition hover:border-cyan-200/25 hover:bg-white/[0.06]"
+                className="rounded-3xl border border-white/10 bg-white/4 p-6 transition hover:border-cyan-200/25 hover:bg-white/6"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black/40 text-amber-100">
                   <Icon className="h-5 w-5" />
@@ -339,9 +340,9 @@ export default async function HomePage() {
 
       <section className="bg-white text-black">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-18 md:px-6 md:py-24 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-          <div className="relative min-h-[480px] overflow-hidden rounded-[2rem] bg-black">
+          <div className="relative min-h-120 overflow-hidden rounded-4xl bg-black">
             <Image
-              src="/hero/hero-1.png"
+              src={versionedHeroAsset("/hero/hero-1.png")}
               alt="Sir Jude standing with Jude Nnam Choral members"
               fill
               priority={false}
@@ -408,7 +409,7 @@ export default async function HomePage() {
             {journey.map((step, index) => (
               <article
                 key={step.title}
-                className="grid gap-5 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5 sm:grid-cols-[88px_1fr]"
+                className="grid gap-5 rounded-3xl border border-white/10 bg-white/4 p-5 sm:grid-cols-[88px_1fr]"
               >
                 <div>
                   <p className="text-3xl font-semibold text-amber-100">
@@ -453,7 +454,7 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-10 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
-            <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-black">
+            <div className="overflow-hidden rounded-4xl border border-white/10 bg-black">
               {featuredVideo ? (
                 <video
                   src={getOptimizedCloudinaryVideoUrl(featuredVideo.videoUrl)}
@@ -489,7 +490,7 @@ export default async function HomePage() {
               {(latestVideos.length > 1 ? latestVideos.slice(1) : []).map((video) => (
                 <article
                   key={video.id}
-                  className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04]"
+                  className="overflow-hidden rounded-3xl border border-white/10 bg-white/4"
                 >
                   <video
                     src={getOptimizedCloudinaryVideoUrl(video.videoUrl)}
@@ -506,7 +507,7 @@ export default async function HomePage() {
                   </div>
                 </article>
               ))}
-              <div className="rounded-[1.5rem] border border-emerald-200/15 bg-emerald-300/8 p-6">
+              <div className="rounded-3xl border border-emerald-200/15 bg-emerald-300/8 p-6">
                 <Sparkles className="h-6 w-6 text-emerald-100" />
                 <p className="mt-4 text-lg font-semibold text-white">
                   Upload more performance videos from the admin dashboard to keep
@@ -546,7 +547,7 @@ export default async function HomePage() {
             <Link
               key={item.id}
               href="/gallery"
-              className={`group relative h-72 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04] ${galleryLayout[index] ?? "md:h-[250px]"}`}
+              className={`group relative h-72 overflow-hidden rounded-3xl border border-white/10 bg-white/4 ${galleryLayout[index] ?? "md:h-62.5"}`}
             >
               <Image
                 src={item.imageUrl}
@@ -581,7 +582,7 @@ export default async function HomePage() {
             {testimonials.map((story) => (
               <article
                 key={story.quote}
-                className="rounded-[1.5rem] border border-black/10 bg-black/[0.03] p-6"
+                className="rounded-3xl border border-black/10 bg-black/3 p-6"
               >
                 <Quote className="h-7 w-7 text-amber-600" />
                 <p className="mt-5 text-base leading-8 text-black/76">
@@ -631,11 +632,11 @@ export default async function HomePage() {
           {homeEvents.length > 0 ? (
             homeEvents.map((event) => <HomeEventCard key={event.id} event={event} />)
           ) : (
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6 text-sm leading-7 text-white/62 lg:col-span-2">
+            <div className="rounded-3xl border border-white/10 bg-white/4 p-6 text-sm leading-7 text-white/62 lg:col-span-2">
               Published events will appear here when the admin team adds them.
             </div>
           )}
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
+          <div className="rounded-3xl border border-white/10 bg-white/4 p-6">
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/45">
               <Users className="h-4 w-4" />
               Latest news

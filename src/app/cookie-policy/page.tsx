@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import LegalPageShell, { type LegalSection } from "@/components/legal-page-shell";
 
-const siteUrl = "https://www.jnc-choral.vercel.app";
+const siteUrl = "https://www.jnc.vercel.app";
 const lastUpdated = "June 6, 2026";
 const title = "Cookie Policy";
 const description =

@@ -20,7 +20,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import VideosClient from "./ui/videos-client";
 
-const siteUrl = "https://www.jnc-choral.vercel.app";
+const siteUrl = "https://www.jnc.vercel.app";
 const description =
   "Watch Jude Nnam Choral performance videos, rehearsals, concert highlights, and behind-the-scenes media from JNC.";
 

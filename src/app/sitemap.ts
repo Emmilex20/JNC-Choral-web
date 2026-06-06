@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { listPublicScoreSheets } from "@/lib/music-sheets";
 
-const siteUrl = "https://www.jnc-choral.vercel.app";
+const siteUrl = "https://www.jnc.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

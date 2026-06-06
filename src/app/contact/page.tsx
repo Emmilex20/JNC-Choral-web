@@ -18,7 +18,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { Button } from "@/components/ui/button";
 
-const siteUrl = "https://www.jnc-choral.vercel.app";
+const siteUrl = "https://www.jnc.vercel.app";
 const email = "jncplatform@gmail.com";
 const phones = [
   { label: "08064087399", href: "tel:+2348064087399" },

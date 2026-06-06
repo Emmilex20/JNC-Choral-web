@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { versionedHeroAsset } from "@/lib/site-assets";
 
 type Item = {
   id: string;
@@ -48,7 +49,7 @@ export default function VideosClient({ items }: { items: Item[] }) {
 
   if (!featured) {
     return (
-      <section id="screening-room" className="mt-10 rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-8 text-center">
+      <section id="screening-room" className="mt-10 rounded-[1.75rem] border border-white/10 bg-white/4.5 p-8 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-200/15 bg-amber-200/8 text-amber-100">
           <Film className="h-6 w-6" />
         </div>
@@ -71,7 +72,7 @@ export default function VideosClient({ items }: { items: Item[] }) {
 
   return (
     <div className="mt-10 space-y-10">
-      <section id="screening-room" className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.045]">
+      <section id="screening-room" className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/4.5">
         <div className="grid gap-0 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.65fr)]">
           <div className="bg-black">
             <video
@@ -194,9 +195,9 @@ export default function VideosClient({ items }: { items: Item[] }) {
               memories alongside the video archive.
             </p>
           </div>
-          <div className="relative min-h-[220px] overflow-hidden rounded-[1.25rem] bg-black">
+          <div className="relative min-h-55 overflow-hidden rounded-[1.25rem] bg-black">
             <Image
-              src="/hero/hero-3.png"
+              src={versionedHeroAsset("/hero/hero-1.png")}
               alt="Jude Nnam Choral media preview"
               fill
               sizes="(max-width: 1024px) 100vw, 300px"

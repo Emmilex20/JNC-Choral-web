@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description:
     "Explore upcoming and past Jude Nnam Choral events, rehearsals, performances, and RSVP interest.",
   alternates: {
-    canonical: "https://www.jnc-choral.vercel.app/events",
+    canonical: "https://www.jnc.vercel.app/events",
   },
 };
 

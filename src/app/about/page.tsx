@@ -14,13 +14,14 @@ import {
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
+import { versionedHeroAsset } from "@/lib/site-assets";
 
 export const metadata: Metadata = {
   title: "About",
   description:
     "Learn about Jude Nnam Choral, a Nigerian liturgical and gospel choir founded by Dr. Sir Jude Nnam and dedicated to contemporary African choral music.",
   alternates: {
-    canonical: "https://www.jnc-choral.vercel.app/about",
+    canonical: "https://www.jnc.vercel.app/about",
   },
 };
 
@@ -142,7 +143,7 @@ export default function AboutPage() {
             <div className="overflow-hidden rounded-4xl border border-white/10 bg-white/5">
               <div className="relative aspect-video">
                 <Image
-                  src="/hero/hero-1.png"
+                  src={versionedHeroAsset("/hero/hero-1.png")}
                   alt="Dr. Sir Jude Nnam standing with members of Jude Nnam Choral"
                   fill
                   priority

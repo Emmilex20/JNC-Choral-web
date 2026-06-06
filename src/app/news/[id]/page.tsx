@@ -15,7 +15,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { prisma } from "@/lib/prisma";
 
-const siteUrl = "https://www.jnc-choral.vercel.app";
+const siteUrl = "https://www.jnc.vercel.app";
 
 type NewsDetailProps = {
   params: Promise<{ id: string }>;

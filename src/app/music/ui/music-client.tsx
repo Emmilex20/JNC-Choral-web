@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { versionedHeroAsset } from "@/lib/site-assets";
 
 type Item = {
   id: string;
@@ -37,7 +38,7 @@ type Sheet = {
   downloadUrl: string;
 };
 
-const mediaPoster = "/hero/hero-1.png";
+const mediaPoster = versionedHeroAsset("/hero/hero-1.png");
 
 const container = {
   hidden: { opacity: 0 },

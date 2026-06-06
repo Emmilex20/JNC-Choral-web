@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Access your Jude Nnam Choral account to sign in, register, or recover your password.",
   alternates: {
-    canonical: "https://www.jnc-choral.vercel.app/auth/login",
+    canonical: "https://www.jnc.vercel.app/auth/login",
   },
 };
 

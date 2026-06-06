@@ -18,6 +18,7 @@ import {
   DEFAULT_AUDITION_ANTICIPATION_TEXT,
   getCurrentAuditionSetting,
 } from "@/lib/audition-settings";
+import { versionedHeroAsset } from "@/lib/site-assets";
 import AuditionForm from "./ui/audition-form";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
   description:
     "Register for Jude Nnam Choral auditions in Abuja. Apply as a singer, instrumentalist, or production crew.",
   alternates: {
-    canonical: "https://www.jnc-choral.vercel.app/auditions",
+    canonical: "https://www.jnc.vercel.app/auditions",
   },
 };
 
@@ -103,7 +104,7 @@ export default async function AuditionsPage() {
             <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04]">
               <div className="relative aspect-video">
                 <Image
-                  src="/hero/hero-1.png"
+                  src={versionedHeroAsset("/hero/hero-1.png")}
                   alt="Dr. Sir Jude Nnam with Jude Nnam Choral members"
                   fill
                   priority

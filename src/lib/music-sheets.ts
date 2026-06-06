@@ -79,6 +79,18 @@ export async function listVisibleMusicSheets(access: {
         ...(access.canAccessChoristerSheets ? {} : { audience: "ALL_USERS" }),
       },
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        composer: true,
+        fileName: true,
+        fileUrl: true,
+        mimeType: true,
+        publicId: true,
+        audience: true,
+        createdAt: true,
+      },
       take: 200,
     });
   } catch (error) {

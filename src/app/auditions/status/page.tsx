@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     "Track the status of your Jude Nnam Choral audition application.",
   alternates: {
-    canonical: "https://www.jnc-choral.vercel.app/auditions/status",
+    canonical: "https://www.jnc.vercel.app/auditions/status",
   },
 };
 

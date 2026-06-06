@@ -17,6 +17,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: "https://www.jnc-choral.vercel.app/sitemap.xml",
+    sitemap: "https://www.jnc.vercel.app/sitemap.xml",
   };
 }

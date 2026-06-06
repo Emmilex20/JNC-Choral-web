@@ -5,26 +5,27 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { versionedHeroAsset } from "@/lib/site-assets";
 
 const slides = [
   {
-    src: "/hero/hero1.jpg",
+    src: versionedHeroAsset("/hero/hero-1.png"),
+    title: "Auditions 2026",
+    subtitle: "S/A/T/B - Instrumentalists - Production",
+    fit: "cover",
+    position: "center",
+  },
+  {
+    src: versionedHeroAsset("/hero/hero1.jpg"),
     title: "Jude Nnam Choral Platform",
     subtitle: "Spreading joy through music",
     fit: "contain",
     position: "top center",
   },
   {
-    src: "/hero/hero-2.png",
+    src: versionedHeroAsset("/hero/hero-2.png"),
     title: "Voices. Strings. Stories.",
     subtitle: "A community built on excellence",
-    fit: "cover",
-    position: "center",
-  },
-  {
-    src: "/hero/hero-3.png",
-    title: "Auditions 2026",
-    subtitle: "S/A/T/B - Instrumentalists - Production",
     fit: "cover",
     position: "center",
   },

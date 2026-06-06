@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import GalleryClient from "./ui/gallery-client";
 
-const siteUrl = "https://www.jnc-choral.vercel.app";
+const siteUrl = "https://www.jnc.vercel.app";
 const description =
   "Browse the Jude Nnam Choral gallery with concert photos, rehearsal moments, choir memories, and media highlights from JNC.";
 
