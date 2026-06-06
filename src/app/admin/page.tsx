@@ -9,6 +9,7 @@ import {
   Megaphone,
   Music2,
   Sparkles,
+  Trophy,
   UserCheck,
   UserCog,
   UsersRound,
@@ -52,6 +53,11 @@ export default async function AdminPage() {
     academyArticleCount,
     quizCount,
     dailyChallengeCount,
+    challengeCount,
+    publishedChallengeCount,
+    challengeSubmissionCount,
+    pendingChallengeSubmissionCount,
+    challengeVoteCount,
     spotlightCount,
     choristerNoticesCount,
     usersCount,
@@ -76,6 +82,11 @@ export default async function AdminPage() {
     prisma.academyArticle.count(),
     prisma.quiz.count(),
     prisma.dailyChallenge.count(),
+    prisma.challenge.count(),
+    prisma.challenge.count({ where: { isPublished: true } }),
+    prisma.challengeSubmission.count(),
+    prisma.challengeSubmission.count({ where: { status: "PENDING" } }),
+    prisma.challengeVote.count(),
     prisma.choristerSpotlight.count(),
     prisma.choristerNotice.count(),
     prisma.user.count(),
@@ -108,14 +119,15 @@ export default async function AdminPage() {
   ]);
 
   const mediaCount = galleryCount + musicCount + sheetCount + videoCount;
-  const reviewQueue = pendingAuditions + pendingChoristers + pendingAttendance;
+  const reviewQueue =
+    pendingAuditions + pendingChoristers + pendingAttendance + pendingChallengeSubmissionCount;
   const publishedContent = publishedEvents + publishedAnnouncements;
 
   const stats = [
     {
       label: "Review Queue",
       value: reviewQueue,
-      detail: `${pendingAuditions} auditions, ${pendingChoristers} chorister requests, ${pendingAttendance} attendance requests`,
+      detail: `${pendingAuditions} auditions, ${pendingChoristers} chorister requests, ${pendingAttendance} attendance requests, ${pendingChallengeSubmissionCount} challenge entries`,
     },
     {
       label: "Members",
@@ -155,6 +167,13 @@ export default async function AdminPage() {
       value: pendingAttendance,
       detail: `${rehearsalsCount} rehearsals in the attendance ledger`,
       icon: CalendarDays,
+    },
+    {
+      href: "/admin/challenges",
+      label: "Challenge Submissions",
+      value: pendingChallengeSubmissionCount,
+      detail: `${challengeSubmissionCount} entries and ${challengeVoteCount} votes across ${challengeCount} challenges`,
+      icon: Trophy,
     },
   ];
 
@@ -228,6 +247,13 @@ export default async function AdminPage() {
       detail: "Manage articles, quizzes, and daily theory challenges.",
       count: academyArticleCount + quizCount + dailyChallengeCount,
       icon: BookOpenText,
+    },
+    {
+      href: "/admin/challenges",
+      title: "Music Challenges",
+      detail: `Publish prompts, moderate entries, and inspect voting. ${publishedChallengeCount} challenges are live.`,
+      count: challengeCount + challengeSubmissionCount,
+      icon: Trophy,
     },
     {
       href: "/admin/spotlights",

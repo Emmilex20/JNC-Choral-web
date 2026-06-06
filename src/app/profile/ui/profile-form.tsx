@@ -15,11 +15,13 @@ import {
   Crown,
   ImagePlus,
   Mail,
+  MicVocal,
   Save,
   ShieldCheck,
   Sparkles,
   Trophy,
   UserRound,
+  Vote,
   X,
 } from "lucide-react";
 
@@ -38,6 +40,7 @@ type ProfileFormProps = {
   joinedAt: string;
   updatedAt: string;
   gamification: GamificationSummary;
+  challengeStats: ChallengeStats;
 };
 
 type GamificationSummary = {
@@ -66,6 +69,13 @@ type GamificationSummary = {
       category: string;
     };
   }[];
+};
+
+type ChallengeStats = {
+  entries: number;
+  wins: number;
+  votes: number;
+  rank: number | null;
 };
 
 type CloudinarySignature = {
@@ -176,6 +186,7 @@ export default function ProfileForm({
   joinedAt,
   updatedAt,
   gamification,
+  challengeStats,
 }: ProfileFormProps) {
   const { update } = useSession();
   const [saved, setSaved] = useState({ name, image: image ?? "" });
@@ -556,6 +567,51 @@ export default function ProfileForm({
                 </dd>
               </div>
             </dl>
+
+            <div className="mt-5 rounded-3xl border border-amber-200/12 bg-amber-200/[0.055] p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <MicVocal className="h-5 w-5 text-amber-100" />
+                    <h3 className="text-lg font-semibold text-white">Challenge record</h3>
+                  </div>
+                  <p className="mt-2 text-sm leading-6 text-white/58">
+                    Track your music challenge entries, wins, and community votes.
+                  </p>
+                </div>
+                <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-black/24 px-3 py-1.5 text-xs font-semibold text-white/68">
+                  <Crown className="h-3.5 w-3.5" />
+                  {challengeStats.rank ? `Rank #${challengeStats.rank}` : "Unranked"}
+                </span>
+              </div>
+              <dl className="mt-5 grid gap-3 sm:grid-cols-4">
+                <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+                  <dt className="text-xs uppercase tracking-[0.18em] text-white/42">Entries</dt>
+                  <dd className="mt-2 text-lg font-semibold text-white">
+                    {challengeStats.entries}
+                  </dd>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+                  <dt className="text-xs uppercase tracking-[0.18em] text-white/42">Wins</dt>
+                  <dd className="mt-2 text-lg font-semibold text-white">
+                    {challengeStats.wins}
+                  </dd>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/24 p-4">
+                  <dt className="text-xs uppercase tracking-[0.18em] text-white/42">Votes</dt>
+                  <dd className="mt-2 flex items-center gap-2 text-lg font-semibold text-white">
+                    <Vote className="h-4 w-4 text-amber-100" />
+                    {challengeStats.votes}
+                  </dd>
+                </div>
+                <Link
+                  href="/music-hub/challenges"
+                  className="rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm font-semibold text-white transition hover:border-amber-200/24 hover:bg-white/[0.07]"
+                >
+                  Enter challenges
+                </Link>
+              </dl>
+            </div>
 
             <div className="mt-6">
               <div className="flex items-center gap-2">

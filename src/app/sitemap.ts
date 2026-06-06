@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { listPublishedAcademyArticlesForSitemap } from "@/lib/academy";
+import { listPublishedChallengesForSitemap } from "@/lib/challenges";
 import { listPublicScoreSheets } from "@/lib/music-sheets";
 import { listPublishedQuizzesForSitemap } from "@/lib/music-hub";
 
@@ -11,6 +12,9 @@ type AcademySitemapEntry = Awaited<
   ReturnType<typeof listPublishedAcademyArticlesForSitemap>
 >[number];
 type QuizSitemapEntry = Awaited<ReturnType<typeof listPublishedQuizzesForSitemap>>[number];
+type ChallengeSitemapEntry = Awaited<
+  ReturnType<typeof listPublishedChallengesForSitemap>
+>[number];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -26,6 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/music-hub/quizzes",
     "/music-hub/daily-challenge",
     "/music-hub/leaderboard",
+    "/music-hub/challenges",
     "/community/spotlights",
     "/gallery",
     "/music",
@@ -36,10 +41,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/cookie-policy",
   ];
 
-  const [scores, academyArticles, quizzes] = await Promise.all([
+  const [scores, academyArticles, quizzes, challenges] = await Promise.all([
     listPublicScoreSheets(),
     listPublishedAcademyArticlesForSitemap(),
     listPublishedQuizzesForSitemap(),
+    listPublishedChallengesForSitemap(),
   ]);
 
   return [
@@ -66,6 +72,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: quiz.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.65,
+    })),
+    ...challenges.map((challenge: ChallengeSitemapEntry) => ({
+      url: `${siteUrl}/music-hub/challenges/${challenge.slug}`,
+      lastModified: challenge.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.68,
     })),
   ];
 }

@@ -101,6 +101,8 @@ model User {
   leaderboardEntries     LeaderboardEntry[]
   achievements           UserAchievement[]
   featuredSpotlights     ChoristerSpotlight[]    @relation("SpotlightFeaturedUser")
+  challengeSubmissions   ChallengeSubmission[]
+  challengeVotes         ChallengeVote[]
   profile                UserProfile?
 
   createdAt DateTime @default(now())
@@ -601,4 +603,71 @@ model ChoristerSpotlight {
 
   @@index([isPublished, weekStart])
   @@index([featuredUserId])
+}
+
+model Challenge {
+  id                 String                @id @default(cuid())
+  title              String
+  slug               String                @unique
+  type               String
+  description        String?
+  prompt             String?
+  rules              String?
+  coverImageUrl      String?
+  coverImagePublicId String?
+  startsAt           DateTime?
+  endsAt             DateTime?
+  isPublished        Boolean               @default(false)
+  submissions        ChallengeSubmission[]
+  votes              ChallengeVote[]
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  @@index([isPublished, startsAt, endsAt])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model ChallengeSubmission {
+  id            String   @id @default(cuid())
+  challengeId   String
+  userId        String?
+  title         String?
+  description   String
+  mediaType     String   @default("TEXT")
+  audioUrl      String?
+  videoUrl      String?
+  mediaPublicId String?
+  status        String   @default("PENDING")
+  adminNote     String?
+  isWinner      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  challenge Challenge       @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  votes     ChallengeVote[]
+
+  @@index([challengeId, status])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([isWinner])
+}
+
+model ChallengeVote {
+  id           String   @id @default(cuid())
+  challengeId  String
+  submissionId String
+  userId       String
+  createdAt    DateTime @default(now())
+
+  challenge  Challenge           @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  submission ChallengeSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, userId])
+  @@unique([submissionId, userId])
+  @@index([challengeId, createdAt])
+  @@index([submissionId])
+  @@index([userId])
 }

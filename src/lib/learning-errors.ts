@@ -12,6 +12,9 @@ const learningTables = [
   "Achievement",
   "UserAchievement",
   "ChoristerSpotlight",
+  "Challenge",
+  "ChallengeSubmission",
+  "ChallengeVote",
 ];
 
 export function isMissingLearningTableError(error: unknown) {

@@ -9,6 +9,7 @@ const allowedFolderSuffixes = new Set([
   "event-media",
   "music-sheets",
   "spotlights",
+  "challenges",
 ]);
 
 export async function GET(request: Request) {

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import { authOptions } from "@/auth";
+import { getUserChallengeStats } from "@/lib/challenges";
 import { getUserGamificationSummary } from "@/lib/gamification";
 import { prisma } from "@/lib/prisma";
 import ProfileForm from "./ui/profile-form";
@@ -37,7 +38,10 @@ export default async function ProfilePage() {
     redirect("/auth/login");
   }
 
-  const gamification = await getUserGamificationSummary(user.id);
+  const [gamification, challengeStats] = await Promise.all([
+    getUserGamificationSummary(user.id),
+    getUserChallengeStats(user.id),
+  ]);
 
   return (
     <main className="min-h-screen bg-[#02040a] text-white">
@@ -71,6 +75,7 @@ export default async function ProfilePage() {
             quiz: attempt.quiz,
           })),
         }}
+        challengeStats={challengeStats}
       />
       <SiteFooter />
     </main>

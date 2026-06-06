@@ -22,6 +22,9 @@ const hasCurrentModelDelegates = (client?: PrismaClient) => {
         achievement?: unknown;
         userAchievement?: unknown;
         choristerSpotlight?: unknown;
+        challenge?: unknown;
+        challengeSubmission?: unknown;
+        challengeVote?: unknown;
       }
     | undefined;
 
@@ -33,7 +36,10 @@ const hasCurrentModelDelegates = (client?: PrismaClient) => {
       maybeClient.leaderboardEntry &&
       maybeClient.achievement &&
       maybeClient.userAchievement &&
-      maybeClient.choristerSpotlight
+      maybeClient.choristerSpotlight &&
+      maybeClient.challenge &&
+      maybeClient.challengeSubmission &&
+      maybeClient.challengeVote
   );
 };
 
