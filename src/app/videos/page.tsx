@@ -20,6 +20,9 @@ const siteUrl = "https://www.jnc-choral.vercel.app";
 const description =
   "Watch Jude Nnam Choral performance videos, rehearsals, concert highlights, and behind-the-scenes media from JNC.";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Video Highlights",
   description,
@@ -44,7 +47,7 @@ export const metadata: Metadata = {
 
 export default async function VideosPage() {
   const items = await prisma.videoItem.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     select: {
       id: true,
       title: true,

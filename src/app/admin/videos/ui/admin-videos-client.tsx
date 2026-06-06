@@ -17,13 +17,24 @@ type Item = {
   videoUrl: string;
   posterUrl: string | null;
   publicId: string;
-  createdAt: Date;
+  createdAt: string;
 };
 
 async function getSignature() {
   const res = await fetch("/api/admin/cloudinary-signature");
   if (!res.ok) throw new Error("Failed to get signature");
   return res.json();
+}
+
+function getVideoPosterUrl(videoUrl: string) {
+  if (!videoUrl.includes("/video/upload/")) return null;
+
+  const withTransformation = videoUrl.replace("/video/upload/", "/video/upload/so_0/");
+  if (/\.[a-z0-9]+($|\?)/i.test(withTransformation)) {
+    return withTransformation.replace(/\.[a-z0-9]+($|\?)/i, ".jpg$1");
+  }
+
+  return `${withTransformation}.jpg`;
 }
 
 export default function AdminVideosClient({ initialItems }: { initialItems: Item[] }) {
@@ -80,10 +91,12 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
         const uploaded = await upload(file);
         const videoUrl = uploaded.secure_url as string;
         const publicId = uploaded.public_id as string;
+        const posterUrl = getVideoPosterUrl(videoUrl) ?? undefined;
 
         const res = await createVideoItemAction({
           videoUrl,
           publicId,
+          posterUrl,
           title: title.trim() || undefined,
         });
 
@@ -92,7 +105,9 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
           return;
         }
 
-        window.location.reload();
+        setItems((prev) => [res.item, ...prev]);
+        setTitle("");
+        e.target.value = "";
       } catch (err) {
         setError(getErrorMessage(err, "Upload error"));
       }
@@ -257,6 +272,8 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
             <video
               className="mt-3 w-full rounded-xl"
               controls
+              playsInline
+              preload="none"
               poster={x.posterUrl ?? undefined}
               src={x.videoUrl}
             />

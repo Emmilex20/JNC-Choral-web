@@ -4,7 +4,15 @@ import AdminVideosClient from "./ui/admin-videos-client";
 
 export default async function AdminVideosPage() {
   const items = await prisma.videoItem.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: {
+      id: true,
+      title: true,
+      videoUrl: true,
+      posterUrl: true,
+      publicId: true,
+      createdAt: true,
+    },
     take: 300,
   });
 
@@ -21,7 +29,12 @@ export default async function AdminVideosPage() {
         </div>
       </AdminPageHeader>
 
-      <AdminVideosClient initialItems={items} />
+      <AdminVideosClient
+        initialItems={items.map((item) => ({
+          ...item,
+          createdAt: item.createdAt.toISOString(),
+        }))}
+      />
     </div>
   );
 }

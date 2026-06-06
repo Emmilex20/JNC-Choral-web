@@ -5,10 +5,12 @@ import { authOptions } from "@/auth";
 import { isAdminSession } from "@/lib/authz";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
+import { revalidatePath } from "next/cache";
 
 const CreateSchema = z.object({
   videoUrl: z.string().url(),
   publicId: z.string().min(2),
+  posterUrl: z.string().url().optional(),
   title: z.string().optional(),
 });
 
@@ -19,11 +21,20 @@ export async function createVideoItemAction(input: unknown) {
   const parsed = CreateSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
-  await prisma.videoItem.create({
+  const item = await prisma.videoItem.create({
     data: {
       videoUrl: parsed.data.videoUrl,
       publicId: parsed.data.publicId,
+      posterUrl: parsed.data.posterUrl ?? null,
       title: parsed.data.title?.trim() || null,
+    },
+    select: {
+      id: true,
+      title: true,
+      videoUrl: true,
+      posterUrl: true,
+      publicId: true,
+      createdAt: true,
     },
   });
 
@@ -36,7 +47,17 @@ export async function createVideoItemAction(input: unknown) {
     },
   });
 
-  return { ok: true as const };
+  revalidatePath("/videos");
+  revalidatePath("/admin/videos");
+  revalidatePath("/news");
+
+  return {
+    ok: true as const,
+    item: {
+      ...item,
+      createdAt: item.createdAt.toISOString(),
+    },
+  };
 }
 
 const DeleteSchema = z.object({ id: z.string().min(1) });
@@ -49,6 +70,8 @@ export async function deleteVideoItemAction(input: unknown) {
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
   await prisma.videoItem.delete({ where: { id: parsed.data.id } });
+  revalidatePath("/videos");
+  revalidatePath("/admin/videos");
   return { ok: true as const };
 }
 
@@ -69,6 +92,8 @@ export async function updateVideoTitleAction(input: unknown) {
     data: { title: parsed.data.title?.trim() || null },
   });
 
+  revalidatePath("/videos");
+  revalidatePath("/admin/videos");
   return { ok: true as const };
 }
 
@@ -89,5 +114,7 @@ export async function updateVideoPosterAction(input: unknown) {
     data: { posterUrl: parsed.data.posterUrl },
   });
 
+  revalidatePath("/videos");
+  revalidatePath("/admin/videos");
   return { ok: true as const };
 }
