@@ -39,6 +39,7 @@ enum ApplicationStatus {
 enum AttendanceStatus {
   PRESENT
   ABSENT
+  EXCUSED
 }
 
 enum MusicSheetAudience {
@@ -327,6 +328,8 @@ model AttendanceRecord {
   rehearsalId  String
   userId       String
   status       AttendanceStatus @default(PRESENT)
+  excuseNote   String?
+  autoMarked   Boolean          @default(false)
   markedAt     DateTime         @default(now())
   confirmedAt  DateTime?
   confirmedBy  String?

@@ -3,6 +3,10 @@
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import {
+  ATTENDANCE_STATUSES,
+  getAttendanceWindowState,
+} from "@/lib/attendance-policy";
 import { prisma } from "@/lib/prisma";
 
 function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean }) {
@@ -83,7 +87,8 @@ export async function upsertChoristerProfileAction(input: unknown) {
 
 const MarkAttendanceSchema = z.object({
   rehearsalId: z.string().min(1),
-  status: z.enum(["PRESENT", "ABSENT"]).default("PRESENT"),
+  status: z.enum(ATTENDANCE_STATUSES).default("PRESENT"),
+  excuseNote: z.string().max(500).optional(),
 });
 
 export async function markAttendanceAction(input: unknown) {
@@ -99,6 +104,53 @@ export async function markAttendanceAction(input: unknown) {
   const parsed = MarkAttendanceSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
+  const rehearsal = await prisma.rehearsal.findUnique({
+    where: { id: parsed.data.rehearsalId },
+    select: { id: true, startsAt: true },
+  });
+
+  if (!rehearsal) return { ok: false as const, error: "Rehearsal not found" };
+
+  const windowState = getAttendanceWindowState(rehearsal.startsAt);
+  if (windowState === "UPCOMING") {
+    return {
+      ok: false as const,
+      error: "Attendance opens on the rehearsal day.",
+    };
+  }
+
+  if (windowState === "CLOSED") {
+    return {
+      ok: false as const,
+      error: "Attendance marking has closed for this rehearsal.",
+    };
+  }
+
+  const existingRecord = await prisma.attendanceRecord.findUnique({
+    where: {
+      rehearsalId_userId: {
+        rehearsalId: parsed.data.rehearsalId,
+        userId: user.id,
+      },
+    },
+    select: { confirmedAt: true },
+  });
+
+  if (existingRecord?.confirmedAt) {
+    return {
+      ok: false as const,
+      error: "This attendance record has already been approved.",
+    };
+  }
+
+  const excuseNote = parsed.data.excuseNote?.trim() ?? "";
+  if (parsed.data.status === "EXCUSED" && excuseNote.length < 3) {
+    return {
+      ok: false as const,
+      error: "Please add a short excuse note.",
+    };
+  }
+
   await prisma.attendanceRecord.upsert({
     where: {
       rehearsalId_userId: {
@@ -110,9 +162,13 @@ export async function markAttendanceAction(input: unknown) {
       rehearsalId: parsed.data.rehearsalId,
       userId: user.id,
       status: parsed.data.status,
+      excuseNote: parsed.data.status === "EXCUSED" ? excuseNote : null,
+      autoMarked: false,
     },
     update: {
       status: parsed.data.status,
+      excuseNote: parsed.data.status === "EXCUSED" ? excuseNote : null,
+      autoMarked: false,
       confirmedAt: null,
       confirmedBy: null,
       markedAt: new Date(),

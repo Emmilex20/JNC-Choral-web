@@ -2,6 +2,8 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
+import { materializeAutoAbsences } from "@/lib/attendance-auto";
+import { getAttendanceWindow, getAttendanceWindowState } from "@/lib/attendance-policy";
 import { getMusicSheetAccess, listVisibleMusicSheets } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth";
@@ -35,6 +37,11 @@ export default async function ChoristersPage() {
 
   if (!user || !canAccess(user)) redirect("/");
 
+  const now = new Date();
+  if (user.isChorister && user.choristerVerified) {
+    await materializeAutoAbsences(prisma, { userId: user.id, now });
+  }
+
   const musicSheetAccess = await getMusicSheetAccess(session);
 
   const [profile, notices, rehearsals, attendance, sheets] = await Promise.all([
@@ -59,7 +66,6 @@ export default async function ChoristersPage() {
     listVisibleMusicSheets(musicSheetAccess),
   ]);
 
-  const now = new Date();
   const completedRehearsals = rehearsals.filter((r) => r.startsAt <= now);
   const confirmedAttendance = attendance.filter(
     (a) => a.confirmedAt && a.status === "PRESENT"
@@ -118,16 +124,28 @@ export default async function ChoristersPage() {
     createdAt: n.createdAt.toISOString(),
   }));
 
-  const serializedRehearsals = rehearsals.map((r) => ({
-    id: r.id,
-    title: r.title,
-    startsAt: r.startsAt.toISOString(),
-  }));
+  const serializedRehearsals = rehearsals.map((r) => {
+    const attendanceWindow = getAttendanceWindow(r.startsAt);
+
+    return {
+      id: r.id,
+      title: r.title,
+      startsAt: r.startsAt.toISOString(),
+      attendanceWindow: {
+        opensAt: attendanceWindow.opensAt.toISOString(),
+        closesAt: attendanceWindow.closesAt.toISOString(),
+        state: getAttendanceWindowState(r.startsAt, now),
+      },
+    };
+  });
 
   const serializedAttendance = attendance.map((a) => ({
     id: a.id,
     rehearsalId: a.rehearsalId,
     status: a.status,
+    markedAt: a.markedAt.toISOString(),
+    excuseNote: a.excuseNote,
+    autoMarked: a.autoMarked,
     confirmedAt: a.confirmedAt ? a.confirmedAt.toISOString() : null,
     rehearsal: {
       id: a.rehearsal.id,

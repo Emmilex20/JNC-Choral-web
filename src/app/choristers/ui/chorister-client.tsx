@@ -47,12 +47,20 @@ type Rehearsal = {
   id: string;
   title: string;
   startsAt: string;
+  attendanceWindow: {
+    opensAt: string;
+    closesAt: string;
+    state: "UPCOMING" | "OPEN" | "CLOSED";
+  };
 };
 
 type Attendance = {
   id: string;
   rehearsalId: string;
-  status: "PRESENT" | "ABSENT";
+  status: "PRESENT" | "ABSENT" | "EXCUSED";
+  markedAt: string;
+  excuseNote: string | null;
+  autoMarked: boolean;
   confirmedAt: string | null;
   rehearsal: {
     id: string;
@@ -113,9 +121,18 @@ function audienceLabel(audience: Sheet["audience"]) {
 }
 
 function attendanceRecordLabel(record: Attendance | undefined) {
-  if (!record) return "Ready to mark present or absent";
+  if (!record) return "Ready to mark present, absent, or excused";
 
-  const statusLabel = record.status === "ABSENT" ? "Absence" : "Presence";
+  if (record.autoMarked) {
+    return "Automatically marked absent after the marking window closed";
+  }
+
+  const statusLabel =
+    record.status === "EXCUSED"
+      ? "Excuse"
+      : record.status === "ABSENT"
+        ? "Absence"
+        : "Presence";
   if (record.confirmedAt) {
     return `${statusLabel} approved on ${formatDate(record.confirmedAt)}`;
   }
@@ -142,6 +159,7 @@ export default function ChoristerClient({
   const [uploadingPassport, setUploadingPassport] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [excuseNotes, setExcuseNotes] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     phone: profile?.phone ?? "",
     address: profile?.address ?? "",
@@ -229,11 +247,15 @@ export default function ChoristerClient({
     });
   }
 
-  function markAttendance(rehearsalId: string, status: Attendance["status"]) {
+  function markAttendance(
+    rehearsalId: string,
+    status: Attendance["status"],
+    excuseNote?: string
+  ) {
     setError(null);
     setStatusMessage(null);
     startTransition(async () => {
-      const res = await markAttendanceAction({ rehearsalId, status });
+      const res = await markAttendanceAction({ rehearsalId, status, excuseNote });
       if (!res.ok) {
         setError(res.error);
         return;
@@ -550,7 +572,7 @@ export default function ChoristerClient({
                   Rehearsal Deck
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">
-                  Mark presence or absence with clarity
+                  Mark attendance or submit an excuse
                 </h2>
               </div>
               <Badge className="rounded-full bg-white/10 px-4 py-1.5 text-white hover:bg-white/10">
@@ -566,17 +588,43 @@ export default function ChoristerClient({
               ) : (
                 sortedRehearsals.map((rehearsal) => {
                   const record = attendanceMap.get(rehearsal.id);
+                  const canMark =
+                    rehearsal.attendanceWindow.state === "OPEN" &&
+                    !record?.confirmedAt &&
+                    !record?.autoMarked;
+                  const excuseNote =
+                    excuseNotes[rehearsal.id] ?? record?.excuseNote ?? "";
+                  const windowLabel =
+                    rehearsal.attendanceWindow.state === "UPCOMING"
+                      ? `Opens ${formatDateTime(rehearsal.attendanceWindow.opensAt)}`
+                      : rehearsal.attendanceWindow.state === "OPEN"
+                        ? `Open until ${formatDateTime(rehearsal.attendanceWindow.closesAt)}`
+                        : "Marking window closed";
+                  const windowClass =
+                    rehearsal.attendanceWindow.state === "OPEN"
+                      ? "border-cyan-300/15 bg-cyan-300/10 text-cyan-100"
+                      : rehearsal.attendanceWindow.state === "UPCOMING"
+                        ? "border-white/10 bg-white/5 text-white/65"
+                        : "border-rose-300/15 bg-rose-300/10 text-rose-100";
+
                   return (
                     <div
                       key={rehearsal.id}
                       className="rounded-[1.5rem] border border-white/10 bg-black/28 p-4 backdrop-blur-sm"
                     >
-                      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                         <div className="min-w-0">
                           <p className="text-lg font-semibold text-white">{rehearsal.title}</p>
-                          <p className="mt-1 text-sm text-white/60">{formatDateTime(rehearsal.startsAt)}</p>
+                          <p className="mt-1 text-sm text-white/60">
+                            {formatDateTime(rehearsal.startsAt)}
+                          </p>
+                          <div
+                            className={`mt-3 inline-flex rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${windowClass}`}
+                          >
+                            {windowLabel}
+                          </div>
                         </div>
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div className="flex flex-col gap-3 lg:items-end">
                           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/72">
                             {attendanceRecordLabel(record)}
                           </div>
@@ -587,7 +635,7 @@ export default function ChoristerClient({
                               onClick={() => markAttendance(rehearsal.id, "PRESENT")}
                               disabled={
                                 isPending ||
-                                Boolean(record?.confirmedAt) ||
+                                !canMark ||
                                 record?.status === "PRESENT"
                               }
                             >
@@ -600,16 +648,57 @@ export default function ChoristerClient({
                               onClick={() => markAttendance(rehearsal.id, "ABSENT")}
                               disabled={
                                 isPending ||
-                                Boolean(record?.confirmedAt) ||
+                                !canMark ||
                                 record?.status === "ABSENT"
                               }
                             >
                               <CircleX className="h-4 w-4" />
                               {record?.status === "ABSENT" ? "Absent marked" : "Mark Absent"}
                             </Button>
+                            <Button
+                              variant="outline"
+                              className="rounded-full border-amber-300/20 bg-amber-300/10 px-5 text-amber-100 hover:bg-amber-300/15"
+                              onClick={() =>
+                                markAttendance(rehearsal.id, "EXCUSED", excuseNote)
+                              }
+                              disabled={
+                                isPending ||
+                                !canMark ||
+                                record?.status === "EXCUSED" ||
+                                excuseNote.trim().length < 3
+                              }
+                            >
+                              <FileText className="h-4 w-4" />
+                              {record?.status === "EXCUSED" ? "Excuse sent" : "Send Excuse"}
+                            </Button>
                           </div>
                         </div>
                       </div>
+                      {canMark || record?.status === "EXCUSED" ? (
+                        <div className="mt-4 rounded-[1.25rem] border border-amber-300/12 bg-amber-300/8 p-4">
+                          <label
+                            htmlFor={`excuse-${rehearsal.id}`}
+                            className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-100/70"
+                          >
+                            Excuse note
+                          </label>
+                          <textarea
+                            id={`excuse-${rehearsal.id}`}
+                            value={excuseNote}
+                            onChange={(e) =>
+                              setExcuseNotes((current) => ({
+                                ...current,
+                                [rehearsal.id]: e.target.value,
+                              }))
+                            }
+                            rows={3}
+                            maxLength={500}
+                            disabled={!canMark}
+                            placeholder="Briefly tell admin why you need to be excused."
+                            className="mt-3 w-full resize-none rounded-2xl border border-white/10 bg-black/35 p-3 text-sm text-white outline-none placeholder:text-white/35 disabled:opacity-70"
+                          />
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })

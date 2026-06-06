@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { getAttendanceWindowState } from "@/lib/attendance-policy";
 import { isAdminSession } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
 
@@ -131,6 +132,38 @@ export async function rejectAttendanceAction(input: unknown) {
 
   const parsed = ConfirmAttendanceSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
+
+  const record = await prisma.attendanceRecord.findUnique({
+    where: { id: parsed.data.id },
+    include: { rehearsal: { select: { startsAt: true } } },
+  });
+
+  if (!record) return { ok: true as const };
+
+  if (getAttendanceWindowState(record.rehearsal.startsAt) === "CLOSED") {
+    const now = new Date();
+    const updated = await prisma.attendanceRecord.update({
+      where: { id: parsed.data.id },
+      data: {
+        status: "ABSENT",
+        excuseNote: null,
+        autoMarked: true,
+        markedAt: now,
+        confirmedAt: now,
+        confirmedBy: "system",
+      },
+    });
+    return {
+      ok: true as const,
+      record: {
+        status: updated.status,
+        excuseNote: updated.excuseNote,
+        autoMarked: updated.autoMarked,
+        markedAt: updated.markedAt.toISOString(),
+        confirmedAt: updated.confirmedAt ? updated.confirmedAt.toISOString() : null,
+      },
+    };
+  }
 
   await prisma.attendanceRecord.delete({ where: { id: parsed.data.id } });
   return { ok: true as const };

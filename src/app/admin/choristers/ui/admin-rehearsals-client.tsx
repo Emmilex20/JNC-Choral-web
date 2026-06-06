@@ -24,9 +24,29 @@ type PendingAttendance = {
   rehearsalDate: string;
   userName: string | null;
   userEmail: string | null;
-  status: "PRESENT" | "ABSENT";
+  status: "PRESENT" | "ABSENT" | "EXCUSED";
+  excuseNote: string | null;
+  autoMarked: boolean;
   markedAt: string;
 };
+
+function requestBadgeClass(status: PendingAttendance["status"]) {
+  if (status === "EXCUSED") {
+    return "mt-3 rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20";
+  }
+
+  if (status === "ABSENT") {
+    return "mt-3 rounded-full bg-rose-500/15 text-rose-100 hover:bg-rose-500/20";
+  }
+
+  return "mt-3 rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20";
+}
+
+function requestLabel(status: PendingAttendance["status"]) {
+  if (status === "EXCUSED") return "Excuse request";
+  if (status === "ABSENT") return "Absent request";
+  return "Present request";
+}
 
 export default function AdminRehearsalsClient({
   initialRehearsals,
@@ -158,9 +178,9 @@ export default function AdminRehearsalsClient({
 
       <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6 md:p-8">
         <p className="text-xs uppercase tracking-[0.22em] text-white/45">Attendance Queue</p>
-        <h3 className="mt-2 text-xl font-semibold text-white">Pending confirmations</h3>
+        <h3 className="mt-2 text-xl font-semibold text-white">Pending attendance</h3>
         <p className="mt-2 text-sm text-white/60">
-          Choristers have submitted presence or absence requests. Approve or reject below.
+          Choristers have submitted attendance and excuse requests. Approve or decline below.
         </p>
         <div className="mt-4 grid gap-3">
           {pending.length === 0 ? (
@@ -181,15 +201,14 @@ export default function AdminRehearsalsClient({
                     <p className="text-xs text-white/60">
                       {new Date(p.rehearsalDate).toLocaleString()}
                     </p>
-                    <Badge
-                      className={
-                        p.status === "ABSENT"
-                          ? "mt-3 rounded-full bg-rose-500/15 text-rose-100 hover:bg-rose-500/20"
-                          : "mt-3 rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20"
-                      }
-                    >
-                      {p.status === "ABSENT" ? "Absent request" : "Present request"}
+                    <Badge className={requestBadgeClass(p.status)}>
+                      {requestLabel(p.status)}
                     </Badge>
+                    {p.excuseNote ? (
+                      <p className="mt-3 rounded-2xl border border-amber-300/15 bg-amber-300/8 p-3 text-sm leading-6 text-amber-50/85">
+                        {p.excuseNote}
+                      </p>
+                    ) : null}
                     <p className="mt-3 text-xs uppercase tracking-[0.18em] text-white/45">
                       Marked {new Date(p.markedAt).toLocaleString()}
                     </p>
@@ -208,7 +227,7 @@ export default function AdminRehearsalsClient({
                       onClick={() => rejectAttendance(p.id)}
                       disabled={isPending}
                     >
-                      Reject
+                      {p.status === "EXCUSED" ? "Decline" : "Reject"}
                     </Button>
                   </div>
                 </div>

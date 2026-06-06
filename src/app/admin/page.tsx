@@ -4,6 +4,7 @@ import {
   DEFAULT_AUDITION_ANTICIPATION_TEXT,
   getCurrentAuditionSetting,
 } from "@/lib/audition-settings";
+import { materializeAutoAbsences } from "@/lib/attendance-auto";
 import { getEventResponseRowsMap } from "@/lib/event-responses";
 import { listMusicSheetsForAdmin } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
@@ -78,6 +79,8 @@ function AdminSection({
 }
 
 export default async function AdminPage() {
+  await materializeAutoAbsences(prisma);
+
   const [
     rows,
     events,
@@ -179,6 +182,8 @@ export default async function AdminPage() {
     userName: p.user.name,
     userEmail: p.user.email,
     status: p.status,
+    excuseNote: p.excuseNote,
+    autoMarked: p.autoMarked,
     markedAt: p.markedAt.toISOString(),
   }));
 
@@ -194,7 +199,7 @@ export default async function AdminPage() {
     {
       label: "Review queue",
       value: formatCompactNumber(reviewQueueCount),
-      detail: `${pendingAuditions} auditions, ${pendingChoristers.length} chorister requests, ${pendingAttendance.length} attendance confirmations`,
+      detail: `${pendingAuditions} auditions, ${pendingChoristers.length} chorister requests, ${pendingAttendance.length} attendance requests`,
     },
     {
       label: "Published updates",
@@ -320,7 +325,7 @@ export default async function AdminPage() {
       id: "rehearsals",
       title: "Rehearsals & Attendance",
       eyebrow: "Operations",
-      description: "Create rehearsals and close the loop on attendance confirmations from a single responsive workspace.",
+      description: "Create rehearsals and close the loop on attendance and excuse requests from a single responsive workspace.",
       countLabel: formatCountLabel(rehearsals.length, "rehearsals"),
       content: (
         <AdminRehearsalsClient
@@ -383,6 +388,8 @@ export default async function AdminPage() {
               startsAt: a.rehearsal.startsAt.toISOString(),
               status: a.status,
               markedAt: a.markedAt.toISOString(),
+              excuseNote: a.excuseNote,
+              autoMarked: a.autoMarked,
               confirmedAt: a.confirmedAt ? a.confirmedAt.toISOString() : null,
             })),
           }))}
@@ -507,7 +514,7 @@ export default async function AdminPage() {
               <strong>{pendingChoristers.length}</strong>
             </div>
             <div className="admin-rail-stat">
-              <span className="admin-subtle">Attendance confirmations</span>
+              <span className="admin-subtle">Attendance requests</span>
               <strong>{pendingAttendance.length}</strong>
             </div>
             <div className="admin-rail-stat">

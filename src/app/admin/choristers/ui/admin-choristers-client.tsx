@@ -25,8 +25,10 @@ type AttendanceRow = {
   id: string;
   rehearsalTitle: string;
   startsAt: string;
-  status: "PRESENT" | "ABSENT";
+  status: "PRESENT" | "ABSENT" | "EXCUSED";
   markedAt: string;
+  excuseNote: string | null;
+  autoMarked: boolean;
   confirmedAt: string | null;
 };
 
@@ -42,6 +44,29 @@ type ChoristerRow = {
 
 function valueOrFallback(value: string | null | undefined) {
   return value && value.trim() ? value : "-";
+}
+
+function attendanceStatusLabel(row: AttendanceRow) {
+  if (row.autoMarked) return "Auto absent";
+  if (row.status === "EXCUSED") return "Excused";
+  if (row.status === "ABSENT") return "Absent";
+  return "Present";
+}
+
+function attendanceStatusClass(row: AttendanceRow) {
+  if (row.autoMarked) {
+    return "rounded-full bg-slate-500/15 text-slate-100 hover:bg-slate-500/20";
+  }
+
+  if (row.status === "EXCUSED") {
+    return "rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20";
+  }
+
+  if (row.status === "ABSENT") {
+    return "rounded-full bg-rose-500/15 text-rose-100 hover:bg-rose-500/20";
+  }
+
+  return "rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20";
 }
 
 export default function AdminChoristersClient({
@@ -62,7 +87,9 @@ export default function AdminChoristersClient({
   }, [selected]);
 
   const attendanceStats = useMemo(() => {
-    if (!selected) return { total: 0, confirmed: 0, present: 0, absent: 0 };
+    if (!selected) {
+      return { total: 0, confirmed: 0, present: 0, absent: 0, excused: 0, autoAbsent: 0 };
+    }
     const total = selected.attendance.length;
     const confirmed = selected.attendance.filter((a) => a.confirmedAt).length;
     const present = selected.attendance.filter(
@@ -71,7 +98,13 @@ export default function AdminChoristersClient({
     const absent = selected.attendance.filter(
       (a) => a.status === "ABSENT" && a.confirmedAt
     ).length;
-    return { total, confirmed, present, absent };
+    const excused = selected.attendance.filter(
+      (a) => a.status === "EXCUSED" && a.confirmedAt
+    ).length;
+    const autoAbsent = selected.attendance.filter(
+      (a) => a.status === "ABSENT" && a.autoMarked && a.confirmedAt
+    ).length;
+    return { total, confirmed, present, absent, excused, autoAbsent };
   }, [selected]);
 
   const profileDetails = useMemo(() => {
@@ -153,9 +186,27 @@ export default function AdminChoristersClient({
     startTransition(async () => {
       const res = await rejectAttendanceAction({ id });
       if (!res.ok) return;
+      const updatedRecord = "record" in res && res.record ? res.record : null;
       setSelected((prev) =>
         prev
-          ? { ...prev, attendance: prev.attendance.filter((a) => a.id !== id) }
+          ? {
+              ...prev,
+              attendance:
+                updatedRecord
+                  ? prev.attendance.map((a) =>
+                      a.id === id
+                        ? {
+                            ...a,
+                            status: updatedRecord.status,
+                            excuseNote: updatedRecord.excuseNote,
+                            autoMarked: updatedRecord.autoMarked,
+                            markedAt: updatedRecord.markedAt,
+                            confirmedAt: updatedRecord.confirmedAt,
+                          }
+                        : a
+                    )
+                  : prev.attendance.filter((a) => a.id !== id),
+            }
           : prev
       );
     });
@@ -301,12 +352,17 @@ export default function AdminChoristersClient({
                             key={a.id}
                             className="rounded-2xl border border-white/10 bg-black/30 p-4"
                           >
-                            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                               <div>
                                 <p className="font-semibold text-white">{a.rehearsalTitle}</p>
                                 <p className="mt-1 text-xs text-white/60">
                                   {new Date(a.startsAt).toLocaleString()}
                                 </p>
+                                {a.excuseNote ? (
+                                  <p className="mt-3 rounded-2xl border border-amber-300/15 bg-amber-300/8 p-3 text-sm leading-6 text-amber-50/85">
+                                    {a.excuseNote}
+                                  </p>
+                                ) : null}
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 {a.confirmedAt ? (
@@ -318,14 +374,8 @@ export default function AdminChoristersClient({
                                     Pending
                                   </Badge>
                                 )}
-                                <Badge
-                                  className={
-                                    a.status === "ABSENT"
-                                      ? "rounded-full bg-rose-500/15 text-rose-100 hover:bg-rose-500/20"
-                                      : "rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20"
-                                  }
-                                >
-                                  {a.status === "ABSENT" ? "Absent" : "Present"}
+                                <Badge className={attendanceStatusClass(a)}>
+                                  {attendanceStatusLabel(a)}
                                 </Badge>
                                 <Badge className="rounded-full bg-white/10 text-white/70 hover:bg-white/10">
                                   Marked {new Date(a.markedAt).toLocaleDateString()}
@@ -345,7 +395,7 @@ export default function AdminChoristersClient({
                                       onClick={() => rejectAttendance(a.id)}
                                       disabled={isPending}
                                     >
-                                      Reject
+                                      {a.status === "EXCUSED" ? "Decline" : "Reject"}
                                     </Button>
                                   </>
                                 ) : null}
@@ -380,6 +430,18 @@ export default function AdminChoristersClient({
                         <p className="text-sm text-white/60">Approved absent</p>
                         <p className="mt-2 text-3xl font-semibold text-white">
                           {attendanceStats.absent}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                        <p className="text-sm text-white/60">Approved excused</p>
+                        <p className="mt-2 text-3xl font-semibold text-white">
+                          {attendanceStats.excused}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                        <p className="text-sm text-white/60">Auto absent</p>
+                        <p className="mt-2 text-3xl font-semibold text-white">
+                          {attendanceStats.autoAbsent}
                         </p>
                       </div>
                       <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
