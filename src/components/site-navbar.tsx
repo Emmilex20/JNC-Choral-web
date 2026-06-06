@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import NotificationBell from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -137,6 +138,7 @@ export default function SiteNavbar() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <NotificationBell />
           {isAuthed ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -189,7 +191,8 @@ export default function SiteNavbar() {
           )}
         </nav>
 
-        <div className="md:hidden">
+        <div className="flex items-center gap-2 md:hidden">
+          <NotificationBell compact />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-2xl text-white">

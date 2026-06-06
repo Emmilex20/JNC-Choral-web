@@ -5,6 +5,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { getAttendanceWindowState } from "@/lib/attendance-policy";
 import { isAdminSession } from "@/lib/authz";
+import {
+  createOrUpdateNotification,
+  deleteNotificationForSource,
+  NotificationAudience,
+  NotificationType,
+} from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 const NoticeCreateSchema = z.object({
@@ -30,6 +36,18 @@ export async function createChoristerNoticeAction(input: unknown) {
     },
   });
 
+  if (notice.isPublished) {
+    await createOrUpdateNotification({
+      audience: NotificationAudience.CHORISTERS,
+      type: NotificationType.CHORISTER_NOTICE,
+      sourceId: notice.id,
+      title: notice.title,
+      body: notice.body,
+      href: "/choristers#member-notices",
+      actorId: session.user.id,
+    });
+  }
+
   return { ok: true as const, notice };
 }
 
@@ -45,10 +63,28 @@ export async function toggleChoristerNoticeAction(input: unknown) {
   const parsed = NoticeToggleSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
-  await prisma.choristerNotice.update({
+  const notice = await prisma.choristerNotice.update({
     where: { id: parsed.data.id },
     data: { isPublished: parsed.data.isPublished },
   });
+
+  if (notice.isPublished) {
+    await createOrUpdateNotification({
+      audience: NotificationAudience.CHORISTERS,
+      type: NotificationType.CHORISTER_NOTICE,
+      sourceId: notice.id,
+      title: notice.title,
+      body: notice.body,
+      href: "/choristers#member-notices",
+      actorId: session.user.id,
+    });
+  } else {
+    await deleteNotificationForSource({
+      audience: NotificationAudience.CHORISTERS,
+      type: NotificationType.CHORISTER_NOTICE,
+      sourceId: notice.id,
+    });
+  }
 
   return { ok: true as const };
 }
@@ -63,6 +99,11 @@ export async function deleteChoristerNoticeAction(input: unknown) {
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
   await prisma.choristerNotice.delete({ where: { id: parsed.data.id } });
+  await deleteNotificationForSource({
+    audience: NotificationAudience.CHORISTERS,
+    type: NotificationType.CHORISTER_NOTICE,
+    sourceId: parsed.data.id,
+  });
   return { ok: true as const };
 }
 
@@ -90,6 +131,20 @@ export async function createRehearsalAction(input: unknown) {
     },
   });
 
+  await createOrUpdateNotification({
+    audience: NotificationAudience.CHORISTERS,
+    type: NotificationType.REHEARSAL_CREATED,
+    sourceId: rehearsal.id,
+    title: "New rehearsal scheduled",
+    body: `${rehearsal.title} is scheduled for ${rehearsal.startsAt.toLocaleString("en-NG", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Africa/Lagos",
+    })}.`,
+    href: "/choristers#rehearsal-deck",
+    actorId: session.user.id,
+  });
+
   return { ok: true as const, rehearsal };
 }
 
@@ -103,6 +158,11 @@ export async function deleteRehearsalAction(input: unknown) {
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
   await prisma.rehearsal.delete({ where: { id: parsed.data.id } });
+  await deleteNotificationForSource({
+    audience: NotificationAudience.CHORISTERS,
+    type: NotificationType.REHEARSAL_CREATED,
+    sourceId: parsed.data.id,
+  });
   return { ok: true as const };
 }
 

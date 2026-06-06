@@ -53,6 +53,21 @@ enum EventResponseStatus {
   NOT_ATTENDING
 }
 
+enum NotificationAudience {
+  ADMIN
+  CHORISTERS
+  PUBLIC
+}
+
+enum NotificationType {
+  CHORISTER_NOTICE
+  ATTENDANCE_MARKED
+  REHEARSAL_CREATED
+  PUBLIC_ANNOUNCEMENT
+  PUBLIC_EVENT
+  SYSTEM
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -74,6 +89,7 @@ model User {
   auditions     AuditionApplication[]
   choristerProfile ChoristerProfile?
   choristerAttendances AttendanceRecord[]
+  notificationReads NotificationRead[]
   profile       UserProfile?
 
   createdAt     DateTime  @default(now())
@@ -348,4 +364,36 @@ model AttendanceRecord {
   @@unique([rehearsalId, userId])
   @@index([userId])
   @@index([rehearsalId])
+}
+
+model Notification {
+  id        String               @id @default(cuid())
+  audience  NotificationAudience
+  type      NotificationType     @default(SYSTEM)
+  sourceId  String?
+  title     String
+  body      String
+  href      String?
+  actorId   String?
+  metadata  Json?
+  reads     NotificationRead[]
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+
+  @@unique([type, sourceId, audience])
+  @@index([audience, createdAt])
+  @@index([type, sourceId])
+}
+
+model NotificationRead {
+  id             String       @id @default(cuid())
+  notificationId String
+  userId         String
+  readAt         DateTime     @default(now())
+
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+  @@index([userId, readAt])
 }

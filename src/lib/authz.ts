@@ -1,5 +1,12 @@
 import type { Session } from "next-auth";
 
-export function isAdminSession(session: Session | null) {
-  return session?.user?.role === "ADMIN";
+type AdminSession = Session & {
+  user: Session["user"] & {
+    id: string;
+    role: "ADMIN";
+  };
+};
+
+export function isAdminSession(session: Session | null): session is AdminSession {
+  return session?.user?.role === "ADMIN" && Boolean(session.user.id);
 }

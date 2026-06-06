@@ -7,6 +7,11 @@ import {
   ATTENDANCE_STATUSES,
   getAttendanceWindowState,
 } from "@/lib/attendance-policy";
+import {
+  createOrUpdateNotification,
+  NotificationAudience,
+  NotificationType,
+} from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
 
 function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean }) {
@@ -34,7 +39,14 @@ export async function upsertChoristerProfileAction(input: unknown) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, isChorister: true, choristerVerified: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isChorister: true,
+      choristerVerified: true,
+    },
   });
   if (!user || !canAccess(user)) return { ok: false as const, error: "Unauthorized" };
 
@@ -97,7 +109,14 @@ export async function markAttendanceAction(input: unknown) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, isChorister: true, choristerVerified: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isChorister: true,
+      choristerVerified: true,
+    },
   });
   if (!user || !canAccess(user)) return { ok: false as const, error: "Unauthorized" };
 
@@ -106,7 +125,7 @@ export async function markAttendanceAction(input: unknown) {
 
   const rehearsal = await prisma.rehearsal.findUnique({
     where: { id: parsed.data.rehearsalId },
-    select: { id: true, startsAt: true },
+    select: { id: true, title: true, startsAt: true },
   });
 
   if (!rehearsal) return { ok: false as const, error: "Rehearsal not found" };
@@ -151,7 +170,7 @@ export async function markAttendanceAction(input: unknown) {
     };
   }
 
-  await prisma.attendanceRecord.upsert({
+  const record = await prisma.attendanceRecord.upsert({
     where: {
       rehearsalId_userId: {
         rehearsalId: parsed.data.rehearsalId,
@@ -172,6 +191,35 @@ export async function markAttendanceAction(input: unknown) {
       confirmedAt: null,
       confirmedBy: null,
       markedAt: new Date(),
+    },
+    select: {
+      id: true,
+      status: true,
+      excuseNote: true,
+    },
+  });
+
+  const choristerName = user.name || user.email || "A chorister";
+  const statusLabel =
+    record.status === "EXCUSED"
+      ? "submitted an excuse"
+      : record.status === "ABSENT"
+        ? "marked absent"
+        : "marked present";
+
+  await createOrUpdateNotification({
+    audience: NotificationAudience.ADMIN,
+    type: NotificationType.ATTENDANCE_MARKED,
+    sourceId: record.id,
+    title: "Attendance needs review",
+    body: `${choristerName} ${statusLabel} for ${rehearsal.title}.${
+      record.excuseNote ? ` Note: ${record.excuseNote}` : ""
+    }`,
+    href: "/admin/rehearsals",
+    actorId: user.id,
+    metadata: {
+      rehearsalId: rehearsal.id,
+      status: record.status,
     },
   });
 

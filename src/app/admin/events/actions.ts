@@ -3,6 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth";
 import { isAdminSession } from "@/lib/authz";
+import {
+  createOrUpdateNotification,
+  deleteNotificationForSource,
+  NotificationAudience,
+  NotificationType,
+} from "@/lib/notifications";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 
@@ -67,7 +73,7 @@ export async function updateEventAction(input: unknown) {
 
   const d = parsed.data;
 
-  await prisma.event.update({
+  const event = await prisma.event.update({
     where: { id: d.id },
     data: {
       title: d.title,
@@ -81,6 +87,22 @@ export async function updateEventAction(input: unknown) {
       endsAt: d.endsAt?.trim() ? new Date(d.endsAt) : null,
     },
   });
+
+  if (event.isPublished) {
+    await createOrUpdateNotification({
+      audience: NotificationAudience.PUBLIC,
+      type: NotificationType.PUBLIC_EVENT,
+      sourceId: event.id,
+      title: "Public event updated",
+      body: `${event.title} is scheduled for ${event.startsAt.toLocaleString("en-NG", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Africa/Lagos",
+      })}.`,
+      href: "/events",
+      actorId: session.user.id,
+    });
+  }
 
   return { ok: true as const };
 }
@@ -97,10 +119,32 @@ export async function toggleEventPublishAction(input: unknown) {
   const parsed = ToggleSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
-  await prisma.event.update({
+  const event = await prisma.event.update({
     where: { id: parsed.data.id },
     data: { isPublished: parsed.data.isPublished },
   });
+
+  if (event.isPublished) {
+    await createOrUpdateNotification({
+      audience: NotificationAudience.PUBLIC,
+      type: NotificationType.PUBLIC_EVENT,
+      sourceId: event.id,
+      title: "New public event",
+      body: `${event.title} is now published for ${event.startsAt.toLocaleString("en-NG", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Africa/Lagos",
+      })}.`,
+      href: "/events",
+      actorId: session.user.id,
+    });
+  } else {
+    await deleteNotificationForSource({
+      audience: NotificationAudience.PUBLIC,
+      type: NotificationType.PUBLIC_EVENT,
+      sourceId: event.id,
+    });
+  }
 
   return { ok: true as const };
 }
@@ -115,5 +159,10 @@ export async function deleteEventAction(input: unknown) {
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
   await prisma.event.delete({ where: { id: parsed.data.id } });
+  await deleteNotificationForSource({
+    audience: NotificationAudience.PUBLIC,
+    type: NotificationType.PUBLIC_EVENT,
+    sourceId: parsed.data.id,
+  });
   return { ok: true as const };
 }
