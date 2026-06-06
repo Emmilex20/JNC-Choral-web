@@ -6,6 +6,23 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 
+type JwtUser = {
+  id?: string;
+  role?: string | null;
+  image?: string | null;
+  onboardingComplete?: boolean;
+};
+
+type SessionUserUpdate = {
+  name?: string | null;
+  image?: string | null;
+  onboardingComplete?: boolean;
+};
+
+type SessionUpdatePayload = SessionUserUpdate & {
+  user?: SessionUserUpdate;
+};
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: {
@@ -44,7 +61,9 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
+          image: user.image,
           role: user.role,
+          onboardingComplete: user.onboardingComplete,
         };
       },
     }),
@@ -53,27 +72,28 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.id = (user as any).id;
-        token.role = (user as any).role;
+        const authUser = user as typeof user & JwtUser;
+        token.id = authUser.id;
+        token.role = authUser.role;
         token.name = user.name;
         token.email = user.email;
-        token.picture = (user as any).image;
-        token.onboardingComplete = (user as any).onboardingComplete;
+        token.picture = authUser.image;
+        token.onboardingComplete = authUser.onboardingComplete;
       }
-      if (trigger === "update" && session?.user) {
-        token.name = session.user.name;
-        token.picture = (session.user as any).image ?? token.picture;
+      if (trigger === "update" && session) {
+        const updatePayload = session as SessionUpdatePayload;
+        const updatedUser = updatePayload.user ?? updatePayload;
+        token.name = updatedUser.name ?? token.name;
+        token.picture = updatedUser.image ?? token.picture;
         token.onboardingComplete =
-          (session.user as any).onboardingComplete ?? token.onboardingComplete;
+          updatedUser.onboardingComplete ?? token.onboardingComplete;
       }
-      if (token.id && token.onboardingComplete === false) {
+      if (token.id && token.onboardingComplete !== true) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: { onboardingComplete: true },
         });
-        if (dbUser?.onboardingComplete) {
-          token.onboardingComplete = true;
-        }
+        token.onboardingComplete = dbUser?.onboardingComplete ?? false;
       }
       return token;
     },

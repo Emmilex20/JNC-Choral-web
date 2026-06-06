@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   BellRing,
@@ -15,6 +16,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/lib/errors";
 import { markAttendanceAction, upsertChoristerProfileAction } from "../actions";
 
 type Profile = {
@@ -240,8 +242,8 @@ export default function ChoristerClient({
       const imageUrl = uploaded.secure_url as string;
       setForm((current) => ({ ...current, passportImageUrl: imageUrl }));
       setStatusMessage("Passport image uploaded. Save profile to store it.");
-    } catch (err: any) {
-      setError(err?.message ?? "Passport upload failed");
+    } catch (err) {
+      setError(getErrorMessage(err, "Passport upload failed"));
     } finally {
       setUploadingPassport(false);
       e.target.value = "";
@@ -494,12 +496,14 @@ export default function ChoristerClient({
                   </label>
                 </div>
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <div className="h-28 w-28 overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/40">
+                  <div className="relative h-28 w-28 overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/40">
                     {form.passportImageUrl ? (
-                      <img
+                      <Image
                         src={form.passportImageUrl}
                         alt="Passport"
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="112px"
+                        className="object-cover"
                       />
                     ) : null}
                   </div>

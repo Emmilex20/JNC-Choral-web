@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Download, FileText, Lock } from "lucide-react";
 
@@ -107,11 +108,13 @@ export default function MusicClient({
                 <p className="text-sm font-semibold text-white">
                   {track.title ?? "Untitled Track"}
                 </p>
-                <div className="mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/50">
-                  <img
+                <div className="relative mt-3 h-40 overflow-hidden rounded-xl border border-white/10 bg-black/50">
+                  <Image
                     src={mediaPoster}
                     alt="Track cover"
-                    className="h-40 w-full object-cover"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover"
                   />
                 </div>
                 <audio className="mt-3 w-full" controls src={track.audioUrl} />

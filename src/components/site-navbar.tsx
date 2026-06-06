@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,14 +47,12 @@ const adminNav = [
 
 export default function SiteNavbar() {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
   const { data: session, status } = useSession();
   const isAuthed = status === "authenticated";
-  const role = (session?.user as { role?: string } | null)?.role;
-  const avatar = (session?.user as { image?: string } | null)?.image;
-  const onboardingComplete = Boolean(
-    (session?.user as { onboardingComplete?: boolean } | null)?.onboardingComplete
-  );
+  const role = session?.user?.role;
+  const avatar = session?.user?.image;
+  const onboardingComplete = Boolean(session?.user?.onboardingComplete);
   const isAdmin = role === "ADMIN";
   const nav = [
     ...baseNav.slice(0, 3),
@@ -59,13 +60,23 @@ export default function SiteNavbar() {
     ...baseNav.slice(3),
     ...(isAdmin ? adminNav : []),
   ];
+  const isMediaActive = mediaNav.some((item) => pathname.startsWith(item.href));
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  function isActiveHref(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  function navLinkClass(active: boolean) {
+    return cn(
+      "relative py-2 text-sm font-medium text-white/74 transition duration-200 hover:text-white",
+      "after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-amber-200 after:transition-transform after:duration-200 hover:after:scale-x-100",
+      active && "text-white after:scale-x-100"
+    );
+  }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/62 backdrop-blur-xl">
       {isAuthed && !onboardingComplete ? (
         <div className="border-b border-amber-500/20 bg-amber-500/10">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-xs text-amber-100 md:px-6">
@@ -79,30 +90,40 @@ export default function SiteNavbar() {
           </div>
         </div>
       ) : null}
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="relative h-9 w-9 overflow-hidden rounded-xl bg-white/10">
-            <img src="/logo.svg" alt="JNC logo" className="h-full w-full object-cover" />
+      <div className="mx-auto flex h-[4.75rem] max-w-7xl items-center justify-between px-4 md:px-6">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-amber-200/15 bg-white/10 shadow-[0_0_28px_rgba(251,191,36,0.12)]">
+            <Image
+              src="/logo.svg"
+              alt="JNC logo"
+              fill
+              sizes="44px"
+              className="object-cover"
+            />
           </div>
           <div className="leading-tight">
-            <p className="text-sm font-semibold text-white">Jude Nnam Choral (JNC)</p>
-            <p className="text-xs text-white/70">Choral Platform</p>
+            <p className="text-base font-semibold tracking-tight text-white">
+              Jude Nnam Choral
+            </p>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-amber-100/58">
+              JNC Platform
+            </p>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm text-white/80 hover:text-white transition"
+              className={navLinkClass(isActiveHref(item.href))}
             >
               {item.label}
             </Link>
           ))}
           <DropdownMenu>
             <DropdownMenuTrigger
-              className="text-sm text-white/80 hover:text-white transition"
+              className={navLinkClass(isMediaActive)}
               suppressHydrationWarning
             >
               Media
@@ -121,12 +142,14 @@ export default function SiteNavbar() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="rounded-2xl text-white hover:bg-white/10 hover:text-white"
+                  className="rounded-2xl border border-white/0 text-white transition hover:border-white/10 hover:bg-white/10 hover:text-white"
                 >
                   {avatar ? (
-                    <img
+                    <Image
                       src={avatar}
                       alt="Profile"
+                      width={36}
+                      height={36}
                       className="h-9 w-9 rounded-full object-cover"
                     />
                   ) : (
@@ -166,92 +189,83 @@ export default function SiteNavbar() {
         </nav>
 
         <div className="md:hidden">
-          {mounted ? (
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white">
-                  <Menu />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="bg-black text-white border-white/10 overflow-y-auto">
-                <div className="flex min-h-full flex-col">
-                  <SheetHeader>
-                    <SheetTitle className="text-white">Menu</SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-6 grid gap-3">
-                    {nav.map((item) => (
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-2xl text-white">
+                <Menu />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="bg-black text-white border-white/10 overflow-y-auto">
+              <div className="flex min-h-full flex-col">
+                <SheetHeader>
+                  <SheetTitle className="text-white">Menu</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6 grid gap-3">
+                  {nav.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90">
+                    <div className="text-xs uppercase tracking-[0.2em] text-white/60">
+                      Media
+                    </div>
+                    <div className="mt-3 grid gap-2">
+                      {mediaNav.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/85 hover:bg-white/10 transition"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  {isAuthed ? (
+                    <>
                       <Link
-                        key={item.href}
-                        href={item.href}
+                        href="/profile"
                         onClick={() => setOpen(false)}
                         className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
                       >
-                        {item.label}
+                        Profile
                       </Link>
-                    ))}
-                    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90">
-                      <div className="text-xs uppercase tracking-[0.2em] text-white/60">
-                        Media
-                      </div>
-                      <div className="mt-3 grid gap-2">
-                        {mediaNav.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setOpen(false)}
-                            className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/85 hover:bg-white/10 transition"
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                    {isAuthed ? (
-                      <>
-                        <Link
-                          href="/profile"
-                          onClick={() => setOpen(false)}
-                          className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
-                        >
-                          Profile
+                      <Button
+                        className="rounded-2xl mt-2"
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                      >
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        asChild
+                        variant="ghost"
+                        className="rounded-2xl mt-2 text-white hover:bg-white/10 hover:text-white"
+                      >
+                        <Link href="/auth/login" onClick={() => setOpen(false)}>
+                          Log in
                         </Link>
-                        <Button
-                          className="rounded-2xl mt-2"
-                          onClick={() => signOut({ callbackUrl: "/" })}
-                        >
-                          Logout
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          asChild
-                          variant="ghost"
-                          className="rounded-2xl mt-2 text-white hover:bg-white/10 hover:text-white"
-                        >
-                          <Link href="/auth/login" onClick={() => setOpen(false)}>
-                            Log in
-                          </Link>
-                        </Button>
-                        <Button asChild className="rounded-2xl">
-                          <Link
-                            href="/auth/register"
-                            onClick={() => setOpen(false)}
-                          >
-                            Register
-                          </Link>
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                      </Button>
+                      <Button asChild className="rounded-2xl">
+                        <Link href="/auth/register" onClick={() => setOpen(false)}>
+                          Register
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
-              </SheetContent>
-            </Sheet>
-          ) : (
-            <Button variant="ghost" size="icon" className="text-white">
-              <Menu />
-            </Button>
-          )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

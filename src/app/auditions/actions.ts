@@ -50,7 +50,7 @@ export async function submitAuditionAction(input: unknown) {
     });
 
     return { ok: true as const };
-  } catch (err: any) {
+  } catch {
     return {
       ok: false as const,
       error: "Something went wrong while submitting. Please try again.",

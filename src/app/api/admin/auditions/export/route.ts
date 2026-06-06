@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth";
+import { isAdminSession } from "@/lib/authz";
 import { getServerSession } from "next-auth";
 
-function escapeCsv(value: any) {
+function escapeCsv(value: unknown) {
   const s = String(value ?? "");
   if (s.includes(",") || s.includes("\n") || s.includes('"')) {
     return `"${s.replaceAll('"', '""')}"`;
@@ -13,7 +14,7 @@ function escapeCsv(value: any) {
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  if (!isAdminSession(session)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -41,7 +42,7 @@ export async function GET() {
 
   const csv = [
     headers.join(","),
-    ...rows.map((r: { id: any; fullName: any; phone: any; email: any; city: any; category: any; voicePart: any; instrument: any; instrumentLevel: any; canSightRead: any; productionRole: any; portfolioLink: any; notes: any; status: any; createdAt: { toISOString: () => any; }; }) =>
+    ...rows.map((r) =>
       [
         r.id,
         r.fullName,

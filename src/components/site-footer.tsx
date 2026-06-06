@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 
 export default function SiteFooter() {
@@ -9,7 +10,13 @@ export default function SiteFooter() {
           <div>
             <div className="flex items-center gap-3">
               <div className="relative h-10 w-10 overflow-hidden rounded-2xl bg-white/10">
-                <img src="/logo.svg" alt="JNC logo" className="h-full w-full object-cover" />
+                <Image
+                  src="/logo.svg"
+                  alt="JNC logo"
+                  fill
+                  sizes="40px"
+                  className="object-cover"
+                />
               </div>
               <p className="text-lg font-semibold text-white">Jude Nnam Choral (JNC)</p>
             </div>

@@ -2,12 +2,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth";
+import { isAdminSession } from "@/lib/authz";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
-
-function requireAdmin(session: any) {
-  return session?.user && (session.user as any).role === "ADMIN";
-}
 
 const CreateSchema = z.object({
   imageUrl: z.string().url(),
@@ -17,7 +14,7 @@ const CreateSchema = z.object({
 
 export async function createGalleryItemAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = CreateSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -46,7 +43,7 @@ const DeleteSchema = z.object({ id: z.string().min(1) });
 
 export async function deleteGalleryItemAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = DeleteSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };

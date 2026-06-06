@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 type Item = {
   id: string;
@@ -20,7 +21,14 @@ export default function GalleryClient({ items }: { items: Item[] }) {
             onClick={() => setOpen(x)}
             className="mb-4 w-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left hover:bg-white/10 transition"
           >
-            <img src={x.imageUrl} alt={x.title ?? "Gallery"} className="w-full object-cover" />
+            <Image
+              src={x.imageUrl}
+              alt={x.title ?? "Gallery"}
+              width={900}
+              height={700}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="w-full object-cover"
+            />
             {x.title ? (
               <div className="p-3 text-sm font-semibold text-white">{x.title}</div>
             ) : null}
@@ -37,7 +45,14 @@ export default function GalleryClient({ items }: { items: Item[] }) {
             className="w-full max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-black"
             onClick={(e) => e.stopPropagation()}
           >
-            <img src={open.imageUrl} alt={open.title ?? "Image"} className="w-full object-contain" />
+            <Image
+              src={open.imageUrl}
+              alt={open.title ?? "Image"}
+              width={1200}
+              height={900}
+              sizes="100vw"
+              className="w-full object-contain"
+            />
             <div className="flex items-center justify-between p-4">
               <p className="text-sm font-semibold text-white">{open.title ?? "Gallery"}</p>
               <button

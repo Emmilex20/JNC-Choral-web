@@ -13,12 +13,23 @@ type EventResponseRow = {
   createdAt: Date;
 };
 
+type EventResponseGroupByRow = {
+  eventId: string;
+  status: EventResponseStatus;
+  _count?: {
+    _all?: number;
+  };
+};
+
+type EventResponseModel = {
+  groupBy?: (args: unknown) => Promise<EventResponseGroupByRow[]>;
+  findMany?: (args: unknown) => Promise<EventResponseRow[]>;
+  upsert?: (args: unknown) => Promise<unknown>;
+};
+
 function getEventResponseModel() {
   return (prisma as unknown as {
-    eventResponse?: {
-      groupBy?: (args: unknown) => Promise<any[]>;
-      findMany?: (args: unknown) => Promise<EventResponseRow[]>;
-    };
+    eventResponse?: EventResponseModel;
   }).eventResponse;
 }
 
@@ -127,12 +138,12 @@ export async function createOrUpdateEventResponse(input: {
   note: string | null;
 }) {
   const eventResponse = getEventResponseModel();
-  if (!eventResponse || !("findMany" in eventResponse)) {
+  if (!eventResponse?.upsert) {
     return { ok: false as const, error: "RSVP is temporarily unavailable." };
   }
 
   try {
-    await (prisma as any).eventResponse.upsert({
+    await eventResponse.upsert({
       where: {
         eventId_email: {
           eventId: input.eventId,

@@ -32,7 +32,19 @@ type Row = {
 };
 
 const statusOptions = ["PENDING", "SHORTLISTED", "ACCEPTED", "REJECTED"] as const;
+const statusFilterOptions = ["ALL", ...statusOptions] as const;
 const categoryOptions = ["ALL", "SINGER", "INSTRUMENTALIST", "PRODUCTION"] as const;
+
+type StatusFilter = (typeof statusFilterOptions)[number];
+type CategoryFilter = (typeof categoryOptions)[number];
+
+function isStatusFilter(value: string): value is StatusFilter {
+  return statusFilterOptions.some((option) => option === value);
+}
+
+function isCategoryFilter(value: string): value is CategoryFilter {
+  return categoryOptions.some((option) => option === value);
+}
 
 function statusBadge(status: Row["status"]) {
   const base = "rounded-full bg-white/10 text-white hover:bg-white/10";
@@ -44,10 +56,8 @@ function statusBadge(status: Row["status"]) {
 
 export default function AdminAuditionsClient({ initialRows }: { initialRows: Row[] }) {
   const [rows, setRows] = useState<Row[]>(initialRows);
-  const [statusFilter, setStatusFilter] =
-    useState<"ALL" | Row["status"]>("ALL");
-  const [categoryFilter, setCategoryFilter] =
-    useState<(typeof categoryOptions)[number]>("ALL");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("ALL");
   const [q, setQ] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -98,7 +108,9 @@ export default function AdminAuditionsClient({ initialRows }: { initialRows: Row
 
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => {
+              if (isStatusFilter(e.target.value)) setStatusFilter(e.target.value);
+            }}
             className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
           >
             <option value="ALL">All Status</option>
@@ -111,7 +123,9 @@ export default function AdminAuditionsClient({ initialRows }: { initialRows: Row
 
           <select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value as any)}
+            onChange={(e) => {
+              if (isCategoryFilter(e.target.value)) setCategoryFilter(e.target.value);
+            }}
             className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
           >
             {categoryOptions.map((c) => (

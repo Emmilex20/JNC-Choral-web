@@ -16,8 +16,6 @@ const geistMono = Geist_Mono({
 const siteUrl = "https://www.jnc-choral.vercel.app";
 const ogImage = "/logo.svg";
 const siteName = "Jude Nnam Choral";
-const tagline =
-  "Spreading joy through music in Abuja and beyond.";
 const description =
   "Jude Nnam Choral is a vibrant choir in Abuja, Nigeria. Join auditions, attend events, and experience uplifting choral music and community.";
 

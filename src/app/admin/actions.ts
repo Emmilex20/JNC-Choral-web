@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/auth";
+import { isAdminSession } from "@/lib/authz";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 
@@ -12,7 +13,7 @@ const Schema = z.object({
 
 export async function updateAuditionStatusAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  if (!isAdminSession(session)) {
     return { ok: false as const, error: "Unauthorized" };
   }
 

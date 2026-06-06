@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
   });
 
   if (!user) redirect("/auth/login");
-  if (user.onboardingComplete) redirect("/profile");
+  if (user.onboardingComplete) redirect("/");
 
   return (
     <main className="min-h-screen bg-black">

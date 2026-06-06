@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { confirmAttendanceAction, rejectAttendanceAction } from "../actions";
@@ -380,9 +381,12 @@ export default function AdminChoristersClient({
                       {selected.profile?.passportImageUrl ? (
                         <div className="space-y-4">
                           <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/40">
-                            <img
+                            <Image
                               src={selected.profile.passportImageUrl}
                               alt={`${selected.name ?? "Chorister"} passport`}
+                              width={720}
+                              height={720}
+                              sizes="(max-width: 1280px) 100vw, 320px"
                               className="h-auto w-full object-cover"
                             />
                           </div>

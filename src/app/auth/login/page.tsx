@@ -10,6 +10,17 @@ import SiteFooter from "@/components/site-footer";
 
 type ToastState = { type: "success" | "error"; message: string } | null;
 
+function getLoginErrorToast(errorParam: string | null): ToastState {
+  if (!errorParam) return null;
+  return {
+    type: "error",
+    message:
+      errorParam === "CredentialsSignin"
+        ? "Invalid email or password."
+        : "Unable to sign in. Please try again.",
+  };
+}
+
 function Toast({ toast, onClose }: { toast: ToastState; onClose: () => void }) {
   if (!toast) return null;
   return (
@@ -40,17 +51,10 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const errorParam = searchParams.get("error");
-  const [toast, setToast] = useState<ToastState>(null);
+  const [toast, setToast] = useState<ToastState>(() =>
+    getLoginErrorToast(errorParam)
+  );
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    if (!errorParam) return;
-    const message =
-      errorParam === "CredentialsSignin"
-        ? "Invalid email or password."
-        : "Unable to sign in. Please try again.";
-    setToast({ type: "error", message });
-  }, [errorParam]);
 
   useEffect(() => {
     if (!toast) return;

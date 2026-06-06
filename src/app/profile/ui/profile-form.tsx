@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
+import { getErrorMessage } from "@/lib/errors";
 import { updateProfileAction } from "../actions";
 
 type ProfileFormProps = {
@@ -51,8 +53,8 @@ export default function ProfileForm({ name, email, image }: ProfileFormProps) {
       const imageUrl = uploaded.secure_url as string;
       setForm((p) => ({ ...p, image: imageUrl }));
       setMessage("Image uploaded. Click save to update your profile.");
-    } catch (err: any) {
-      setMessage(err?.message ?? "Upload error");
+    } catch (err) {
+      setMessage(getErrorMessage(err, "Upload error"));
     } finally {
       setUploading(false);
     }
@@ -109,12 +111,14 @@ export default function ProfileForm({ name, email, image }: ProfileFormProps) {
         <div>
           <label className="text-xs text-white/70">Profile photo</label>
           <div className="mt-2 flex items-center gap-4">
-            <div className="h-16 w-16 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+            <div className="relative h-16 w-16 overflow-hidden rounded-2xl border border-white/10 bg-black/40">
               {form.image ? (
-                <img
+                <Image
                   src={form.image}
                   alt="Profile"
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="64px"
+                  className="object-cover"
                 />
               ) : null}
             </div>

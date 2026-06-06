@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { auditionSchema, type AuditionInput } from "@/lib/audition-schema";
 import { submitAuditionAction } from "../actions";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const categories = [
   { value: "SINGER", label: "Singer (Soprano/Alto/Tenor/Bass)" },
@@ -19,6 +20,7 @@ export default function AuditionForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { status } = useSession();
+  const router = useRouter();
 
   const form = useForm<AuditionInput>({
     resolver: zodResolver(auditionSchema),
@@ -30,7 +32,7 @@ export default function AuditionForm() {
     mode: "onTouched",
   });
 
-  const category = form.watch("category");
+  const category = useWatch({ control: form.control, name: "category" });
 
   const title = useMemo(() => {
     if (category === "SINGER") return "Singer Details";
@@ -40,7 +42,7 @@ export default function AuditionForm() {
 
   async function onSubmit(values: AuditionInput) {
     if (status !== "authenticated") {
-      window.location.href = "/auth/login?callbackUrl=/auditions";
+      router.push("/auth/login?callbackUrl=/auditions");
       return;
     }
 
@@ -187,7 +189,9 @@ export default function AuditionForm() {
                   <option value="BASS">Bass</option>
                 </select>
                 {errors.voicePart && (
-                  <p className="mt-1 text-xs text-red-200">{errors.voicePart.message as any}</p>
+                  <p className="mt-1 text-xs text-red-200">
+                    {String(errors.voicePart.message ?? "")}
+                  </p>
                 )}
               </div>
 
@@ -222,7 +226,9 @@ export default function AuditionForm() {
                   placeholder="Keyboard, Drums, Violin..."
                 />
                 {errors.instrument && (
-                  <p className="mt-1 text-xs text-red-200">{errors.instrument.message as any}</p>
+                  <p className="mt-1 text-xs text-red-200">
+                    {String(errors.instrument.message ?? "")}
+                  </p>
                 )}
               </div>
 
@@ -268,7 +274,9 @@ export default function AuditionForm() {
                   <option value="OTHER">Other</option>
                 </select>
                 {errors.productionRole && (
-                  <p className="mt-1 text-xs text-red-200">{errors.productionRole.message as any}</p>
+                  <p className="mt-1 text-xs text-red-200">
+                    {String(errors.productionRole.message ?? "")}
+                  </p>
                 )}
               </div>
 
@@ -280,7 +288,9 @@ export default function AuditionForm() {
                   placeholder="https://..."
                 />
                 {errors.portfolioLink && (
-                  <p className="mt-1 text-xs text-red-200">{errors.portfolioLink.message as any}</p>
+                  <p className="mt-1 text-xs text-red-200">
+                    {String(errors.portfolioLink.message ?? "")}
+                  </p>
                 )}
               </div>
             </div>

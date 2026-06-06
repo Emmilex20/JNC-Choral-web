@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/errors";
 import {
   createChoristerNoticeAction,
   deleteChoristerNoticeAction,
@@ -57,8 +58,8 @@ export default function AdminChoristerNoticesClient({
       if (!up.ok) throw new Error("Upload failed");
       const uploaded = await up.json();
       setAttachmentUrl(uploaded.secure_url as string);
-    } catch (err: any) {
-      setError(err?.message ?? "Upload error");
+    } catch (err) {
+      setError(getErrorMessage(err, "Upload error"));
     } finally {
       setUploading(false);
     }

@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Image from "next/image";
 import { ImageIcon, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/errors";
 import {
   createEventAction,
   deleteEventAction,
@@ -173,8 +175,8 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
         imageUrl: uploaded.secure_url as string,
         imagePublicId: uploaded.public_id as string,
       }));
-    } catch (err: any) {
-      setError(err?.message ?? "Image upload failed");
+    } catch (err) {
+      setError(getErrorMessage(err, "Image upload failed"));
     } finally {
       setUploadingImage(false);
       e.target.value = "";
@@ -194,8 +196,8 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
         videoUrl: uploaded.secure_url as string,
         videoPublicId: uploaded.public_id as string,
       }));
-    } catch (err: any) {
-      setError(err?.message ?? "Video upload failed");
+    } catch (err) {
+      setError(getErrorMessage(err, "Video upload failed"));
     } finally {
       setUploadingVideo(false);
       e.target.value = "";
@@ -405,11 +407,15 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
                   ) : null}
                 </div>
                 {form.imageUrl ? (
-                  <img
-                    src={form.imageUrl}
-                    alt="Event preview"
-                    className="mt-4 h-40 w-full rounded-2xl object-cover"
-                  />
+                  <div className="relative mt-4 h-40 w-full overflow-hidden rounded-2xl">
+                    <Image
+                      src={form.imageUrl}
+                      alt="Event preview"
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 420px"
+                      className="object-cover"
+                    />
+                  </div>
                 ) : (
                   <p className="mt-3 text-sm text-white/55">No image uploaded yet.</p>
                 )}
@@ -568,11 +574,15 @@ export default function AdminEventsClient({ initialEvents }: { initialEvents: Ev
                   <p className="mt-3 text-sm text-white/75">{r.description}</p>
                 ) : null}
                 {r.imageUrl ? (
-                  <img
-                    src={r.imageUrl}
-                    alt={r.title}
-                    className="mt-4 h-44 w-full rounded-2xl object-cover"
-                  />
+                  <div className="relative mt-4 h-44 w-full overflow-hidden rounded-2xl">
+                    <Image
+                      src={r.imageUrl}
+                      alt={r.title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
                 ) : null}
                 {r.videoUrl ? (
                   <video src={r.videoUrl} controls className="mt-4 w-full rounded-2xl" />

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/errors";
 import {
   createVideoItemAction,
   deleteVideoItemAction,
@@ -92,8 +93,8 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
         }
 
         window.location.reload();
-      } catch (err: any) {
-        setError(err?.message ?? "Upload error");
+      } catch (err) {
+        setError(getErrorMessage(err, "Upload error"));
       }
     });
   }
@@ -117,8 +118,8 @@ export default function AdminVideosClient({ initialItems }: { initialItems: Item
           setItems((prev) =>
             prev.map((x) => (x.id === id ? { ...x, posterUrl } : x))
           );
-        } catch (err: any) {
-          setError(err?.message ?? "Upload error");
+        } catch (err) {
+          setError(getErrorMessage(err, "Upload error"));
         }
       });
     };

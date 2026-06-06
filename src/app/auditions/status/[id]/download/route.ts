@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -18,13 +19,17 @@ export async function GET(
     );
   }
 
+  const ownerFilters: Prisma.AuditionApplicationWhereInput[] = [
+    { userId: session.user.id },
+  ];
+  if (session.user.email) {
+    ownerFilters.push({ email: session.user.email });
+  }
+
   const app = await prisma.auditionApplication.findFirst({
     where: {
       id,
-      OR: [
-        { userId: session.user.id },
-        session.user.email ? { email: session.user.email } : undefined,
-      ].filter(Boolean) as any,
+      OR: ownerFilters,
     },
   });
 

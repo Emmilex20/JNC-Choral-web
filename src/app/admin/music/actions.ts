@@ -6,12 +6,9 @@ import {
   getMusicSheetsMigrationErrorMessage,
   isMissingMusicSheetsTableError,
 } from "@/lib/music-sheets";
+import { isAdminSession } from "@/lib/authz";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
-
-function requireAdmin(session: any) {
-  return session?.user && (session.user as any).role === "ADMIN";
-}
 
 const CreateSchema = z.object({
   audioUrl: z.string().url(),
@@ -21,7 +18,7 @@ const CreateSchema = z.object({
 
 export async function createMusicItemAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = CreateSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -50,7 +47,7 @@ const DeleteSchema = z.object({ id: z.string().min(1) });
 
 export async function deleteMusicItemAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = DeleteSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -66,7 +63,7 @@ const UpdateSchema = z.object({
 
 export async function updateMusicTitleAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = UpdateSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -92,7 +89,7 @@ const CreateSheetSchema = z.object({
 
 export async function createMusicSheetAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = CreateSheetSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -122,7 +119,7 @@ const DeleteSheetSchema = z.object({ id: z.string().min(1) });
 
 export async function deleteMusicSheetAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = DeleteSheetSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -146,7 +143,7 @@ const UpdateSheetSchema = z.object({
 
 export async function updateMusicSheetAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = UpdateSheetSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };

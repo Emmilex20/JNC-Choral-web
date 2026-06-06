@@ -34,9 +34,11 @@ export default function OnboardingClient({
         setError(res.error);
         return;
       }
-      await update({ onboardingComplete: true, name: form.name });
+      await update({
+        user: { onboardingComplete: true, name: form.name },
+      });
+      router.replace("/");
       router.refresh();
-      router.push("/profile");
     });
   }
 

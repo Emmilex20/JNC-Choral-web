@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { authOptions } from "@/auth";
 import { cloudinary } from "@/lib/cloudinary";
+import { isAdminSession } from "@/lib/authz";
 import { getServerSession } from "next-auth";
 
 const allowedFolderSuffixes = new Set(["music-sheets", "event-media"]);
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
+  if (!isAdminSession(session)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

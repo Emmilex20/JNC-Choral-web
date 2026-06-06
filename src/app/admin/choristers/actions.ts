@@ -3,11 +3,8 @@
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { isAdminSession } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
-
-function requireAdmin(session: any) {
-  return session?.user && (session.user as any).role === "ADMIN";
-}
 
 const NoticeCreateSchema = z.object({
   title: z.string().min(2).max(120),
@@ -18,7 +15,7 @@ const NoticeCreateSchema = z.object({
 
 export async function createChoristerNoticeAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = NoticeCreateSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -42,7 +39,7 @@ const NoticeToggleSchema = z.object({
 
 export async function toggleChoristerNoticeAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = NoticeToggleSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -59,7 +56,7 @@ const NoticeDeleteSchema = z.object({ id: z.string().min(1) });
 
 export async function deleteChoristerNoticeAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = NoticeDeleteSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -75,7 +72,7 @@ const RehearsalCreateSchema = z.object({
 
 export async function createRehearsalAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = RehearsalCreateSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -99,7 +96,7 @@ const RehearsalDeleteSchema = z.object({ id: z.string().min(1) });
 
 export async function deleteRehearsalAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = RehearsalDeleteSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -112,7 +109,7 @@ const ConfirmAttendanceSchema = z.object({ id: z.string().min(1) });
 
 export async function confirmAttendanceAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = ConfirmAttendanceSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
@@ -130,7 +127,7 @@ export async function confirmAttendanceAction(input: unknown) {
 
 export async function rejectAttendanceAction(input: unknown) {
   const session = await getServerSession(authOptions);
-  if (!requireAdmin(session)) return { ok: false as const, error: "Unauthorized" };
+  if (!isAdminSession(session)) return { ok: false as const, error: "Unauthorized" };
 
   const parsed = ConfirmAttendanceSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getErrorMessage } from "@/lib/errors";
 import {
   createMusicItemAction,
   createMusicSheetAction,
@@ -125,8 +126,8 @@ export default function AdminMusicClient({
         }
 
         window.location.reload();
-      } catch (err: any) {
-        setError(err?.message ?? "Upload error");
+      } catch (err) {
+        setError(getErrorMessage(err, "Upload error"));
       } finally {
         e.target.value = "";
       }
@@ -171,8 +172,8 @@ export default function AdminMusicClient({
         ]);
         setSheetTitle("");
         setSheetAudience("ALL_USERS");
-      } catch (err: any) {
-        setError(err?.message ?? "Upload error");
+      } catch (err) {
+        setError(getErrorMessage(err, "Upload error"));
       } finally {
         e.target.value = "";
       }

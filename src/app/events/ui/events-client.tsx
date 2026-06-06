@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { CheckCircle2, Clock3, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -128,7 +129,15 @@ export default function EventsClient({ upcoming, past }: EventsClientProps) {
     return (
       <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-black/30">
         {event.imageUrl ? (
-          <img src={event.imageUrl} alt={event.title} className="h-56 w-full object-cover" />
+          <div className="relative h-56 w-full">
+            <Image
+              src={event.imageUrl}
+              alt={event.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+            />
+          </div>
         ) : null}
         {event.videoUrl ? (
           <video src={event.videoUrl} controls className="w-full bg-black" />

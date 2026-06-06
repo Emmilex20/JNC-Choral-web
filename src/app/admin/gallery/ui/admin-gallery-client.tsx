@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getErrorMessage } from "@/lib/errors";
 import { createGalleryItemAction, deleteGalleryItemAction } from "../actions";
 
 type Item = {
@@ -66,8 +68,8 @@ export default function AdminGalleryClient({ initialItems }: { initialItems: Ite
 
         // simplest refresh so types/dates match server
         window.location.reload();
-      } catch (err: any) {
-        setError(err?.message ?? "Upload error");
+      } catch (err) {
+        setError(getErrorMessage(err, "Upload error"));
       }
     });
   }
@@ -120,9 +122,12 @@ export default function AdminGalleryClient({ initialItems }: { initialItems: Ite
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((x) => (
           <div key={x.id} className="rounded-2xl border border-white/10 bg-black/30 p-3">
-            <img
+            <Image
               src={x.imageUrl}
               alt={x.title ?? "Gallery image"}
+              width={600}
+              height={384}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="h-48 w-full rounded-xl object-cover"
             />
             <div className="mt-3 flex items-start justify-between gap-2">
