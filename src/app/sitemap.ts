@@ -18,11 +18,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/music",
     "/videos",
     "/contact",
-    "/auth/login",
-    "/auth/register",
-    "/auth/forgot",
-    "/auth/reset",
-    "/profile",
+    "/privacy-policy",
+    "/terms-of-service",
+    "/cookie-policy",
   ];
 
   const scores = await listPublicScoreSheets();

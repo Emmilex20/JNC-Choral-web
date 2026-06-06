@@ -6,6 +6,15 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: [
+          "/admin",
+          "/api",
+          "/profile",
+          "/onboarding",
+          "/auditions/status",
+          "/auth/forgot",
+          "/auth/reset",
+        ],
       },
     ],
     sitemap: "https://www.jnc-choral.vercel.app/sitemap.xml",
