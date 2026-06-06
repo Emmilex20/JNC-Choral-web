@@ -200,8 +200,8 @@ export default async function AdminPage() {
     },
     {
       href: "/admin/music",
-      title: "Music",
-      detail: "Manage audio tracks and choir sheet files.",
+      title: "Music & Scores",
+      detail: "Manage audio tracks and the public scores bank.",
       count: musicCount + sheetCount,
       icon: Music2,
     },

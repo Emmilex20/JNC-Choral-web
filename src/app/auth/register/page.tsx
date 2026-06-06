@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { registerUserAction } from "./actions";
 import { signIn } from "next-auth/react";
@@ -39,6 +39,9 @@ function Toast({ toast, onClose }: { toast: ToastState; onClose: () => void }) {
 
 function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawCallbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl = rawCallbackUrl?.startsWith("/") ? rawCallbackUrl : "/";
   const [toast, setToast] = useState<ToastState>(null);
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
@@ -71,8 +74,23 @@ function RegisterForm() {
         setToast({ type: "error", message: res.error });
         return;
       }
+      const signInResult = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
+
+      if (signInResult?.ok) {
+        setToast({ type: "success", message: "Account created. Redirecting..." });
+        setTimeout(() => router.push(callbackUrl), 800);
+        return;
+      }
+
       setToast({ type: "success", message: "Account created. Please sign in." });
-      setTimeout(() => router.push("/auth/login"), 1200);
+      setTimeout(
+        () => router.push(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`),
+        1200
+      );
     });
   }
 
@@ -99,7 +117,7 @@ function RegisterForm() {
           </p>
 
         <Button
-          onClick={() => signIn("google", { callbackUrl: "/" })}
+          onClick={() => signIn("google", { callbackUrl })}
           className="mt-6 w-full cursor-pointer rounded-2xl bg-gradient-to-r from-white via-slate-100 to-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.18)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(255,255,255,0.28)]"
         >
           Continue with Google

@@ -23,6 +23,7 @@ export async function getMusicSheetAccess(session: Session | null) {
   if (!session?.user?.id) {
     return {
       isSignedIn: false,
+      isAdmin: false,
       canAccessAllUserSheets: false,
       canAccessChoristerSheets: false,
     };
@@ -42,6 +43,7 @@ export async function getMusicSheetAccess(session: Session | null) {
 
   return {
     isSignedIn: true,
+    isAdmin: user?.role === "ADMIN",
     canAccessAllUserSheets: true,
     canAccessChoristerSheets,
   };
@@ -63,6 +65,7 @@ export async function listMusicSheetsForAdmin() {
 
 export async function listVisibleMusicSheets(access: {
   isSignedIn: boolean;
+  isAdmin?: boolean;
   canAccessChoristerSheets: boolean;
 }) {
   if (!access.isSignedIn) {
@@ -71,7 +74,10 @@ export async function listVisibleMusicSheets(access: {
 
   try {
     return await prisma.musicSheet.findMany({
-      where: access.canAccessChoristerSheets ? undefined : { audience: "ALL_USERS" },
+      where: {
+        ...(access.isAdmin ? {} : { isPublished: true }),
+        ...(access.canAccessChoristerSheets ? {} : { audience: "ALL_USERS" }),
+      },
       orderBy: { createdAt: "desc" },
       take: 200,
     });
@@ -94,6 +100,7 @@ export async function findMusicSheetById(id: string) {
           fileUrl: true,
           mimeType: true,
           audience: true,
+          isPublished: true,
         },
       }),
       missingTable: false,
@@ -104,6 +111,68 @@ export async function findMusicSheetById(id: string) {
         sheet: null,
         missingTable: true,
       } as const;
+    }
+    throw error;
+  }
+}
+
+export async function listPublicScoreSheets() {
+  try {
+    return await prisma.musicSheet.findMany({
+      where: {
+        audience: "ALL_USERS",
+        isPublished: true,
+      },
+      orderBy: [{ title: "asc" }, { fileName: "asc" }],
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        composer: true,
+        description: true,
+        voicing: true,
+        lyricsLanguage: true,
+        scoreKey: true,
+        fileName: true,
+        mimeType: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  } catch (error) {
+    if (isMissingMusicSheetsTableError(error)) {
+      return [];
+    }
+    throw error;
+  }
+}
+
+export async function findPublicScoreSheetBySlug(slug: string) {
+  try {
+    return await prisma.musicSheet.findFirst({
+      where: {
+        slug,
+        audience: "ALL_USERS",
+        isPublished: true,
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        composer: true,
+        description: true,
+        voicing: true,
+        lyricsLanguage: true,
+        scoreKey: true,
+        fileName: true,
+        mimeType: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  } catch (error) {
+    if (isMissingMusicSheetsTableError(error)) {
+      return null;
     }
     throw error;
   }

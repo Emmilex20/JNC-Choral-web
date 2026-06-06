@@ -9,6 +9,7 @@ import {
 import { isAdminSession } from "@/lib/authz";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
+import { createScoreSlug } from "@/lib/score-slugs";
 
 const CreateSchema = z.object({
   audioUrl: z.string().url(),
@@ -83,9 +84,31 @@ const CreateSheetSchema = z.object({
   publicId: z.string().min(2),
   fileName: z.string().min(1).max(255),
   mimeType: z.string().max(120).optional(),
-  title: z.string().optional(),
+  title: z.string().min(1).max(160),
+  composer: z.string().max(120).optional(),
+  description: z.string().max(1200).optional(),
+  voicing: z.string().max(80).optional(),
+  lyricsLanguage: z.string().max(80).optional(),
+  scoreKey: z.string().max(40).optional(),
   audience: SheetAudienceSchema,
+  isPublished: z.boolean().optional(),
 });
+
+async function getUniqueMusicSheetSlug(title: string, fileName: string) {
+  const base = createScoreSlug(title || fileName);
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const slug = attempt === 0 ? base : `${base}-${attempt + 1}`;
+    const existing = await prisma.musicSheet.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (!existing) return slug;
+  }
+
+  return `${base}-${Date.now().toString(36)}`;
+}
 
 export async function createMusicSheetAction(input: unknown) {
   const session = await getServerSession(authOptions);
@@ -95,14 +118,22 @@ export async function createMusicSheetAction(input: unknown) {
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
   try {
+    const title = parsed.data.title.trim();
     const sheet = await prisma.musicSheet.create({
       data: {
         fileUrl: parsed.data.fileUrl,
         publicId: parsed.data.publicId,
         fileName: parsed.data.fileName.trim(),
         mimeType: parsed.data.mimeType?.trim() || null,
-        title: parsed.data.title?.trim() || null,
+        title,
+        slug: await getUniqueMusicSheetSlug(title, parsed.data.fileName),
+        composer: parsed.data.composer?.trim() || "Sir Jude Nnam",
+        description: parsed.data.description?.trim() || null,
+        voicing: parsed.data.voicing?.trim() || null,
+        lyricsLanguage: parsed.data.lyricsLanguage?.trim() || null,
+        scoreKey: parsed.data.scoreKey?.trim() || null,
         audience: parsed.data.audience,
+        isPublished: parsed.data.isPublished ?? true,
       },
     });
 
@@ -137,8 +168,14 @@ export async function deleteMusicSheetAction(input: unknown) {
 
 const UpdateSheetSchema = z.object({
   id: z.string().min(1),
-  title: z.string().optional(),
+  title: z.string().min(1).max(160),
+  composer: z.string().max(120).optional(),
+  description: z.string().max(1200).optional(),
+  voicing: z.string().max(80).optional(),
+  lyricsLanguage: z.string().max(80).optional(),
+  scoreKey: z.string().max(40).optional(),
   audience: SheetAudienceSchema,
+  isPublished: z.boolean(),
 });
 
 export async function updateMusicSheetAction(input: unknown) {
@@ -152,8 +189,14 @@ export async function updateMusicSheetAction(input: unknown) {
     await prisma.musicSheet.update({
       where: { id: parsed.data.id },
       data: {
-        title: parsed.data.title?.trim() || null,
+        title: parsed.data.title.trim(),
+        composer: parsed.data.composer?.trim() || "Sir Jude Nnam",
+        description: parsed.data.description?.trim() || null,
+        voicing: parsed.data.voicing?.trim() || null,
+        lyricsLanguage: parsed.data.lyricsLanguage?.trim() || null,
+        scoreKey: parsed.data.scoreKey?.trim() || null,
         audience: parsed.data.audience,
+        isPublished: parsed.data.isPublished,
       },
     });
 

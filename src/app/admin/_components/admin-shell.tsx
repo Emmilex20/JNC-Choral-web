@@ -127,8 +127,8 @@ const navGroups: { label: string; items: AdminNavItem[] }[] = [
       },
       {
         href: "/admin/music",
-        label: "Music",
-        description: "Audio and sheets",
+        label: "Music & Scores",
+        description: "Audio and score bank",
         icon: Music2,
       },
       {

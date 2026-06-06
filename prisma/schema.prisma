@@ -250,12 +250,20 @@ model MusicItem {
 model MusicSheet {
   id        String             @id @default(cuid())
   title     String?
+  slug      String             @unique
+  composer  String             @default("Sir Jude Nnam")
+  description String?
+  voicing   String?
+  lyricsLanguage String?
+  scoreKey  String?
   fileName  String
   fileUrl   String
   mimeType  String?
   publicId  String             @unique
   audience  MusicSheetAudience @default(ALL_USERS)
+  isPublished Boolean          @default(true)
   createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
 }
 
 model VideoItem {

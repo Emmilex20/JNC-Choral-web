@@ -24,10 +24,17 @@ type Item = {
 type Sheet = {
   id: string;
   title: string | null;
+  slug: string;
+  composer: string;
+  description: string | null;
+  voicing: string | null;
+  lyricsLanguage: string | null;
+  scoreKey: string | null;
   fileName: string;
   mimeType: string | null;
   publicId: string;
   audience: "ALL_USERS" | "CHORISTERS_ONLY";
+  isPublished: boolean;
   createdAt: string;
 };
 
@@ -41,7 +48,7 @@ async function getSignature(folderSuffix?: string) {
 }
 
 function audienceLabel(audience: Sheet["audience"]) {
-  return audience === "CHORISTERS_ONLY" ? "Choristers only" : "All users";
+  return audience === "CHORISTERS_ONLY" ? "Choristers only" : "Public score bank";
 }
 
 export default function AdminMusicClient({
@@ -57,12 +64,24 @@ export default function AdminMusicClient({
   const [editId, setEditId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [sheetTitle, setSheetTitle] = useState("");
+  const [sheetComposer, setSheetComposer] = useState("Sir Jude Nnam");
+  const [sheetDescription, setSheetDescription] = useState("");
+  const [sheetVoicing, setSheetVoicing] = useState("");
+  const [sheetLanguage, setSheetLanguage] = useState("");
+  const [sheetKey, setSheetKey] = useState("");
   const [sheetAudience, setSheetAudience] =
     useState<Sheet["audience"]>("ALL_USERS");
+  const [sheetPublished, setSheetPublished] = useState(true);
   const [editingSheetId, setEditingSheetId] = useState<string | null>(null);
   const [editingSheetTitle, setEditingSheetTitle] = useState("");
+  const [editingSheetComposer, setEditingSheetComposer] = useState("Sir Jude Nnam");
+  const [editingSheetDescription, setEditingSheetDescription] = useState("");
+  const [editingSheetVoicing, setEditingSheetVoicing] = useState("");
+  const [editingSheetLanguage, setEditingSheetLanguage] = useState("");
+  const [editingSheetKey, setEditingSheetKey] = useState("");
   const [editingSheetAudience, setEditingSheetAudience] =
     useState<Sheet["audience"]>("ALL_USERS");
+  const [editingSheetPublished, setEditingSheetPublished] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -140,6 +159,11 @@ export default function AdminMusicClient({
 
     startTransition(async () => {
       try {
+        if (!sheetTitle.trim()) {
+          setError("Add the score title before uploading the file.");
+          return;
+        }
+
         const uploaded = await uploadSheet(file);
         const fileUrl = uploaded.secure_url as string;
         const publicId = uploaded.public_id as string;
@@ -149,8 +173,14 @@ export default function AdminMusicClient({
           publicId,
           fileName: file.name,
           mimeType: file.type || undefined,
-          title: sheetTitle.trim() || undefined,
+          title: sheetTitle.trim(),
+          composer: sheetComposer.trim() || undefined,
+          description: sheetDescription.trim() || undefined,
+          voicing: sheetVoicing.trim() || undefined,
+          lyricsLanguage: sheetLanguage.trim() || undefined,
+          scoreKey: sheetKey.trim() || undefined,
           audience: sheetAudience,
+          isPublished: sheetPublished,
         });
 
         if (!res.ok) {
@@ -162,16 +192,29 @@ export default function AdminMusicClient({
           {
             id: res.sheet.id,
             title: res.sheet.title,
+            slug: res.sheet.slug,
+            composer: res.sheet.composer,
+            description: res.sheet.description,
+            voicing: res.sheet.voicing,
+            lyricsLanguage: res.sheet.lyricsLanguage,
+            scoreKey: res.sheet.scoreKey,
             fileName: res.sheet.fileName,
             mimeType: res.sheet.mimeType,
             publicId: res.sheet.publicId,
             audience: res.sheet.audience,
+            isPublished: res.sheet.isPublished,
             createdAt: res.sheet.createdAt.toISOString(),
           },
           ...prev,
         ]);
         setSheetTitle("");
+        setSheetComposer("Sir Jude Nnam");
+        setSheetDescription("");
+        setSheetVoicing("");
+        setSheetLanguage("");
+        setSheetKey("");
         setSheetAudience("ALL_USERS");
+        setSheetPublished(true);
       } catch (err) {
         setError(getErrorMessage(err, "Upload error"));
       } finally {
@@ -219,21 +262,39 @@ export default function AdminMusicClient({
   function beginSheetEdit(sheet: Sheet) {
     setEditingSheetId(sheet.id);
     setEditingSheetTitle(sheet.title ?? "");
+    setEditingSheetComposer(sheet.composer);
+    setEditingSheetDescription(sheet.description ?? "");
+    setEditingSheetVoicing(sheet.voicing ?? "");
+    setEditingSheetLanguage(sheet.lyricsLanguage ?? "");
+    setEditingSheetKey(sheet.scoreKey ?? "");
     setEditingSheetAudience(sheet.audience);
+    setEditingSheetPublished(sheet.isPublished);
   }
 
   function cancelSheetEdit() {
     setEditingSheetId(null);
     setEditingSheetTitle("");
+    setEditingSheetComposer("Sir Jude Nnam");
+    setEditingSheetDescription("");
+    setEditingSheetVoicing("");
+    setEditingSheetLanguage("");
+    setEditingSheetKey("");
     setEditingSheetAudience("ALL_USERS");
+    setEditingSheetPublished(true);
   }
 
   function saveSheetEdit(id: string) {
     startTransition(async () => {
       const res = await updateMusicSheetAction({
         id,
-        title: editingSheetTitle.trim() || undefined,
+        title: editingSheetTitle.trim(),
+        composer: editingSheetComposer.trim() || undefined,
+        description: editingSheetDescription.trim() || undefined,
+        voicing: editingSheetVoicing.trim() || undefined,
+        lyricsLanguage: editingSheetLanguage.trim() || undefined,
+        scoreKey: editingSheetKey.trim() || undefined,
         audience: editingSheetAudience,
+        isPublished: editingSheetPublished,
       });
       if (!res.ok) {
         setError(res.error);
@@ -244,8 +305,14 @@ export default function AdminMusicClient({
           sheet.id === id
             ? {
                 ...sheet,
-                title: editingSheetTitle.trim() || null,
+                title: editingSheetTitle.trim(),
+                composer: editingSheetComposer.trim() || "Sir Jude Nnam",
+                description: editingSheetDescription.trim() || null,
+                voicing: editingSheetVoicing.trim() || null,
+                lyricsLanguage: editingSheetLanguage.trim() || null,
+                scoreKey: editingSheetKey.trim() || null,
                 audience: editingSheetAudience,
+                isPublished: editingSheetPublished,
               }
             : sheet
         )
@@ -255,7 +322,7 @@ export default function AdminMusicClient({
   }
 
   function removeSheet(id: string) {
-    if (!confirm("Remove this sheet file?")) return;
+    if (!confirm("Remove this score file?")) return;
     startTransition(async () => {
       const res = await deleteMusicSheetAction({ id });
       if (!res.ok) return;
@@ -373,67 +440,153 @@ export default function AdminMusicClient({
         <div className="admin-module rounded-3xl border border-white/10 bg-white/5 p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">Choir scripts & sheets</h2>
+              <h2 className="text-xl font-semibold text-white">Scores Bank</h2>
               <p className="mt-1 text-sm text-white/60">
-                Upload PDF or Word files and target downloads to all signed-in users or choristers only.
+                Upload Sir Jude Nnam score files with searchable details for the public scores archive.
               </p>
             </div>
             <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
-              {sheets.length} sheet file{sheets.length === 1 ? "" : "s"}
+              {sheets.length} score file{sheets.length === 1 ? "" : "s"}
             </Badge>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto]">
+          <div className="mt-5 grid gap-3">
             <input
               value={sheetTitle}
               onChange={(e) => setSheetTitle(e.target.value)}
-              placeholder="Optional title (e.g. Easter Cantata Alto Score)"
+              placeholder="Score title (e.g. Chukwu Di Nso)"
               className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
             />
-            <select
-              value={sheetAudience}
-              onChange={(e) => setSheetAudience(e.target.value as Sheet["audience"])}
-              className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
-            >
-              <option value="ALL_USERS">All users</option>
-              <option value="CHORISTERS_ONLY">Choristers only</option>
-            </select>
-            <label className="inline-flex cursor-pointer items-center gap-2">
+            <div className="grid gap-3 md:grid-cols-2">
               <input
-                type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={onPickSheetFile}
-                className="hidden"
-                disabled={isPending}
+                value={sheetComposer}
+                onChange={(e) => setSheetComposer(e.target.value)}
+                placeholder="Composer"
+                className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
               />
-              <span className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white hover:bg-white/10">
-                {isPending ? "Uploading..." : "Upload Sheet"}
-              </span>
-            </label>
+              <input
+                value={sheetVoicing}
+                onChange={(e) => setSheetVoicing(e.target.value)}
+                placeholder="Voicing (e.g. SATB, SSA, Unison)"
+                className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+              />
+              <input
+                value={sheetLanguage}
+                onChange={(e) => setSheetLanguage(e.target.value)}
+                placeholder="Language (e.g. Igbo, English, Latin)"
+                className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+              />
+              <input
+                value={sheetKey}
+                onChange={(e) => setSheetKey(e.target.value)}
+                placeholder="Key (optional)"
+                className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+              />
+            </div>
+            <textarea
+              value={sheetDescription}
+              onChange={(e) => setSheetDescription(e.target.value)}
+              placeholder="Short SEO description for the score page"
+              rows={4}
+              className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+            />
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <select
+                value={sheetAudience}
+                onChange={(e) => setSheetAudience(e.target.value as Sheet["audience"])}
+                className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+              >
+                <option value="ALL_USERS">Public score bank</option>
+                <option value="CHORISTERS_ONLY">Choristers only</option>
+              </select>
+              <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85">
+                <input
+                  type="checkbox"
+                  checked={sheetPublished}
+                  onChange={(e) => setSheetPublished(e.target.checked)}
+                  className="h-4 w-4 accent-white"
+                />
+                Published
+              </label>
+              <label className="inline-flex cursor-pointer items-center gap-2">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  onChange={onPickSheetFile}
+                  className="hidden"
+                  disabled={isPending || !sheetTitle.trim()}
+                />
+                <span className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white hover:bg-white/10">
+                  {isPending ? "Uploading..." : "Upload Score"}
+                </span>
+              </label>
+            </div>
           </div>
 
           <div className="mt-6 grid gap-3">
             {sheets.map((sheet) => (
               <div key={sheet.id} className="rounded-2xl border border-white/10 bg-black/30 p-4">
                 {editingSheetId === sheet.id ? (
-                  <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto]">
+                  <div className="grid gap-3">
                     <input
                       value={editingSheetTitle}
                       onChange={(e) => setEditingSheetTitle(e.target.value)}
-                      placeholder="Sheet title"
+                      placeholder="Score title"
                       className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
                     />
-                    <select
-                      value={editingSheetAudience}
-                      onChange={(e) =>
-                        setEditingSheetAudience(e.target.value as Sheet["audience"])
-                      }
-                      className="rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
-                    >
-                      <option value="ALL_USERS">All users</option>
-                      <option value="CHORISTERS_ONLY">Choristers only</option>
-                    </select>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <input
+                        value={editingSheetComposer}
+                        onChange={(e) => setEditingSheetComposer(e.target.value)}
+                        placeholder="Composer"
+                        className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                      />
+                      <input
+                        value={editingSheetVoicing}
+                        onChange={(e) => setEditingSheetVoicing(e.target.value)}
+                        placeholder="Voicing"
+                        className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                      />
+                      <input
+                        value={editingSheetLanguage}
+                        onChange={(e) => setEditingSheetLanguage(e.target.value)}
+                        placeholder="Language"
+                        className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                      />
+                      <input
+                        value={editingSheetKey}
+                        onChange={(e) => setEditingSheetKey(e.target.value)}
+                        placeholder="Key"
+                        className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                      />
+                    </div>
+                    <textarea
+                      value={editingSheetDescription}
+                      onChange={(e) => setEditingSheetDescription(e.target.value)}
+                      rows={4}
+                      placeholder="Short SEO description"
+                      className="w-full rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                    />
                     <div className="flex flex-wrap gap-2">
+                      <select
+                        value={editingSheetAudience}
+                        onChange={(e) =>
+                          setEditingSheetAudience(e.target.value as Sheet["audience"])
+                        }
+                        className="min-w-48 rounded-xl border border-white/10 bg-black/40 p-3 text-sm text-white outline-none focus:border-white/25"
+                      >
+                        <option value="ALL_USERS">Public score bank</option>
+                        <option value="CHORISTERS_ONLY">Choristers only</option>
+                      </select>
+                      <label className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/40 px-3 py-3 text-sm text-white/85">
+                        <input
+                          type="checkbox"
+                          checked={editingSheetPublished}
+                          onChange={(e) => setEditingSheetPublished(e.target.checked)}
+                          className="h-4 w-4 accent-white"
+                        />
+                        Published
+                      </label>
                       <Button className="rounded-2xl" onClick={() => saveSheetEdit(sheet.id)} disabled={isPending}>
                         Save
                       </Button>
@@ -454,6 +607,15 @@ export default function AdminMusicClient({
                         <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
                           {audienceLabel(sheet.audience)}
                         </Badge>
+                        <Badge
+                          className={
+                            sheet.isPublished
+                              ? "rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20"
+                              : "rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20"
+                          }
+                        >
+                          {sheet.isPublished ? "Published" : "Draft"}
+                        </Badge>
                         {sheet.mimeType ? (
                           <Badge className="rounded-full bg-white/10 text-white/80 hover:bg-white/10">
                             {sheet.mimeType.includes("pdf") ? "PDF" : "Word"}
@@ -463,10 +625,31 @@ export default function AdminMusicClient({
                       <p className="mt-3 text-sm font-semibold text-white">
                         {sheet.title ?? sheet.fileName}
                       </p>
+                      <p className="mt-1 text-xs text-white/65">
+                        {sheet.composer}
+                        {sheet.voicing ? ` / ${sheet.voicing}` : ""}
+                        {sheet.lyricsLanguage ? ` / ${sheet.lyricsLanguage}` : ""}
+                        {sheet.scoreKey ? ` / Key: ${sheet.scoreKey}` : ""}
+                      </p>
+                      {sheet.description ? (
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/62">
+                          {sheet.description}
+                        </p>
+                      ) : null}
                       <p className="mt-1 break-all text-xs text-white/60">{sheet.fileName}</p>
                       <p className="mt-2 text-xs text-white/50">
                         {new Date(sheet.createdAt).toLocaleString()}
                       </p>
+                      {sheet.audience === "ALL_USERS" && sheet.isPublished ? (
+                        <a
+                          href={`/scores/${sheet.slug}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-3 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/10"
+                        >
+                          Open public score page
+                        </a>
+                      ) : null}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Button
@@ -492,7 +675,7 @@ export default function AdminMusicClient({
             ))}
             {sheets.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm text-white/60">
-                No choir sheet files uploaded yet.
+                No score files uploaded yet.
               </div>
             ) : null}
           </div>

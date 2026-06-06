@@ -30,6 +30,7 @@ const baseNav = [
 ];
 
 const mediaNav = [
+  { label: "Scores", href: "/scores" },
   { label: "Gallery", href: "/gallery" },
   { label: "Music", href: "/music" },
   { label: "Videos", href: "/videos" },

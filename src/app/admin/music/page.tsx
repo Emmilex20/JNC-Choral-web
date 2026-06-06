@@ -16,8 +16,8 @@ export default async function AdminMusicPage() {
     <div className="space-y-6">
       <AdminPageHeader
         eyebrow="Audio Library"
-        title="Music"
-        description="Manage public audio tracks and restricted choir sheet downloads from one focused workspace."
+        title="Music & Scores"
+        description="Manage public audio tracks and the Sir Jude Nnam Scores Bank from one focused workspace."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-stat-card min-h-0">
@@ -25,7 +25,7 @@ export default async function AdminMusicPage() {
             <p className="admin-metric-value">{music.length}</p>
           </div>
           <div className="admin-stat-card min-h-0">
-            <p className="text-sm text-white/68">Sheet Files</p>
+            <p className="text-sm text-white/68">Scores</p>
             <p className="admin-metric-value">{musicSheets.length}</p>
           </div>
         </div>
@@ -36,10 +36,17 @@ export default async function AdminMusicPage() {
         initialSheets={musicSheets.map((sheet) => ({
           id: sheet.id,
           title: sheet.title,
+          slug: sheet.slug,
+          composer: sheet.composer,
+          description: sheet.description,
+          voicing: sheet.voicing,
+          lyricsLanguage: sheet.lyricsLanguage,
+          scoreKey: sheet.scoreKey,
           fileName: sheet.fileName,
           mimeType: sheet.mimeType,
           publicId: sheet.publicId,
           audience: sheet.audience,
+          isPublished: sheet.isPublished,
           createdAt: sheet.createdAt.toISOString(),
         }))}
       />

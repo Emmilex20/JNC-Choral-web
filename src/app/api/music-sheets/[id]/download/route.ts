@@ -13,7 +13,7 @@ function toAttachmentName(fileName: string) {
 } 
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -21,7 +21,11 @@ export async function GET(
   const access = await getMusicSheetAccess(session);
 
   if (!access.isSignedIn) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const url = new URL(request.url);
+    const callbackUrl = `${url.pathname}${url.search}`;
+    return NextResponse.redirect(
+      new URL(`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`, url)
+    );
   }
 
   const { sheet, missingTable } = await findMusicSheetById(id);
@@ -34,6 +38,10 @@ export async function GET(
   }
 
   if (!sheet) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (!sheet.isPublished && !access.isAdmin) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
