@@ -15,6 +15,7 @@ import {
   Trash2,
   Upload,
   Vote,
+  WandSparkles,
   XCircle,
 } from "lucide-react";
 
@@ -29,6 +30,7 @@ import {
   setChallengeSubmissionWinnerAction,
   updateChallengeAction,
 } from "../actions";
+import { generateMusicChallengeDraftAction } from "../../ai-actions";
 
 const adminChallengeTypes = [
   "Vocal Challenge",
@@ -175,6 +177,8 @@ export default function AdminChallengesClient({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
 
   function reloadOnSuccess(result: { ok: boolean; error?: string }) {
     if (!result.ok) {
@@ -264,6 +268,33 @@ export default function AdminChallengesClient({
     });
   }
 
+  function generateChallengeDraft() {
+    setError(null);
+    setAiGenerating(true);
+    startTransition(async () => {
+      const res = await generateMusicChallengeDraftAction({
+        topic: aiPrompt,
+        type: form.type,
+      });
+
+      if (!res.ok) {
+        setError(res.error);
+        setAiGenerating(false);
+        return;
+      }
+
+      setForm((current) => ({
+        ...current,
+        title: res.data.title,
+        description: res.data.description,
+        prompt: res.data.prompt,
+        rules: res.data.rules,
+        isPublished: false,
+      }));
+      setAiGenerating(false);
+    });
+  }
+
   function moderateSubmission(
     submission: SubmissionRow,
     status: SubmissionStatus
@@ -328,6 +359,33 @@ export default function AdminChallengesClient({
         ) : null}
 
         <div className="mt-5 grid gap-4">
+          <div className="rounded-2xl border border-amber-200/14 bg-amber-200/[0.055] p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white">
+              <WandSparkles className="h-4 w-4 text-amber-100" />
+              OpenAI challenge assistant
+            </div>
+            <textarea
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              rows={3}
+              className={`${inputClass} mt-3`}
+              placeholder="Example: sight-reading hymn refrain, harmony duet, instrumental worship intro, vocal stamina..."
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-3 rounded-2xl border-amber-200/25 bg-black/20 text-white hover:bg-white/10"
+              onClick={generateChallengeDraft}
+              disabled={isPending || aiGenerating}
+            >
+              {aiGenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <WandSparkles className="h-4 w-4" />
+              )}
+              {aiGenerating ? "Generating..." : "Generate challenge draft"}
+            </Button>
+          </div>
           <div>
             <label className={labelClass}>Title</label>
             <input

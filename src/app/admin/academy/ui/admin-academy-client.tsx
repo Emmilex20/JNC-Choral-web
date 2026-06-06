@@ -12,6 +12,7 @@ import {
   Loader2,
   Plus,
   Trash2,
+  WandSparkles,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,11 @@ import {
   updateDailyChallengeAction,
   updateQuizAction,
 } from "../actions";
+import {
+  generateAcademyArticleDraftAction,
+  generateDailyChallengeDraftAction,
+  generateQuizDraftAction,
+} from "../../ai-actions";
 
 const adminQuizCategories = [
   "Beginner Music",
@@ -213,6 +219,7 @@ export default function AdminAcademyClient({
   const [activeTab, setActiveTab] = useState<TabId>("articles");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [aiTask, setAiTask] = useState<"article" | "quiz" | "daily" | null>(null);
   const [categories] = useState<CategoryRow[]>(initialCategories);
   const [articles] = useState<ArticleRow[]>(initialArticles);
   const [quizzes] = useState<QuizRow[]>(initialQuizzes);
@@ -234,6 +241,7 @@ export default function AdminAcademyClient({
     isFeatured: false,
     isTrending: false,
   });
+  const [articleAiPrompt, setArticleAiPrompt] = useState("");
 
   const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
   const [quizForm, setQuizForm] = useState<QuizForm>({
@@ -244,6 +252,7 @@ export default function AdminAcademyClient({
     isPopular: false,
     questions: [emptyQuestion()],
   });
+  const [quizAiPrompt, setQuizAiPrompt] = useState("");
 
   const [editingChallengeId, setEditingChallengeId] = useState<string | null>(null);
   const [challengeForm, setChallengeForm] = useState<ChallengeForm>({
@@ -255,6 +264,7 @@ export default function AdminAcademyClient({
     explanation: "",
     isPublished: true,
   });
+  const [dailyAiPrompt, setDailyAiPrompt] = useState("");
 
   function reloadOnSuccess(result: { ok: boolean; error?: string }) {
     if (!result.ok) {
@@ -365,6 +375,36 @@ export default function AdminAcademyClient({
     });
   }
 
+  function generateArticleDraft() {
+    const selectedCategory =
+      categories.find((category) => category.id === articleForm.categoryId) ?? categories[0];
+
+    setError(null);
+    setAiTask("article");
+    startTransition(async () => {
+      const res = await generateAcademyArticleDraftAction({
+        topic: articleAiPrompt,
+        categoryName: selectedCategory?.name ?? "Music Theory",
+      });
+
+      if (!res.ok) {
+        setError(res.error);
+        setAiTask(null);
+        return;
+      }
+
+      setArticleForm((prev) => ({
+        ...prev,
+        title: res.data.title,
+        excerpt: res.data.excerpt,
+        body: res.data.body,
+        tags: res.data.tags.join(", "),
+        status: "DRAFT",
+      }));
+      setAiTask(null);
+    });
+  }
+
   function resetQuizForm() {
     setEditingQuizId(null);
     setQuizForm({
@@ -442,6 +482,37 @@ export default function AdminAcademyClient({
     });
   }
 
+  function generateQuizDraft() {
+    setError(null);
+    setAiTask("quiz");
+    startTransition(async () => {
+      const res = await generateQuizDraftAction({
+        topic: quizAiPrompt,
+        category: quizForm.category,
+      });
+
+      if (!res.ok) {
+        setError(res.error);
+        setAiTask(null);
+        return;
+      }
+
+      setQuizForm((prev) => ({
+        ...prev,
+        title: res.data.title,
+        description: res.data.description,
+        isPublished: false,
+        questions: res.data.questions.map((question) => ({
+          prompt: question.prompt,
+          options: normalizeFourOptions(question.options),
+          correctIndex: question.correctIndex,
+          explanation: question.explanation,
+        })),
+      }));
+      setAiTask(null);
+    });
+  }
+
   function removeQuiz(quiz: QuizRow) {
     if (!confirm(`Delete ${quiz.title}?`)) return;
     startTransition(async () => {
@@ -495,6 +566,33 @@ export default function AdminAcademyClient({
         ? await updateDailyChallengeAction({ id: editingChallengeId, ...payload })
         : await createDailyChallengeAction(payload);
       reloadOnSuccess(res);
+    });
+  }
+
+  function generateDailyChallengeDraft() {
+    setError(null);
+    setAiTask("daily");
+    startTransition(async () => {
+      const res = await generateDailyChallengeDraftAction({
+        topic: dailyAiPrompt,
+      });
+
+      if (!res.ok) {
+        setError(res.error);
+        setAiTask(null);
+        return;
+      }
+
+      setChallengeForm((prev) => ({
+        ...prev,
+        title: res.data.title,
+        prompt: res.data.prompt,
+        options: normalizeFourOptions(res.data.options),
+        correctIndex: res.data.correctIndex,
+        explanation: res.data.explanation,
+        isPublished: false,
+      }));
+      setAiTask(null);
     });
   }
 
@@ -552,6 +650,33 @@ export default function AdminAcademyClient({
               </h2>
 
               <div className="mt-5 grid gap-4">
+                <div className="rounded-2xl border border-amber-200/14 bg-amber-200/[0.055] p-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                    <WandSparkles className="h-4 w-4 text-amber-100" />
+                    OpenAI draft assistant
+                  </div>
+                  <textarea
+                    value={articleAiPrompt}
+                    onChange={(e) => setArticleAiPrompt(e.target.value)}
+                    rows={3}
+                    className={`${inputClass} mt-3`}
+                    placeholder="Example: blending, vowel matching, rehearsal discipline, sight-reading for beginners..."
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-3 rounded-2xl border-amber-200/25 bg-black/20 text-white hover:bg-white/10"
+                    disabled={isPending || aiTask !== null}
+                    onClick={generateArticleDraft}
+                  >
+                    {aiTask === "article" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <WandSparkles className="h-4 w-4" />
+                    )}
+                    {aiTask === "article" ? "Generating..." : "Generate article draft"}
+                  </Button>
+                </div>
                 <div>
                   <label className={labelClass}>Title</label>
                   <input
@@ -859,6 +984,33 @@ export default function AdminAcademyClient({
               {editingQuizId ? "Edit quiz" : "Create quiz"}
             </h2>
             <div className="mt-5 grid gap-4">
+              <div className="rounded-2xl border border-amber-200/14 bg-amber-200/[0.055] p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <WandSparkles className="h-4 w-4 text-amber-100" />
+                  OpenAI quiz assistant
+                </div>
+                <textarea
+                  value={quizAiPrompt}
+                  onChange={(e) => setQuizAiPrompt(e.target.value)}
+                  rows={3}
+                  className={`${inputClass} mt-3`}
+                  placeholder="Example: beginner solfa, time signatures, choral blend, worship music history..."
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 rounded-2xl border-amber-200/25 bg-black/20 text-white hover:bg-white/10"
+                  disabled={isPending || aiTask !== null}
+                  onClick={generateQuizDraft}
+                >
+                  {aiTask === "quiz" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <WandSparkles className="h-4 w-4" />
+                  )}
+                  {aiTask === "quiz" ? "Generating..." : "Generate quiz draft"}
+                </Button>
+              </div>
               <input
                 value={quizForm.title}
                 onChange={(e) => setQuizForm((prev) => ({ ...prev, title: e.target.value }))}
@@ -1119,6 +1271,33 @@ export default function AdminAcademyClient({
               {editingChallengeId ? "Edit challenge" : "Create or update challenge"}
             </h2>
             <div className="mt-5 grid gap-4">
+              <div className="rounded-2xl border border-amber-200/14 bg-amber-200/[0.055] p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-white">
+                  <WandSparkles className="h-4 w-4 text-amber-100" />
+                  OpenAI daily challenge assistant
+                </div>
+                <textarea
+                  value={dailyAiPrompt}
+                  onChange={(e) => setDailyAiPrompt(e.target.value)}
+                  rows={3}
+                  className={`${inputClass} mt-3`}
+                  placeholder="Example: intervals, key signatures, rhythm counting, diction, listening skills..."
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 rounded-2xl border-amber-200/25 bg-black/20 text-white hover:bg-white/10"
+                  disabled={isPending || aiTask !== null}
+                  onClick={generateDailyChallengeDraft}
+                >
+                  {aiTask === "daily" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <WandSparkles className="h-4 w-4" />
+                  )}
+                  {aiTask === "daily" ? "Generating..." : "Generate daily challenge"}
+                </Button>
+              </div>
               <input
                 type="date"
                 value={challengeForm.challengeDate}
