@@ -38,6 +38,7 @@ enum ApplicationStatus {
 
 enum AttendanceStatus {
   PRESENT
+  ABSENT
 }
 
 enum MusicSheetAudience {

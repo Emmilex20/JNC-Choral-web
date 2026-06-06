@@ -25,6 +25,7 @@ type AttendanceRow = {
   id: string;
   rehearsalTitle: string;
   startsAt: string;
+  status: "PRESENT" | "ABSENT";
   markedAt: string;
   confirmedAt: string | null;
 };
@@ -61,10 +62,16 @@ export default function AdminChoristersClient({
   }, [selected]);
 
   const attendanceStats = useMemo(() => {
-    if (!selected) return { total: 0, confirmed: 0 };
+    if (!selected) return { total: 0, confirmed: 0, present: 0, absent: 0 };
     const total = selected.attendance.length;
     const confirmed = selected.attendance.filter((a) => a.confirmedAt).length;
-    return { total, confirmed };
+    const present = selected.attendance.filter(
+      (a) => a.status === "PRESENT" && a.confirmedAt
+    ).length;
+    const absent = selected.attendance.filter(
+      (a) => a.status === "ABSENT" && a.confirmedAt
+    ).length;
+    return { total, confirmed, present, absent };
   }, [selected]);
 
   const profileDetails = useMemo(() => {
@@ -304,13 +311,22 @@ export default function AdminChoristersClient({
                               <div className="flex flex-wrap items-center gap-2">
                                 {a.confirmedAt ? (
                                   <Badge className="rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20">
-                                    Confirmed
+                                    Approved
                                   </Badge>
                                 ) : (
                                   <Badge className="rounded-full bg-amber-500/15 text-amber-100 hover:bg-amber-500/20">
                                     Pending
                                   </Badge>
                                 )}
+                                <Badge
+                                  className={
+                                    a.status === "ABSENT"
+                                      ? "rounded-full bg-rose-500/15 text-rose-100 hover:bg-rose-500/20"
+                                      : "rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20"
+                                  }
+                                >
+                                  {a.status === "ABSENT" ? "Absent" : "Present"}
+                                </Badge>
                                 <Badge className="rounded-full bg-white/10 text-white/70 hover:bg-white/10">
                                   Marked {new Date(a.markedAt).toLocaleDateString()}
                                 </Badge>
@@ -321,7 +337,7 @@ export default function AdminChoristersClient({
                                       onClick={() => confirmAttendance(a.id)}
                                       disabled={isPending}
                                     >
-                                      Confirm
+                                      Approve
                                     </Button>
                                     <Button
                                       variant="outline"
@@ -355,13 +371,19 @@ export default function AdminChoristersClient({
                         </p>
                       </div>
                       <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
-                        <p className="text-sm text-white/60">Confirmed</p>
+                        <p className="text-sm text-white/60">Approved present</p>
                         <p className="mt-2 text-3xl font-semibold text-white">
-                          {attendanceStats.confirmed}
+                          {attendanceStats.present}
                         </p>
                       </div>
                       <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
-                        <p className="text-sm text-white/60">Confirmation rate</p>
+                        <p className="text-sm text-white/60">Approved absent</p>
+                        <p className="mt-2 text-3xl font-semibold text-white">
+                          {attendanceStats.absent}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                        <p className="text-sm text-white/60">Approval rate</p>
                         <p className="mt-2 text-3xl font-semibold text-white">
                           {attendanceStats.total === 0
                             ? "0%"

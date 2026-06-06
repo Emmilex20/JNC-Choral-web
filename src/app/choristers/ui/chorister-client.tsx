@@ -8,6 +8,7 @@ import {
   CalendarClock,
   ChevronRight,
   CircleCheckBig,
+  CircleX,
   Download,
   FileText,
   Sparkles,
@@ -51,7 +52,7 @@ type Rehearsal = {
 type Attendance = {
   id: string;
   rehearsalId: string;
-  status: "PRESENT";
+  status: "PRESENT" | "ABSENT";
   confirmedAt: string | null;
   rehearsal: {
     id: string;
@@ -109,6 +110,17 @@ function formatDate(value: string) {
 
 function audienceLabel(audience: Sheet["audience"]) {
   return audience === "CHORISTERS_ONLY" ? "Choristers only" : "All signed-in users";
+}
+
+function attendanceRecordLabel(record: Attendance | undefined) {
+  if (!record) return "Ready to mark present or absent";
+
+  const statusLabel = record.status === "ABSENT" ? "Absence" : "Presence";
+  if (record.confirmedAt) {
+    return `${statusLabel} approved on ${formatDate(record.confirmedAt)}`;
+  }
+
+  return `${statusLabel} submitted and pending approval`;
 }
 
 async function getPassportSignature() {
@@ -217,11 +229,11 @@ export default function ChoristerClient({
     });
   }
 
-  function markPresent(rehearsalId: string) {
+  function markAttendance(rehearsalId: string, status: Attendance["status"]) {
     setError(null);
     setStatusMessage(null);
     startTransition(async () => {
-      const res = await markAttendanceAction({ rehearsalId });
+      const res = await markAttendanceAction({ rehearsalId, status });
       if (!res.ok) {
         setError(res.error);
         return;
@@ -278,7 +290,7 @@ export default function ChoristerClient({
                 Welcome, {user.name ?? "Chorister"}
               </span>
               <span className="rounded-full border border-cyan-300/15 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100">
-                {stats.confirmedCount} of {stats.totalRehearsals} rehearsals confirmed
+                {stats.confirmedCount} of {stats.totalRehearsals} rehearsals present
               </span>
             </div>
 
@@ -324,11 +336,11 @@ export default function ChoristerClient({
                   </div>
                   <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
                     <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-white/45">
-                      <span>Confirmed</span>
+                      <span>Present</span>
                       <CircleCheckBig className="h-4 w-4" />
                     </div>
                     <div className="mt-2 text-2xl font-semibold text-white">{stats.confirmedCount}</div>
-                    <div className="mt-1 text-sm text-white/55">rehearsals</div>
+                    <div className="mt-1 text-sm text-white/55">present approvals</div>
                   </div>
                 </div>
               </div>
@@ -537,7 +549,9 @@ export default function ChoristerClient({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/50">
                   Rehearsal Deck
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">Mark your presence with clarity</h2>
+                <h2 className="mt-2 text-2xl font-semibold text-white">
+                  Mark presence or absence with clarity
+                </h2>
               </div>
               <Badge className="rounded-full bg-white/10 px-4 py-1.5 text-white hover:bg-white/10">
                 {attendance.length} marked
@@ -564,20 +578,36 @@ export default function ChoristerClient({
                         </div>
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/72">
-                            {record?.confirmedAt
-                              ? `Confirmed on ${formatDate(record.confirmedAt)}`
-                              : record
-                                ? "Marked and pending confirmation"
-                                : "Ready to mark present"}
+                            {attendanceRecordLabel(record)}
                           </div>
-                          <Button
-                            variant="outline"
-                            className="rounded-full border-white/15 bg-white/5 px-5 text-white hover:bg-white/10"
-                            onClick={() => markPresent(rehearsal.id)}
-                            disabled={isPending || Boolean(record)}
-                          >
-                            {record ? "Marked" : "Mark Present"}
-                          </Button>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              variant="outline"
+                              className="rounded-full border-emerald-300/20 bg-emerald-300/10 px-5 text-emerald-100 hover:bg-emerald-300/15"
+                              onClick={() => markAttendance(rehearsal.id, "PRESENT")}
+                              disabled={
+                                isPending ||
+                                Boolean(record?.confirmedAt) ||
+                                record?.status === "PRESENT"
+                              }
+                            >
+                              <CircleCheckBig className="h-4 w-4" />
+                              {record?.status === "PRESENT" ? "Present marked" : "Mark Present"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="rounded-full border-rose-300/20 bg-rose-300/10 px-5 text-rose-100 hover:bg-rose-300/15"
+                              onClick={() => markAttendance(rehearsal.id, "ABSENT")}
+                              disabled={
+                                isPending ||
+                                Boolean(record?.confirmedAt) ||
+                                record?.status === "ABSENT"
+                              }
+                            >
+                              <CircleX className="h-4 w-4" />
+                              {record?.status === "ABSENT" ? "Absent marked" : "Mark Absent"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -83,6 +83,7 @@ export async function upsertChoristerProfileAction(input: unknown) {
 
 const MarkAttendanceSchema = z.object({
   rehearsalId: z.string().min(1),
+  status: z.enum(["PRESENT", "ABSENT"]).default("PRESENT"),
 });
 
 export async function markAttendanceAction(input: unknown) {
@@ -108,10 +109,10 @@ export async function markAttendanceAction(input: unknown) {
     create: {
       rehearsalId: parsed.data.rehearsalId,
       userId: user.id,
-      status: "PRESENT",
+      status: parsed.data.status,
     },
     update: {
-      status: "PRESENT",
+      status: parsed.data.status,
       confirmedAt: null,
       confirmedBy: null,
       markedAt: new Date(),

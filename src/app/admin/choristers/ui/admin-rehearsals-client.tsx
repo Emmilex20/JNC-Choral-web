@@ -24,6 +24,7 @@ type PendingAttendance = {
   rehearsalDate: string;
   userName: string | null;
   userEmail: string | null;
+  status: "PRESENT" | "ABSENT";
   markedAt: string;
 };
 
@@ -159,7 +160,7 @@ export default function AdminRehearsalsClient({
         <p className="text-xs uppercase tracking-[0.22em] text-white/45">Attendance Queue</p>
         <h3 className="mt-2 text-xl font-semibold text-white">Pending confirmations</h3>
         <p className="mt-2 text-sm text-white/60">
-          Choristers have marked themselves present. Confirm or reject below.
+          Choristers have submitted presence or absence requests. Approve or reject below.
         </p>
         <div className="mt-4 grid gap-3">
           {pending.length === 0 ? (
@@ -180,6 +181,15 @@ export default function AdminRehearsalsClient({
                     <p className="text-xs text-white/60">
                       {new Date(p.rehearsalDate).toLocaleString()}
                     </p>
+                    <Badge
+                      className={
+                        p.status === "ABSENT"
+                          ? "mt-3 rounded-full bg-rose-500/15 text-rose-100 hover:bg-rose-500/20"
+                          : "mt-3 rounded-full bg-emerald-500/15 text-emerald-100 hover:bg-emerald-500/20"
+                      }
+                    >
+                      {p.status === "ABSENT" ? "Absent request" : "Present request"}
+                    </Badge>
                     <p className="mt-3 text-xs uppercase tracking-[0.18em] text-white/45">
                       Marked {new Date(p.markedAt).toLocaleString()}
                     </p>
@@ -190,7 +200,7 @@ export default function AdminRehearsalsClient({
                       onClick={() => confirmAttendance(p.id)}
                       disabled={isPending}
                     >
-                      Confirm
+                      Approve
                     </Button>
                     <Button
                       variant="outline"

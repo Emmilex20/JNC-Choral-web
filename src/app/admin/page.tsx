@@ -178,6 +178,7 @@ export default async function AdminPage() {
     rehearsalDate: p.rehearsal.startsAt.toISOString(),
     userName: p.user.name,
     userEmail: p.user.email,
+    status: p.status,
     markedAt: p.markedAt.toISOString(),
   }));
 
@@ -380,6 +381,7 @@ export default async function AdminPage() {
               id: a.id,
               rehearsalTitle: a.rehearsal.title,
               startsAt: a.rehearsal.startsAt.toISOString(),
+              status: a.status,
               markedAt: a.markedAt.toISOString(),
               confirmedAt: a.confirmedAt ? a.confirmedAt.toISOString() : null,
             })),

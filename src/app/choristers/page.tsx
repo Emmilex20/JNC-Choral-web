@@ -61,7 +61,9 @@ export default async function ChoristersPage() {
 
   const now = new Date();
   const completedRehearsals = rehearsals.filter((r) => r.startsAt <= now);
-  const confirmedAttendance = attendance.filter((a) => a.confirmedAt);
+  const confirmedAttendance = attendance.filter(
+    (a) => a.confirmedAt && a.status === "PRESENT"
+  );
   const totalRehearsals = completedRehearsals.length;
   const confirmedCount = confirmedAttendance.length;
   const attendancePercent =
