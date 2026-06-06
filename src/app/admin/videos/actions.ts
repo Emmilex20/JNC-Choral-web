@@ -6,6 +6,7 @@ import { isAdminSession } from "@/lib/authz";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
+import { getBestVideoPosterUrl } from "@/lib/cloudinary-media";
 
 const CreateSchema = z.object({
   videoUrl: z.string().url(),
@@ -48,6 +49,7 @@ export async function createVideoItemAction(input: unknown) {
   });
 
   revalidatePath("/videos");
+  revalidatePath("/");
   revalidatePath("/admin/videos");
   revalidatePath("/news");
 
@@ -56,6 +58,7 @@ export async function createVideoItemAction(input: unknown) {
     item: {
       ...item,
       createdAt: item.createdAt.toISOString(),
+      posterUrl: getBestVideoPosterUrl(item.videoUrl, item.posterUrl),
     },
   };
 }
@@ -71,6 +74,7 @@ export async function deleteVideoItemAction(input: unknown) {
 
   await prisma.videoItem.delete({ where: { id: parsed.data.id } });
   revalidatePath("/videos");
+  revalidatePath("/");
   revalidatePath("/admin/videos");
   return { ok: true as const };
 }
@@ -93,6 +97,7 @@ export async function updateVideoTitleAction(input: unknown) {
   });
 
   revalidatePath("/videos");
+  revalidatePath("/");
   revalidatePath("/admin/videos");
   return { ok: true as const };
 }
@@ -115,6 +120,7 @@ export async function updateVideoPosterAction(input: unknown) {
   });
 
   revalidatePath("/videos");
+  revalidatePath("/");
   revalidatePath("/admin/videos");
   return { ok: true as const };
 }

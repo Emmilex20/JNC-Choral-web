@@ -13,6 +13,10 @@ import {
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { Button } from "@/components/ui/button";
+import {
+  getBestVideoPosterUrl,
+  getOptimizedCloudinaryVideoUrl,
+} from "@/lib/cloudinary-media";
 import { prisma } from "@/lib/prisma";
 import VideosClient from "./ui/videos-client";
 
@@ -58,7 +62,14 @@ export default async function VideosPage() {
     take: 200,
   });
 
-  const featured = items[0];
+  const videos = items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    videoUrl: getOptimizedCloudinaryVideoUrl(item.videoUrl),
+    posterUrl: getBestVideoPosterUrl(item.videoUrl, item.posterUrl),
+    createdAt: item.createdAt.toISOString(),
+  }));
+  const featured = videos[0];
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -72,7 +83,7 @@ export default async function VideosPage() {
     },
     mainEntity: {
       "@type": "ItemList",
-      itemListElement: items.map((videoItem, index) => ({
+      itemListElement: videos.map((videoItem, index) => ({
         "@type": "ListItem",
         position: index + 1,
         name: videoItem.title ?? "JNC video highlight",
@@ -143,7 +154,7 @@ export default async function VideosPage() {
               <div className="absolute bottom-5 left-5 right-5">
                 <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/54 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/82 backdrop-blur">
                   <Sparkles className="h-4 w-4 text-amber-100" />
-                  {items.length} video{items.length === 1 ? "" : "s"} available
+                  {videos.length} video{videos.length === 1 ? "" : "s"} available
                 </p>
                 <h2 className="mt-4 text-2xl font-semibold leading-tight text-white">
                   {featured?.title ?? "The JNC screening room"}
@@ -190,13 +201,7 @@ export default async function VideosPage() {
         </div>
 
         <VideosClient
-          items={items.map((item) => ({
-            id: item.id,
-            title: item.title,
-            videoUrl: item.videoUrl,
-            posterUrl: item.posterUrl,
-            createdAt: item.createdAt.toISOString(),
-          }))}
+          items={videos}
         />
       </section>
 

@@ -20,6 +20,10 @@ import {
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  getBestVideoPosterUrl,
+  getOptimizedCloudinaryVideoUrl,
+} from "@/lib/cloudinary-media";
 
 type IconComponent = ComponentType<{ className?: string }>;
 
@@ -230,7 +234,7 @@ export default async function HomePage() {
         take: 8,
       }),
       prisma.videoItem.findMany({
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: 2,
       }),
     ]);
@@ -452,9 +456,14 @@ export default async function HomePage() {
             <div className="overflow-hidden rounded-[2rem] border border-white/10 bg-black">
               {featuredVideo ? (
                 <video
-                  src={featuredVideo.videoUrl}
-                  poster={featuredVideo.posterUrl ?? undefined}
+                  src={getOptimizedCloudinaryVideoUrl(featuredVideo.videoUrl)}
+                  poster={
+                    getBestVideoPosterUrl(featuredVideo.videoUrl, featuredVideo.posterUrl) ??
+                    undefined
+                  }
                   controls
+                  playsInline
+                  preload="none"
                   className="aspect-video w-full bg-black object-cover"
                 />
               ) : (
@@ -483,9 +492,11 @@ export default async function HomePage() {
                   className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04]"
                 >
                   <video
-                    src={video.videoUrl}
-                    poster={video.posterUrl ?? undefined}
+                    src={getOptimizedCloudinaryVideoUrl(video.videoUrl)}
+                    poster={getBestVideoPosterUrl(video.videoUrl, video.posterUrl) ?? undefined}
                     controls
+                    playsInline
+                    preload="none"
                     className="aspect-video w-full bg-black object-cover"
                   />
                   <div className="p-4">

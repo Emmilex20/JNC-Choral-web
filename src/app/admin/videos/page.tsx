@@ -1,4 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import {
+  getBestVideoPosterUrl,
+  getOptimizedCloudinaryVideoUrl,
+} from "@/lib/cloudinary-media";
 import { AdminPageHeader } from "../_components/admin-page-header";
 import AdminVideosClient from "./ui/admin-videos-client";
 
@@ -32,6 +36,8 @@ export default async function AdminVideosPage() {
       <AdminVideosClient
         initialItems={items.map((item) => ({
           ...item,
+          videoUrl: getOptimizedCloudinaryVideoUrl(item.videoUrl),
+          posterUrl: getBestVideoPosterUrl(item.videoUrl, item.posterUrl),
           createdAt: item.createdAt.toISOString(),
         }))}
       />

@@ -77,7 +77,8 @@ export default function VideosClient({ items }: { items: Item[] }) {
             <video
               className="aspect-video w-full bg-black object-cover"
               controls
-              preload="metadata"
+              playsInline
+              preload="none"
               poster={featured.posterUrl ?? mediaPoster}
               src={featured.videoUrl}
             />
@@ -158,7 +159,8 @@ export default function VideosClient({ items }: { items: Item[] }) {
                 <video
                   className="aspect-video w-full bg-black object-cover"
                   controls
-                  preload="metadata"
+                  playsInline
+                  preload="none"
                   poster={videoItem.posterUrl ?? mediaPoster}
                   src={videoItem.videoUrl}
                 />
