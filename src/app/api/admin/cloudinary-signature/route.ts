@@ -4,7 +4,12 @@ import { cloudinary } from "@/lib/cloudinary";
 import { isAdminSession } from "@/lib/authz";
 import { getServerSession } from "next-auth";
 
-const allowedFolderSuffixes = new Set(["music-sheets", "event-media"]);
+const allowedFolderSuffixes = new Set([
+  "academy",
+  "event-media",
+  "music-sheets",
+  "spotlights",
+]);
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);

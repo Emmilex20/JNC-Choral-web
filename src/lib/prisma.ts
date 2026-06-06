@@ -11,11 +11,34 @@ const createClient = () =>
     log: ["error", "warn"],
   });
 
-const hasGalleryItem = (client?: PrismaClient) =>
-  Boolean((client as { galleryItem?: unknown } | undefined)?.galleryItem);
+const hasCurrentModelDelegates = (client?: PrismaClient) => {
+  const maybeClient = client as
+    | {
+        galleryItem?: unknown;
+        academyArticle?: unknown;
+        quiz?: unknown;
+        dailyChallenge?: unknown;
+        leaderboardEntry?: unknown;
+        achievement?: unknown;
+        userAchievement?: unknown;
+        choristerSpotlight?: unknown;
+      }
+    | undefined;
+
+  return Boolean(
+    maybeClient?.galleryItem &&
+      maybeClient.academyArticle &&
+      maybeClient.quiz &&
+      maybeClient.dailyChallenge &&
+      maybeClient.leaderboardEntry &&
+      maybeClient.achievement &&
+      maybeClient.userAchievement &&
+      maybeClient.choristerSpotlight
+  );
+};
 
 export const prisma =
-  globalForPrisma.prisma && hasGalleryItem(globalForPrisma.prisma)
+  globalForPrisma.prisma && hasCurrentModelDelegates(globalForPrisma.prisma)
     ? globalForPrisma.prisma
     : createClient();
 

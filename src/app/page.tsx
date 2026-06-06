@@ -6,17 +6,22 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ComponentType } from "react";
 import {
+  BookOpenText,
+  Brain,
   CalendarDays,
   CirclePlay,
   Clapperboard,
+  Crown,
   HeartHandshake,
   KeyboardMusic,
+  Lightbulb,
   MapPin,
   MicVocal,
   Quote,
   Sparkles,
   TrendingUp,
   Trophy,
+  UserRound,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,14 +30,39 @@ import {
   getOptimizedCloudinaryVideoUrl,
 } from "@/lib/cloudinary-media";
 import { versionedHeroAsset } from "@/lib/site-assets";
+import { getFeaturedAcademyArticle } from "@/lib/academy";
+import { getAchievementShowcase, getLeaderboardPreview } from "@/lib/gamification";
+import { getPopularQuiz, getTodayDailyChallenge } from "@/lib/music-hub";
+import { getCurrentSpotlight } from "@/lib/spotlights";
 
 type IconComponent = ComponentType<{ className?: string }>;
+type GalleryShowcaseItem = {
+  id: string;
+  imageUrl: string;
+  title: string | null;
+};
+type HomeVideoItem = {
+  id: string;
+  title: string | null;
+  videoUrl: string;
+  posterUrl: string | null;
+};
+type HomeNewsPost = {
+  id: string;
+  title: string;
+  body: string;
+};
+type LeaderboardPreviewEntry = Awaited<ReturnType<typeof getLeaderboardPreview>>[number];
 
 function fmt(d: Date) {
   return new Intl.DateTimeFormat("en-NG", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(d);
+}
+
+function leaderboardName(entry: LeaderboardPreviewEntry) {
+  return entry.user.name || entry.user.email?.split("@")[0] || "JNC Member";
 }
 
 function HomeEventCard({
@@ -192,7 +222,7 @@ const testimonials = [
   },
 ];
 
-const fallbackGallery = [
+const fallbackGallery: GalleryShowcaseItem[] = [
   { id: "director-welcome", imageUrl: versionedHeroAsset("/hero/hero-1.png"), title: "Sir Jude with the choir" },
   { id: "instrumentalists", imageUrl: versionedHeroAsset("/hero/hero-2.png"), title: "Instrumental session" },
   { id: "auditions", imageUrl: versionedHeroAsset("/hero/hero-1.png"), title: "Audition season" },
@@ -213,7 +243,18 @@ const galleryLayout = [
 export default async function HomePage() {
   const now = new Date();
 
-  const [upcomingEvents, recentPastEvents, latestNews, latestGallery, latestVideos] =
+  const [
+    upcomingEvents,
+    recentPastEvents,
+    latestNews,
+    latestGallery,
+    latestVideos,
+    featuredAcademyArticle,
+    todayChallenge,
+    popularQuiz,
+    currentSpotlight,
+    leaderboardPreview,
+  ] =
     await Promise.all([
       prisma.event.findMany({
         where: { isPublished: true, startsAt: { gte: now } },
@@ -238,18 +279,26 @@ export default async function HomePage() {
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: 2,
       }),
+      getFeaturedAcademyArticle(),
+      getTodayDailyChallenge(),
+      getPopularQuiz(),
+      getCurrentSpotlight(),
+      getLeaderboardPreview(3),
     ]);
 
   const homeEvents = [...upcomingEvents, ...recentPastEvents].slice(0, 3);
-  const galleryShowcase =
+  const galleryShowcase: GalleryShowcaseItem[] =
     latestGallery.length > 0
-      ? latestGallery.map((item) => ({
+      ? latestGallery.map((item: GalleryShowcaseItem) => ({
           id: item.id,
           imageUrl: item.imageUrl,
           title: item.title,
         }))
       : fallbackGallery;
   const featuredVideo = latestVideos[0] ?? null;
+  const achievementShowcase = getAchievementShowcase();
+  const spotlightPhoto =
+    currentSpotlight?.photoUrl || currentSpotlight?.featuredUser?.image || "/logo.svg";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -299,6 +348,207 @@ export default async function HomePage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="border-b border-white/10 bg-[#030711]">
+        <div className="mx-auto max-w-7xl px-4 py-10 md:px-6">
+          <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-amber-100/70">
+                Music Hub
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                Learn, practice, and return tomorrow stronger.
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-white/56">
+              Fresh academy writing, today&apos;s theory challenge, and a quiz to sharpen your
+              choir instincts.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Link
+              href={featuredAcademyArticle ? `/academy/${featuredAcademyArticle.slug}` : "/academy"}
+              className="group rounded-3xl border border-white/10 bg-white/4.5 p-5 transition hover:border-amber-200/28 hover:bg-white/[0.07]"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-200/15 bg-amber-200/8 text-amber-100">
+                <BookOpenText className="h-5 w-5" />
+              </span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/42">
+                Featured Article
+              </p>
+              <h3 className="mt-3 line-clamp-2 text-xl font-semibold text-white">
+                {featuredAcademyArticle?.title ?? "Music Academy articles are coming soon"}
+              </h3>
+              <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
+                {featuredAcademyArticle
+                  ? featuredAcademyArticle.category.name
+                  : "Publish an article from the admin Academy workspace to feature it here."}
+              </p>
+            </Link>
+
+            <Link
+              href="/music-hub/daily-challenge"
+              className="group rounded-3xl border border-white/10 bg-white/4.5 p-5 transition hover:border-emerald-200/28 hover:bg-white/[0.07]"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-200/15 bg-emerald-200/8 text-emerald-100">
+                <Lightbulb className="h-5 w-5" />
+              </span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/42">
+                Today&apos;s Challenge
+              </p>
+              <h3 className="mt-3 line-clamp-2 text-xl font-semibold text-white">
+                {todayChallenge?.title ?? "Daily theory challenge is waiting for setup"}
+              </h3>
+              <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
+                {todayChallenge?.prompt ??
+                  "Create today&apos;s challenge in admin so visitors can practice."}
+              </p>
+            </Link>
+
+            <Link
+              href={popularQuiz ? `/music-hub/quizzes/${popularQuiz.slug}` : "/music-hub/quizzes"}
+              className="group rounded-3xl border border-white/10 bg-white/4.5 p-5 transition hover:border-cyan-200/28 hover:bg-white/[0.07]"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-200/15 bg-cyan-200/8 text-cyan-100">
+                <Brain className="h-5 w-5" />
+              </span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/42">
+                Popular Quiz
+              </p>
+              <h3 className="mt-3 line-clamp-2 text-xl font-semibold text-white">
+                {popularQuiz?.title ?? "Music quizzes are ready for your first publish"}
+              </h3>
+              <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
+                {popularQuiz
+                  ? `${popularQuiz._count.questions} questions in ${popularQuiz.category}`
+                  : "Build and publish a quiz from the admin Academy workspace."}
+              </p>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-white/10 bg-[linear-gradient(135deg,#02040a_0%,#06101c_52%,#0d0b05_100%)]">
+        <div className="mx-auto max-w-7xl px-4 py-10 md:px-6">
+          <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-amber-100/70">
+                Community Pulse
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+                Spotlight, rankings, and badges in one glance.
+              </h2>
+            </div>
+            <p className="max-w-xl text-sm leading-6 text-white/56">
+              Members can learn, compete, stay consistent, and be celebrated across the JNC
+              platform without leaving the public story behind.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr_1fr]">
+            <Link
+              href="/community/spotlights"
+              className="group overflow-hidden rounded-3xl border border-white/10 bg-white/4.5 transition hover:border-amber-200/28 hover:bg-white/[0.07]"
+            >
+              <div className="relative h-64 bg-black">
+                <Image
+                  src={spotlightPhoto}
+                  alt={currentSpotlight?.name ?? "JNC chorister spotlight"}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 38vw"
+                  className={
+                    spotlightPhoto === "/logo.svg"
+                      ? "object-contain p-12"
+                      : "object-cover transition duration-500 group-hover:scale-[1.03]"
+                  }
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.74))]" />
+                <div className="absolute bottom-5 left-5 right-5">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/20 bg-amber-200/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-50">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Weekly Spotlight
+                  </span>
+                  <h3 className="mt-3 text-2xl font-semibold text-white">
+                    {currentSpotlight?.name ?? "Member spotlight coming soon"}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="line-clamp-3 text-sm leading-7 text-white/62">
+                  {currentSpotlight?.story ??
+                    "Publish a weekly chorister spotlight from the admin dashboard to celebrate the people inside the sound."}
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              href="/music-hub/leaderboard"
+              className="rounded-3xl border border-white/10 bg-white/4.5 p-5 transition hover:border-cyan-200/28 hover:bg-white/[0.07]"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-200/15 bg-cyan-200/8 text-cyan-100">
+                <Crown className="h-5 w-5" />
+              </span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/42">
+                Weekly Leaderboard
+              </p>
+              <div className="mt-4 grid gap-3">
+                {leaderboardPreview.length > 0 ? (
+                  leaderboardPreview.map((entry: LeaderboardPreviewEntry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-black/24 p-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-white">
+                          #{entry.rank ?? "-"} {leaderboardName(entry)}
+                        </p>
+                        <p className="text-xs text-white/45">
+                          {entry.quizAttempts + entry.dailyChallengeAttempts} learning attempts
+                        </p>
+                      </div>
+                      <strong className="text-lg text-amber-100">{entry.points}</strong>
+                    </div>
+                  ))
+                ) : (
+                  <p className="rounded-2xl border border-white/10 bg-black/24 p-4 text-sm leading-7 text-white/58">
+                    Complete quizzes or daily challenges to start the weekly rankings.
+                  </p>
+                )}
+              </div>
+            </Link>
+
+            <Link
+              href="/profile"
+              className="rounded-3xl border border-white/10 bg-white/4.5 p-5 transition hover:border-emerald-200/28 hover:bg-white/[0.07]"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-200/15 bg-emerald-200/8 text-emerald-100">
+                <Trophy className="h-5 w-5" />
+              </span>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/42">
+                Achievement Showcase
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {achievementShowcase.map((achievement) => (
+                  <div
+                    key={achievement.code}
+                    className="rounded-2xl border border-white/10 bg-black/24 p-3"
+                  >
+                    <p className="text-2xl">{achievement.icon}</p>
+                    <p className="mt-2 line-clamp-1 text-sm font-semibold text-white">
+                      {achievement.title}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 flex items-center gap-2 text-sm font-semibold text-white/70">
+                <UserRound className="h-4 w-4" />
+                Badges appear in member profiles.
+              </p>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -487,7 +737,7 @@ export default async function HomePage() {
             </div>
 
             <div className="grid gap-4">
-              {(latestVideos.length > 1 ? latestVideos.slice(1) : []).map((video) => (
+              {(latestVideos.length > 1 ? latestVideos.slice(1) : []).map((video: HomeVideoItem) => (
                 <article
                   key={video.id}
                   className="overflow-hidden rounded-3xl border border-white/10 bg-white/4"
@@ -543,7 +793,7 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-10 grid auto-rows-[250px] gap-4 md:grid-cols-4">
-          {galleryShowcase.map((item, index) => (
+          {galleryShowcase.map((item: GalleryShowcaseItem, index: number) => (
             <Link
               key={item.id}
               href="/gallery"
@@ -643,7 +893,7 @@ export default async function HomePage() {
             </div>
             <div className="mt-5 grid gap-4">
               {latestNews.length > 0 ? (
-                latestNews.map((post) => (
+                latestNews.map((post: HomeNewsPost) => (
                   <Link
                     key={post.id}
                     href={`/news/${post.id}`}

@@ -68,6 +68,11 @@ enum NotificationType {
   SYSTEM
 }
 
+enum AcademyArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -76,24 +81,30 @@ model User {
   image         String?
 
   // For Credentials login (email/password)
-  passwordHash  String?
+  passwordHash String?
 
-  role          Role      @default(USER)
-  isChorister   Boolean   @default(false)
-  choristerVerified Boolean @default(false)
-  adminNote     String?
+  role               Role    @default(USER)
+  isChorister        Boolean @default(false)
+  choristerVerified  Boolean @default(false)
+  adminNote          String?
   onboardingComplete Boolean @default(false)
 
-  accounts      Account[]
-  sessions      Session[]
-  auditions     AuditionApplication[]
-  choristerProfile ChoristerProfile?
-  choristerAttendances AttendanceRecord[]
-  notificationReads NotificationRead[]
-  profile       UserProfile?
+  accounts               Account[]
+  sessions               Session[]
+  auditions              AuditionApplication[]
+  choristerProfile       ChoristerProfile?
+  choristerAttendances   AttendanceRecord[]
+  notificationReads      NotificationRead[]
+  academyArticles        AcademyArticle[]
+  quizAttempts           QuizAttempt[]
+  dailyChallengeAttempts DailyChallengeAttempt[]
+  leaderboardEntries     LeaderboardEntry[]
+  achievements           UserAchievement[]
+  featuredSpotlights     ChoristerSpotlight[]    @relation("SpotlightFeaturedUser")
+  profile                UserProfile?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Account {
@@ -136,12 +147,12 @@ model VerificationToken {
 }
 
 model PasswordReset {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   email     String
   codeHash  String
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@index([email])
 }
@@ -150,36 +161,36 @@ model PasswordReset {
  * AUDITIONS
  */
 model AuditionApplication {
-  id               String            @id @default(cuid())
-  userId           String?
+  id     String  @id @default(cuid())
+  userId String?
 
-  fullName         String
-  phone            String
-  email            String
-  city             String?
-  category         AuditionCategory
+  fullName String
+  phone    String
+  email    String
+  city     String?
+  category AuditionCategory
 
   // For SINGERS
-  voicePart        VoicePart?
+  voicePart         VoicePart?
   singingExperience String?
-  auditionSong     String?
+  auditionSong      String?
 
   // For INSTRUMENTALISTS
-  instrument       String?
-  instrumentLevel  String? // beginner/intermediate/advanced
-  canSightRead     Boolean?
+  instrument      String?
+  instrumentLevel String? // beginner/intermediate/advanced
+  canSightRead    Boolean?
 
   // For PRODUCTION
-  productionRole   String? // producer, content, media, graphics, etc.
-  portfolioLink    String?
+  productionRole String? // producer, content, media, graphics, etc.
+  portfolioLink  String?
 
-  notes            String?
-  status           ApplicationStatus @default(PENDING)
+  notes  String?
+  status ApplicationStatus @default(PENDING)
 
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([email])
   @@index([userId])
@@ -194,29 +205,29 @@ model AuditionSetting {
   note             String?
   anticipationText String?
 
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 /**
  * OPTIONAL: EVENTS + ANNOUNCEMENTS (nice for the website)
  */
 model Event {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  location    String?
-  imageUrl    String?
+  id            String          @id @default(cuid())
+  title         String
+  description   String?
+  location      String?
+  imageUrl      String?
   imagePublicId String?
-  videoUrl    String?
+  videoUrl      String?
   videoPublicId String?
-  startsAt    DateTime
-  endsAt      DateTime?
-  isPublished Boolean  @default(false)
-  responses   EventResponse[]
+  startsAt      DateTime
+  endsAt        DateTime?
+  isPublished   Boolean         @default(false)
+  responses     EventResponse[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model EventResponse {
@@ -230,7 +241,7 @@ model EventResponse {
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
 
-  event     Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, email])
   @@index([eventId])
@@ -238,13 +249,13 @@ model EventResponse {
 }
 
 model Announcement {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   body        String
-  isPublished Boolean  @default(false)
+  isPublished Boolean @default(false)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model GalleryItem {
@@ -264,22 +275,22 @@ model MusicItem {
 }
 
 model MusicSheet {
-  id        String             @id @default(cuid())
-  title     String?
-  slug      String             @unique
-  composer  String             @default("Sir Jude Nnam")
-  description String?
-  voicing   String?
+  id             String             @id @default(cuid())
+  title          String?
+  slug           String             @unique
+  composer       String             @default("Sir Jude Nnam")
+  description    String?
+  voicing        String?
   lyricsLanguage String?
-  scoreKey  String?
-  fileName  String
-  fileUrl   String
-  mimeType  String?
-  publicId  String             @unique
-  audience  MusicSheetAudience @default(ALL_USERS)
-  isPublished Boolean          @default(true)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  scoreKey       String?
+  fileName       String
+  fileUrl        String
+  mimeType       String?
+  publicId       String             @unique
+  audience       MusicSheetAudience @default(ALL_USERS)
+  isPublished    Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 }
 
 model VideoItem {
@@ -292,23 +303,23 @@ model VideoItem {
 }
 
 model ChoristerProfile {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  phone           String?
-  address         String?
-  voicePart       String?
-  dateOfBirth     DateTime?
-  gender          String?
-  maritalStatus   String?
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  phone            String?
+  address          String?
+  voicePart        String?
+  dateOfBirth      DateTime?
+  gender           String?
+  maritalStatus    String?
   emergencyContact String?
-  stateOfOrigin   String?
-  currentParish   String?
-  socialHandle    String?
+  stateOfOrigin    String?
+  currentParish    String?
+  socialHandle     String?
   passportImageUrl String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -323,19 +334,19 @@ model UserProfile {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model ChoristerNotice {
-  id          String   @id @default(cuid())
-  title       String
-  body        String
+  id            String   @id @default(cuid())
+  title         String
+  body          String
   attachmentUrl String?
-  isPublished Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isPublished   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Rehearsal {
@@ -348,15 +359,15 @@ model Rehearsal {
 }
 
 model AttendanceRecord {
-  id           String           @id @default(cuid())
-  rehearsalId  String
-  userId       String
-  status       AttendanceStatus @default(PRESENT)
-  excuseNote   String?
-  autoMarked   Boolean          @default(false)
-  markedAt     DateTime         @default(now())
-  confirmedAt  DateTime?
-  confirmedBy  String?
+  id          String           @id @default(cuid())
+  rehearsalId String
+  userId      String
+  status      AttendanceStatus @default(PRESENT)
+  excuseNote  String?
+  autoMarked  Boolean          @default(false)
+  markedAt    DateTime         @default(now())
+  confirmedAt DateTime?
+  confirmedBy String?
 
   rehearsal Rehearsal @relation(fields: [rehearsalId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -386,14 +397,208 @@ model Notification {
 }
 
 model NotificationRead {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   notificationId String
   userId         String
-  readAt         DateTime     @default(now())
+  readAt         DateTime @default(now())
 
-  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([notificationId, userId])
   @@index([userId, readAt])
+}
+
+model AcademyCategory {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  slug        String           @unique
+  description String?
+  articles    AcademyArticle[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model AcademyArticle {
+  id                 String               @id @default(cuid())
+  title              String
+  slug               String               @unique
+  excerpt            String?
+  body               String
+  coverImageUrl      String?
+  coverImagePublicId String?
+  tags               String[]             @default([])
+  status             AcademyArticleStatus @default(DRAFT)
+  isFeatured         Boolean              @default(false)
+  isTrending         Boolean              @default(false)
+  views              Int                  @default(0)
+  categoryId         String
+  authorId           String?
+  publishedAt        DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  category AcademyCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author   User?           @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([status, publishedAt])
+  @@index([isFeatured])
+  @@index([isTrending])
+}
+
+model Quiz {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  description String?
+  category    String
+  isPublished Boolean       @default(false)
+  isPopular   Boolean       @default(false)
+  questions   Question[]
+  attempts    QuizAttempt[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([category])
+  @@index([isPublished, createdAt])
+  @@index([isPopular])
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  quizId       String
+  prompt       String
+  options      Json
+  correctIndex Int
+  explanation  String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId, order])
+}
+
+model QuizAttempt {
+  id                    String   @id @default(cuid())
+  quizId                String
+  userId                String?
+  score                 Int
+  totalQuestions        Int
+  completionTimeSeconds Int
+  answers               Json
+  createdAt             DateTime @default(now())
+
+  quiz Quiz  @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([quizId])
+  @@index([userId])
+}
+
+model DailyChallenge {
+  id            String                  @id @default(cuid())
+  challengeDate DateTime                @unique
+  title         String
+  prompt        String
+  options       Json
+  correctIndex  Int
+  explanation   String?
+  isPublished   Boolean                 @default(true)
+  attempts      DailyChallengeAttempt[]
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@index([isPublished, challengeDate])
+}
+
+model DailyChallengeAttempt {
+  id                    String   @id @default(cuid())
+  challengeId           String
+  userId                String?
+  selectedIndex         Int
+  isCorrect             Boolean
+  completionTimeSeconds Int?
+  createdAt             DateTime @default(now())
+
+  challenge DailyChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  user      User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([challengeId, userId])
+  @@index([challengeId])
+  @@index([userId])
+}
+
+model LeaderboardEntry {
+  id                     String   @id @default(cuid())
+  userId                 String
+  period                 String
+  periodKey              String
+  points                 Int      @default(0)
+  quizPoints             Int      @default(0)
+  dailyChallengePoints   Int      @default(0)
+  participationPoints    Int      @default(0)
+  quizAttempts           Int      @default(0)
+  dailyChallengeAttempts Int      @default(0)
+  rank                   Int?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period, periodKey])
+  @@index([period, periodKey, rank])
+  @@index([userId])
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  code        String            @unique
+  title       String
+  description String
+  icon        String
+  accent      String?
+  isActive    Boolean           @default(true)
+  users       UserAchievement[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  awardedAt     DateTime @default(now())
+  source        String?
+  metadata      Json?
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId, awardedAt])
+}
+
+model ChoristerSpotlight {
+  id             String   @id @default(cuid())
+  featuredUserId String?
+  name           String
+  photoUrl       String?
+  photoPublicId  String?
+  story          String
+  musicalJourney String
+  favoriteSong   String?
+  advice         String?
+  weekStart      DateTime
+  isPublished    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  featuredUser User? @relation("SpotlightFeaturedUser", fields: [featuredUserId], references: [id], onDelete: SetNull)
+
+  @@index([isPublished, weekStart])
+  @@index([featuredUserId])
 }

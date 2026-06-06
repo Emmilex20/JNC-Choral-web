@@ -12,6 +12,7 @@ import {
   NotificationAudience,
   NotificationType,
 } from "@/lib/notifications";
+import { updateGamificationForUser } from "@/lib/gamification";
 import { prisma } from "@/lib/prisma";
 
 function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean }) {
@@ -222,6 +223,8 @@ export async function markAttendanceAction(input: unknown) {
       status: record.status,
     },
   });
+
+  await updateGamificationForUser(user.id, "attendance");
 
   return { ok: true as const };
 }

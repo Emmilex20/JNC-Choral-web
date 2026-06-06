@@ -3,17 +3,22 @@
 import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import { useMemo, useState, useTransition } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import {
+  Award,
   BadgeCheck,
+  Brain,
   Camera,
   CheckCircle2,
   Clock3,
+  Crown,
   ImagePlus,
   Mail,
   Save,
   ShieldCheck,
   Sparkles,
+  Trophy,
   UserRound,
   X,
 } from "lucide-react";
@@ -32,6 +37,35 @@ type ProfileFormProps = {
   onboardingComplete: boolean;
   joinedAt: string;
   updatedAt: string;
+  gamification: GamificationSummary;
+};
+
+type GamificationSummary = {
+  totalPoints: number;
+  rank: number | null;
+  quizPoints: number;
+  dailyChallengePoints: number;
+  participationPoints: number;
+  badges: {
+    code: string;
+    title: string;
+    description: string;
+    icon: string;
+    accent: string | null;
+    awardedAt: string;
+  }[];
+  quizHistory: {
+    id: string;
+    score: number;
+    totalQuestions: number;
+    completionTimeSeconds: number;
+    createdAt: string;
+    quiz: {
+      title: string;
+      slug: string;
+      category: string;
+    };
+  }[];
 };
 
 type CloudinarySignature = {
@@ -69,6 +103,13 @@ function formatDate(value: string) {
     day: "numeric",
     year: "numeric",
   });
+}
+
+function formatDuration(seconds: number) {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  const remaining = seconds % 60;
+  return remaining > 0 ? `${minutes}m ${remaining}s` : `${minutes}m`;
 }
 
 function roleLabel(role: ProfileFormProps["role"]) {
@@ -134,6 +175,7 @@ export default function ProfileForm({
   onboardingComplete,
   joinedAt,
   updatedAt,
+  gamification,
 }: ProfileFormProps) {
   const { update } = useSession();
   const [saved, setSaved] = useState({ name, image: image ?? "" });
@@ -451,6 +493,169 @@ export default function ProfileForm({
             </Button>
           </div>
         </form>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pb-12 md:px-6 lg:pb-16">
+        <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.032))] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.2)] md:p-7">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/45">
+                  Learning Identity
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                  Points and badges
+                </h2>
+              </div>
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-200/18 bg-amber-200/10 px-3 py-1.5 text-xs font-semibold text-amber-50">
+                <Crown className="h-3.5 w-3.5" />
+                {gamification.rank ? `Rank #${gamification.rank}` : "Unranked"}
+              </span>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-3xl border border-white/10 bg-black/24 p-5">
+                <div className="flex items-center gap-2 text-sm text-white/58">
+                  <Trophy className="h-4 w-4 text-amber-100" />
+                  Total points
+                </div>
+                <p className="mt-3 text-4xl font-semibold tracking-tight text-white">
+                  {gamification.totalPoints}
+                </p>
+              </div>
+              <div className="rounded-3xl border border-white/10 bg-black/24 p-5">
+                <div className="flex items-center gap-2 text-sm text-white/58">
+                  <Brain className="h-4 w-4 text-cyan-100" />
+                  Learning points
+                </div>
+                <p className="mt-3 text-4xl font-semibold tracking-tight text-white">
+                  {gamification.quizPoints + gamification.dailyChallengePoints}
+                </p>
+              </div>
+            </div>
+
+            <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <dt className="text-xs uppercase tracking-[0.18em] text-white/42">Quiz</dt>
+                <dd className="mt-2 text-lg font-semibold text-white">
+                  {gamification.quizPoints}
+                </dd>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <dt className="text-xs uppercase tracking-[0.18em] text-white/42">Daily</dt>
+                <dd className="mt-2 text-lg font-semibold text-white">
+                  {gamification.dailyChallengePoints}
+                </dd>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <dt className="text-xs uppercase tracking-[0.18em] text-white/42">
+                  Active
+                </dt>
+                <dd className="mt-2 text-lg font-semibold text-white">
+                  {gamification.participationPoints}
+                </dd>
+              </div>
+            </dl>
+
+            <div className="mt-6">
+              <div className="flex items-center gap-2">
+                <Award className="h-5 w-5 text-emerald-100" />
+                <h3 className="text-lg font-semibold text-white">Badge collection</h3>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {gamification.badges.length > 0 ? (
+                  gamification.badges.map((badge) => (
+                    <div
+                      key={badge.code}
+                      className="rounded-2xl border border-white/10 bg-black/24 p-4"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-2xl">
+                          {badge.icon}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-white">{badge.title}</p>
+                          <p className="mt-1 text-xs leading-5 text-white/54">
+                            {badge.description}
+                          </p>
+                          <p className="mt-2 text-[11px] uppercase tracking-[0.16em] text-white/38">
+                            Awarded {formatDate(badge.awardedAt)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="rounded-2xl border border-white/10 bg-black/20 p-5 text-sm leading-7 text-white/58 sm:col-span-2">
+                    Badges unlock automatically as you attend rehearsals, complete quizzes, and
+                    build consistency.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(255,255,255,0.032))] p-5 shadow-[0_24px_70px_rgba(0,0,0,0.2)] md:p-7">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/45">
+                  Quiz History
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                  Recent attempts
+                </h2>
+              </div>
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-black/22 px-3 py-1.5 text-xs font-semibold text-white/68">
+                <Brain className="h-3.5 w-3.5" />
+                {gamification.quizHistory.length} shown
+              </span>
+            </div>
+
+            <div className="mt-6 grid gap-3">
+              {gamification.quizHistory.length > 0 ? (
+                gamification.quizHistory.map((attempt) => (
+                  <Link
+                    key={attempt.id}
+                    href={`/music-hub/quizzes/${attempt.quiz.slug}/results?attemptId=${attempt.id}`}
+                    className="grid gap-4 rounded-3xl border border-white/10 bg-black/24 p-4 transition hover:border-amber-200/24 hover:bg-white/[0.06] sm:grid-cols-[1fr_auto] sm:items-center"
+                  >
+                    <div>
+                      <p className="font-semibold text-white">{attempt.quiz.title}</p>
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/42">
+                        {attempt.quiz.category} / {formatDate(attempt.createdAt)}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-left sm:text-right">
+                      <div>
+                        <p className="text-xs text-white/42">Score</p>
+                        <p className="font-semibold text-white">
+                          {attempt.score}/{attempt.totalQuestions}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-white/42">Time</p>
+                        <p className="font-semibold text-white">
+                          {formatDuration(attempt.completionTimeSeconds)}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="rounded-3xl border border-white/10 bg-black/20 p-7 text-center">
+                  <Brain className="mx-auto h-8 w-8 text-cyan-100" />
+                  <h3 className="mt-4 text-xl font-semibold text-white">
+                    No quiz history yet.
+                  </h3>
+                  <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-white/58">
+                    Complete a Music Hub quiz to start building your profile record and
+                    leaderboard rank.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </section>
     </>
   );

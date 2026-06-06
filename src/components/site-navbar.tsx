@@ -40,6 +40,7 @@ const mediaNav = [
 const userNav = [
   { label: "Events", href: "/events" },
   { label: "News", href: "/news" },
+  { label: "Academy", href: "/academy" },
   { label: "Choristers", href: "/choristers" },
 ];
 

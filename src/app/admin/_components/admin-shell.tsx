@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   BellRing,
+  BookOpenText,
   CalendarDays,
   ClipboardList,
   Home,
@@ -16,6 +17,7 @@ import {
   Menu,
   Music2,
   ShieldCheck,
+  Sparkles,
   UserCheck,
   UserCog,
   UsersRound,
@@ -136,6 +138,18 @@ const navGroups: { label: string; items: AdminNavItem[] }[] = [
         label: "Videos",
         description: "Performance footage",
         icon: Video,
+      },
+      {
+        href: "/admin/academy",
+        label: "Academy",
+        description: "Articles, quizzes, challenges",
+        icon: BookOpenText,
+      },
+      {
+        href: "/admin/spotlights",
+        label: "Spotlights",
+        description: "Weekly member stories",
+        icon: Sparkles,
       },
     ],
   },
