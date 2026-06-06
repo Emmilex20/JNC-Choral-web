@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "../_components/admin-page-header";
 import AdminAnnouncementsClient from "./ui/admin-announcements-client";
 
 export default async function AdminAnnouncementsPage() {
@@ -9,12 +10,24 @@ export default async function AdminAnnouncementsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold text-white">Announcements</h1>
-        <p className="mt-2 text-sm text-white/70">
-          Write updates and publish them to show on the public Announcements page.
-        </p>
-      </div>
+      <AdminPageHeader
+        eyebrow="Public Updates"
+        title="Announcements"
+        description="Draft, edit, publish, and retire public-facing choir news from a focused editorial workspace."
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="admin-stat-card min-h-0">
+            <p className="text-sm text-white/68">Posts</p>
+            <p className="admin-metric-value">{posts.length}</p>
+          </div>
+          <div className="admin-stat-card min-h-0">
+            <p className="text-sm text-white/68">Published</p>
+            <p className="admin-metric-value">
+              {posts.filter((post) => post.isPublished).length}
+            </p>
+          </div>
+        </div>
+      </AdminPageHeader>
 
       <AdminAnnouncementsClient initialPosts={posts} />
     </div>

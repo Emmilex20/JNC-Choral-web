@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "../_components/admin-page-header";
 import AdminGalleryClient from "./ui/admin-gallery-client";
 
 export default async function AdminGalleryPage() {
@@ -9,12 +10,16 @@ export default async function AdminGalleryPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold text-white">Gallery</h1>
-        <p className="mt-2 text-sm text-white/70">
-          Upload images to Cloudinary and publish them instantly on the public Gallery page.
-        </p>
-      </div>
+      <AdminPageHeader
+        eyebrow="Visual Archive"
+        title="Gallery"
+        description="Upload and manage image moments from rehearsals, concerts, backstage, and public appearances."
+      >
+        <div className="admin-stat-card min-h-0 max-w-xs">
+          <p className="text-sm text-white/68">Images</p>
+          <p className="admin-metric-value">{items.length}</p>
+        </div>
+      </AdminPageHeader>
 
       <AdminGalleryClient initialItems={items} />
     </div>

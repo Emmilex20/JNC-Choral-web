@@ -1,26 +1,22 @@
-import { ArrowUpRight } from "lucide-react";
-
+import Link from "next/link";
 import {
-  DEFAULT_AUDITION_ANTICIPATION_TEXT,
-  getCurrentAuditionSetting,
-} from "@/lib/audition-settings";
-import { materializeAutoAbsences } from "@/lib/attendance-auto";
-import { getEventResponseRowsMap } from "@/lib/event-responses";
-import { listMusicSheetsForAdmin } from "@/lib/music-sheets";
-import { prisma } from "@/lib/prisma";
-import AdminAnnouncementsClient from "./announcements/ui/admin-announcements-client";
-import AdminChoristerNoticesClient from "./choristers/ui/admin-chorister-notices-client";
-import AdminChoristersClient from "./choristers/ui/admin-choristers-client";
-import AdminPendingChoristersClient from "./choristers/ui/admin-pending-choristers-client";
-import AdminRehearsalsClient from "./choristers/ui/admin-rehearsals-client";
-import AdminEventsClient from "./events/ui/admin-events-client";
-import AdminGalleryClient from "./gallery/ui/admin-gallery-client";
-import AdminMusicClient from "./music/ui/admin-music-client";
-import AdminAuditionsClient from "./ui/admin-auditions-client";
-import AdminUsersClient from "./users/ui/admin-users-client";
-import AdminVideosClient from "./videos/ui/admin-videos-client";
+  ArrowUpRight,
+  BellRing,
+  CalendarDays,
+  ClipboardList,
+  Images,
+  Megaphone,
+  Music2,
+  UserCheck,
+  UserCog,
+  UsersRound,
+  Video,
+} from "lucide-react";
 
-export const dynamic = "force-dynamic";
+import { Button } from "@/components/ui/button";
+import { materializeAutoAbsences } from "@/lib/attendance-auto";
+import { prisma } from "@/lib/prisma";
+import { AdminPageHeader } from "./_components/admin-page-header";
 
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -29,513 +25,373 @@ function formatCompactNumber(value: number) {
   }).format(value);
 }
 
-function formatCountLabel(value: number, noun: string) {
-  return `${formatCompactNumber(value)} ${noun}`;
-}
-
-function AdminSection({
-  id,
-  index,
-  title,
-  eyebrow,
-  description,
-  countLabel,
-  children,
-}: {
-  id: string;
-  index: number;
-  title: string;
-  eyebrow: string;
-  description: string;
-  countLabel: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section id={id} className="admin-section scroll-mt-24">
-      <div className="flex flex-col gap-4 border-b border-white/8 pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div className="max-w-3xl">
-          <p className="admin-eyebrow">
-            {String(index).padStart(2, "0")} / {eyebrow}
-          </p>
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            {title}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 admin-subtle sm:text-base">
-            {description}
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-          <span className="admin-pill">{countLabel}</span>
-          <a href="#admin-top" className="admin-anchor">
-            Back to top
-          </a>
-        </div>
-      </div>
-
-      <div className="mt-6">{children}</div>
-    </section>
-  );
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat("en-NG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(value);
 }
 
 export default async function AdminPage() {
   await materializeAutoAbsences(prisma);
 
   const [
-    rows,
-    events,
-    posts,
-    items,
-    music,
-    musicSheets,
-    videos,
-    users,
-    choristers,
+    totalAuditions,
+    pendingAuditions,
+    acceptedAuditions,
+    eventsCount,
+    publishedEvents,
+    announcementsCount,
+    publishedAnnouncements,
+    galleryCount,
+    musicCount,
+    sheetCount,
+    videoCount,
+    choristerNoticesCount,
+    usersCount,
+    verifiedChoristers,
     pendingChoristers,
-    choristerNotices,
-    rehearsals,
+    rehearsalsCount,
     pendingAttendance,
-    auditionSetting,
+    recentAuditions,
+    upcomingEvents,
   ] = await Promise.all([
+    prisma.auditionApplication.count(),
+    prisma.auditionApplication.count({ where: { status: "PENDING" } }),
+    prisma.auditionApplication.count({ where: { status: "ACCEPTED" } }),
+    prisma.event.count(),
+    prisma.event.count({ where: { isPublished: true } }),
+    prisma.announcement.count(),
+    prisma.announcement.count({ where: { isPublished: true } }),
+    prisma.galleryItem.count(),
+    prisma.musicItem.count(),
+    prisma.musicSheet.count(),
+    prisma.videoItem.count(),
+    prisma.choristerNotice.count(),
+    prisma.user.count(),
+    prisma.user.count({ where: { isChorister: true, choristerVerified: true } }),
+    prisma.user.count({ where: { isChorister: true, choristerVerified: false } }),
+    prisma.rehearsal.count(),
+    prisma.attendanceRecord.count({ where: { confirmedAt: null } }),
     prisma.auditionApplication.findMany({
       orderBy: { createdAt: "desc" },
-      take: 300,
+      take: 4,
+      select: {
+        id: true,
+        fullName: true,
+        category: true,
+        status: true,
+        createdAt: true,
+      },
     }),
     prisma.event.findMany({
-      orderBy: { startsAt: "desc" },
-      take: 200,
-    }),
-    prisma.announcement.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
-    prisma.galleryItem.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 300,
-    }),
-    prisma.musicItem.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 300,
-    }),
-    listMusicSheetsForAdmin(),
-    prisma.videoItem.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 300,
-    }),
-    prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 300,
-    }),
-    prisma.user.findMany({
-      where: { isChorister: true, choristerVerified: true },
-      orderBy: { createdAt: "desc" },
-      take: 300,
-      include: {
-        choristerProfile: true,
-        choristerAttendances: {
-          include: {
-            rehearsal: true,
-          },
-        },
+      where: { startsAt: { gte: new Date() } },
+      orderBy: { startsAt: "asc" },
+      take: 4,
+      select: {
+        id: true,
+        title: true,
+        startsAt: true,
+        isPublished: true,
       },
     }),
-    prisma.user.findMany({
-      where: { isChorister: true, choristerVerified: false },
-      orderBy: { createdAt: "desc" },
-      take: 300,
-    }),
-    prisma.choristerNotice.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
-    prisma.rehearsal.findMany({
-      orderBy: { startsAt: "desc" },
-      take: 200,
-      include: { attendance: true },
-    }),
-    prisma.attendanceRecord.findMany({
-      where: { confirmedAt: null },
-      orderBy: { markedAt: "desc" },
-      take: 300,
-      include: {
-        user: { select: { name: true, email: true } },
-        rehearsal: { select: { title: true, startsAt: true } },
-      },
-    }),
-    getCurrentAuditionSetting(),
   ]);
 
-  const eventResponseMap = await getEventResponseRowsMap(events.map((event) => event.id));
+  const mediaCount = galleryCount + musicCount + sheetCount + videoCount;
+  const reviewQueue = pendingAuditions + pendingChoristers + pendingAttendance;
+  const publishedContent = publishedEvents + publishedAnnouncements;
 
-  const rehearsalRows = rehearsals.map((r) => ({
-    id: r.id,
-    title: r.title,
-    startsAt: r.startsAt.toISOString(),
-    attendanceCount: r.attendance.length,
-    confirmedCount: r.attendance.filter((a) => a.confirmedAt).length,
-  }));
-
-  const pendingAttendanceRows = pendingAttendance.map((p) => ({
-    id: p.id,
-    rehearsalTitle: p.rehearsal.title,
-    rehearsalDate: p.rehearsal.startsAt.toISOString(),
-    userName: p.user.name,
-    userEmail: p.user.email,
-    status: p.status,
-    excuseNote: p.excuseNote,
-    autoMarked: p.autoMarked,
-    markedAt: p.markedAt.toISOString(),
-  }));
-
-  const pendingAuditions = rows.filter((row) => row.status === "PENDING").length;
-  const publishedAnnouncements = posts.filter((post) => post.isPublished).length;
-  const publishedEvents = events.filter((event) => event.isPublished).length;
-  const publishedChoristerNotices = choristerNotices.filter((notice) => notice.isPublished).length;
-  const mediaAssetCount = items.length + music.length + musicSheets.length + videos.length;
-  const reviewQueueCount =
-    pendingAuditions + pendingChoristers.length + pendingAttendance.length;
-
-  const metrics = [
+  const stats = [
     {
-      label: "Review queue",
-      value: formatCompactNumber(reviewQueueCount),
-      detail: `${pendingAuditions} auditions, ${pendingChoristers.length} chorister requests, ${pendingAttendance.length} attendance requests`,
+      label: "Review Queue",
+      value: reviewQueue,
+      detail: `${pendingAuditions} auditions, ${pendingChoristers} chorister requests, ${pendingAttendance} attendance requests`,
     },
     {
-      label: "Published updates",
-      value: formatCompactNumber(
-        publishedAnnouncements + publishedEvents + publishedChoristerNotices
-      ),
-      detail: `${publishedAnnouncements} announcements, ${publishedEvents} events, ${publishedChoristerNotices} chorister notices`,
+      label: "Members",
+      value: verifiedChoristers,
+      detail: `${usersCount} total accounts, ${pendingChoristers} awaiting verification`,
     },
     {
-      label: "Media library",
-      value: formatCompactNumber(mediaAssetCount),
-      detail: `${items.length} gallery items, ${music.length} tracks, ${musicSheets.length} sheet files, ${videos.length} videos`,
+      label: "Published",
+      value: publishedContent,
+      detail: `${publishedEvents}/${eventsCount} events, ${publishedAnnouncements}/${announcementsCount} announcements`,
     },
     {
-      label: "Community",
-      value: formatCompactNumber(users.length),
-      detail: `${choristers.length} verified choristers across ${rehearsals.length} rehearsals`,
+      label: "Media",
+      value: mediaCount,
+      detail: `${galleryCount} images, ${musicCount} tracks, ${sheetCount} sheets, ${videoCount} videos`,
     },
   ];
 
-  const sections = [
+  const queue = [
     {
-      id: "auditions",
+      href: "/admin/auditions",
+      label: "Auditions",
+      value: pendingAuditions,
+      detail: `${acceptedAuditions} accepted from ${totalAuditions} applications`,
+      icon: ClipboardList,
+    },
+    {
+      href: "/admin/choristers/pending",
+      label: "Chorister Verification",
+      value: pendingChoristers,
+      detail: "Requests waiting for admin decision",
+      icon: UserCheck,
+    },
+    {
+      href: "/admin/rehearsals",
+      label: "Attendance Requests",
+      value: pendingAttendance,
+      detail: `${rehearsalsCount} rehearsals in the attendance ledger`,
+      icon: CalendarDays,
+    },
+  ];
+
+  const modules = [
+    {
+      href: "/admin/auditions",
       title: "Auditions",
-      eyebrow: "Talent Pipeline",
-      description: "Set the public audition date, time, and venue, then review incoming applicants without losing context.",
-      countLabel: formatCountLabel(rows.length, "applications"),
-      content: (
-        <AdminAuditionsClient
-          initialRows={rows}
-          initialSetting={{
-            startsAt: auditionSetting?.startsAt
-              ? auditionSetting.startsAt.toISOString()
-              : "",
-            venue: auditionSetting?.venue ?? "",
-            note: auditionSetting?.note ?? "",
-            anticipationText:
-              auditionSetting?.anticipationText ?? DEFAULT_AUDITION_ANTICIPATION_TEXT,
-          }}
-        />
-      ),
+      detail: "Schedule auditions and process applications.",
+      count: totalAuditions,
+      icon: ClipboardList,
     },
     {
-      id: "events",
-      title: "Events",
-      eyebrow: "Programming",
-      description: "Schedule rehearsals, performances, and public appearances with cleaner publishing control and sharper visibility.",
-      countLabel: formatCountLabel(events.length, "events"),
-      content: (
-        <AdminEventsClient
-          initialEvents={events.map((event) => ({
-            ...event,
-            responses: eventResponseMap.get(event.id) ?? [],
-          }))}
-        />
-      ),
+      href: "/admin/rehearsals",
+      title: "Rehearsals",
+      detail: "Create rehearsals and approve attendance.",
+      count: rehearsalsCount,
+      icon: CalendarDays,
     },
     {
-      id: "announcements",
-      title: "Announcements",
-      eyebrow: "Public Updates",
-      description: "Draft, edit, and publish public-facing news in a workspace designed for quick editorial decisions.",
-      countLabel: formatCountLabel(posts.length, "posts"),
-      content: <AdminAnnouncementsClient initialPosts={posts} />,
-    },
-    {
-      id: "gallery",
-      title: "Gallery",
-      eyebrow: "Visual Archive",
-      description: "Upload and organize image content in a tighter grid that stays legible from phones to large desktop displays.",
-      countLabel: formatCountLabel(items.length, "images"),
-      content: <AdminGalleryClient initialItems={items} />,
-    },
-    {
-      id: "music",
-      title: "Music",
-      eyebrow: "Audio Library",
-      description: "Manage public audio tracks and restricted choir script sheet files from one workspace, including audience targeting for downloads.",
-      countLabel: formatCountLabel(music.length + musicSheets.length, "assets"),
-      content: (
-        <AdminMusicClient
-          initialItems={music}
-          initialSheets={musicSheets.map((sheet) => ({
-            id: sheet.id,
-            title: sheet.title,
-            fileName: sheet.fileName,
-            mimeType: sheet.mimeType,
-            publicId: sheet.publicId,
-            audience: sheet.audience,
-            createdAt: sheet.createdAt.toISOString(),
-          }))}
-        />
-      ),
-    },
-    {
-      id: "videos",
-      title: "Videos",
-      eyebrow: "Performance Library",
-      description: "Handle performance footage and posters with enough spacing and hierarchy for fast edits across device sizes.",
-      countLabel: formatCountLabel(videos.length, "videos"),
-      content: <AdminVideosClient initialItems={videos} />,
-    },
-    {
-      id: "chorister-notices",
-      title: "Chorister Notices",
-      eyebrow: "Member Updates",
-      description: "Push notices to verified choristers with clearer attachment handling and better drafting visibility.",
-      countLabel: formatCountLabel(choristerNotices.length, "notices"),
-      content: (
-        <AdminChoristerNoticesClient
-          initialNotices={choristerNotices.map((n) => ({
-            id: n.id,
-            title: n.title,
-            body: n.body,
-            attachmentUrl: n.attachmentUrl,
-            isPublished: n.isPublished,
-            createdAt: n.createdAt.toISOString(),
-          }))}
-        />
-      ),
-    },
-    {
-      id: "rehearsals",
-      title: "Rehearsals & Attendance",
-      eyebrow: "Operations",
-      description: "Create rehearsals and close the loop on attendance and excuse requests from a single responsive workspace.",
-      countLabel: formatCountLabel(rehearsals.length, "rehearsals"),
-      content: (
-        <AdminRehearsalsClient
-          initialRehearsals={rehearsalRows}
-          initialPending={pendingAttendanceRows}
-        />
-      ),
-    },
-    {
-      id: "pending-choristers",
-      title: "Pending Choristers",
-      eyebrow: "Verification",
-      description: "Review chorister verification requests quickly and keep the approval queue visible without digging through user records.",
-      countLabel: formatCountLabel(pendingChoristers.length, "pending"),
-      content: (
-        <AdminPendingChoristersClient
-          initialUsers={pendingChoristers.map((u) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            createdAt: u.createdAt.toISOString(),
-          }))}
-        />
-      ),
-    },
-    {
-      id: "choristers",
+      href: "/admin/choristers",
       title: "Choristers",
-      eyebrow: "Membership",
-      description: "Inspect verified member profiles, notes, and attendance history in a cleaner, more polished review flow.",
-      countLabel: formatCountLabel(choristers.length, "verified"),
-      content: (
-        <AdminChoristersClient
-          initialChoristers={choristers.map((u) => ({
-            id: u.id,
-            name: u.name,
-            email: u.email,
-            adminNote: u.adminNote,
-            createdAt: u.createdAt.toISOString(),
-            profile: u.choristerProfile
-                ? {
-                    phone: u.choristerProfile.phone,
-                    address: u.choristerProfile.address,
-                    voicePart: u.choristerProfile.voicePart,
-                    dateOfBirth: u.choristerProfile.dateOfBirth
-                      ? u.choristerProfile.dateOfBirth.toISOString()
-                      : null,
-                    gender: u.choristerProfile.gender,
-                    maritalStatus: u.choristerProfile.maritalStatus,
-                    emergencyContact: u.choristerProfile.emergencyContact,
-                    stateOfOrigin: u.choristerProfile.stateOfOrigin,
-                    currentParish: u.choristerProfile.currentParish,
-                    socialHandle: u.choristerProfile.socialHandle,
-                    passportImageUrl: u.choristerProfile.passportImageUrl,
-                  }
-                : null,
-            attendance: u.choristerAttendances.map((a) => ({
-              id: a.id,
-              rehearsalTitle: a.rehearsal.title,
-              startsAt: a.rehearsal.startsAt.toISOString(),
-              status: a.status,
-              markedAt: a.markedAt.toISOString(),
-              excuseNote: a.excuseNote,
-              autoMarked: a.autoMarked,
-              confirmedAt: a.confirmedAt ? a.confirmedAt.toISOString() : null,
-            })),
-          }))}
-        />
-      ),
+      detail: "Inspect profiles, notes, and attendance history.",
+      count: verifiedChoristers,
+      icon: UsersRound,
     },
     {
-      id: "users",
+      href: "/admin/choristers/notices",
+      title: "Member Notices",
+      detail: "Send private updates to verified choristers.",
+      count: choristerNoticesCount,
+      icon: BellRing,
+    },
+    {
+      href: "/admin/events",
+      title: "Events",
+      detail: "Publish concerts, rehearsals, and programmes.",
+      count: eventsCount,
+      icon: CalendarDays,
+    },
+    {
+      href: "/admin/announcements",
+      title: "Announcements",
+      detail: "Write public news and updates.",
+      count: announcementsCount,
+      icon: Megaphone,
+    },
+    {
+      href: "/admin/gallery",
+      title: "Gallery",
+      detail: "Manage public image showcases.",
+      count: galleryCount,
+      icon: Images,
+    },
+    {
+      href: "/admin/music",
+      title: "Music",
+      detail: "Manage audio tracks and choir sheet files.",
+      count: musicCount + sheetCount,
+      icon: Music2,
+    },
+    {
+      href: "/admin/videos",
+      title: "Videos",
+      detail: "Upload performance videos and posters.",
+      count: videoCount,
+      icon: Video,
+    },
+    {
+      href: "/admin/users",
       title: "Users",
-      eyebrow: "Accounts",
-      description: "Edit roles, chorister flags, and notes inside a calmer account management surface that scales down cleanly on mobile.",
-      countLabel: formatCountLabel(users.length, "accounts"),
-      content: <AdminUsersClient initialUsers={users} />,
+      detail: "Edit roles, access, and chorister flags.",
+      count: usersCount,
+      icon: UserCog,
     },
   ];
 
   return (
-    <div id="admin-top" className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="min-w-0 space-y-8">
-        <section className="admin-hero">
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
-            <div className="max-w-4xl">
-              <p className="admin-eyebrow">Command Center</p>
-              <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-white sm:text-5xl xl:text-6xl">
-                Sleek control over the entire choir operation.
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-7 admin-subtle sm:text-base">
-                The dashboard is now organized as a high-clarity workspace: faster scanning,
-                stronger visual hierarchy, and responsive navigation that holds together from
-                small phones to wide desktop monitors.
-              </p>
-
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <span className="admin-pill">11 active workspaces</span>
-                <span className="admin-pill">
-                  {formatCountLabel(reviewQueueCount, "items in queue")}
-                </span>
-                <span className="admin-pill">
-                  {formatCountLabel(mediaAssetCount, "media assets")}
-                </span>
-              </div>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-              {metrics.map((metric) => (
-                <div key={metric.label} className="admin-stat-card">
-                  <p className="text-sm font-medium text-white/70">{metric.label}</p>
-                  <p className="admin-metric-value">{metric.value}</p>
-                  <p className="text-sm leading-6 admin-subtle">{metric.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8 border-t border-white/8 pt-6">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="admin-eyebrow">Jump To Workspace</p>
-                <h2 className="mt-2 text-2xl font-semibold text-white">
-                  Fast navigation, no dead space
-                </h2>
-              </div>
-              <p className="max-w-xl text-sm leading-6 admin-subtle">
-                Each module stays directly accessible from the overview, so mobile users
-                don&apos;t need to scroll endlessly and desktop users retain full situational awareness.
-              </p>
-            </div>
-
-            <div className="mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:grid sm:overflow-visible sm:pb-0 2xl:grid-cols-3">
-              {sections.map((section) => (
-                <a
-                  key={section.id}
-                  href={`#${section.id}`}
-                  className="admin-nav-card min-w-[18rem] snap-start sm:min-w-0"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="admin-eyebrow">{section.eyebrow}</p>
-                      <h3 className="mt-2 text-lg font-semibold text-white">
-                        {section.title}
-                      </h3>
-                    </div>
-                    <span className="admin-pill shrink-0">{section.countLabel}</span>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 admin-subtle">{section.description}</p>
-                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-white">
-                    Open module
-                    <ArrowUpRight className="h-4 w-4" />
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {sections.map((section, index) => (
-          <AdminSection
-            key={section.id}
-            id={section.id}
-            index={index + 1}
-            title={section.title}
-            eyebrow={section.eyebrow}
-            description={section.description}
-            countLabel={section.countLabel}
+    <div className="space-y-6">
+      <AdminPageHeader
+        eyebrow="Command Center"
+        title="A calmer dashboard for the whole choir operation."
+        description="Scan the queue, jump into the right workspace, and keep the public site and private chorister portal under control without a long one-page scroll."
+        actions={
+          <Button
+            asChild
+            className="rounded-2xl"
           >
-            {section.content}
-          </AdminSection>
-        ))}
-      </div>
+            <Link href="/admin/auditions">
+              Open Applications
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {stats.map((stat) => (
+            <div key={stat.label} className="admin-stat-card min-h-0">
+              <p className="text-sm font-medium text-white/68">{stat.label}</p>
+              <p className="admin-metric-value">{formatCompactNumber(stat.value)}</p>
+              <p className="text-sm leading-6 admin-subtle">{stat.detail}</p>
+            </div>
+          ))}
+        </div>
+      </AdminPageHeader>
 
-      <aside className="space-y-4 xl:sticky xl:top-24 xl:h-fit">
-        <div className="admin-side-card">
-          <p className="admin-eyebrow">Overview</p>
-          <h2 className="mt-3 text-2xl font-semibold text-white">Operational pulse</h2>
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+        <div className="admin-section">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="admin-eyebrow">Needs Review</p>
+              <h2 className="mt-2 text-2xl font-semibold text-white">
+                Priority queue
+              </h2>
+            </div>
+            <span className="admin-pill admin-pill-inline">{reviewQueue} open</span>
+          </div>
+
           <div className="mt-5 grid gap-3">
-            <div className="admin-rail-stat">
-              <span className="admin-subtle">Auditions awaiting review</span>
-              <strong>{pendingAuditions}</strong>
-            </div>
-            <div className="admin-rail-stat">
-              <span className="admin-subtle">Pending chorister approvals</span>
-              <strong>{pendingChoristers.length}</strong>
-            </div>
-            <div className="admin-rail-stat">
-              <span className="admin-subtle">Attendance requests</span>
-              <strong>{pendingAttendance.length}</strong>
-            </div>
-            <div className="admin-rail-stat">
-              <span className="admin-subtle">Verified choristers</span>
-              <strong>{choristers.length}</strong>
-            </div>
+            {queue.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="admin-rail-link items-center"
+                >
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-amber-100">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block font-semibold text-white">{item.label}</span>
+                      <span className="mt-1 block text-sm admin-subtle">{item.detail}</span>
+                    </span>
+                  </span>
+                  <strong>{item.value}</strong>
+                </Link>
+              );
+            })}
           </div>
         </div>
 
-        <div className="admin-side-card">
-          <p className="admin-eyebrow">Module Index</p>
-          <nav className="mt-4 grid gap-2">
-            {sections.map((section) => (
-              <a key={section.id} href={`#${section.id}`} className="admin-rail-link">
-                <span>{section.title}</span>
-                <span className="text-xs text-white/55">{section.countLabel}</span>
-              </a>
-            ))}
-          </nav>
+        <div className="admin-section">
+          <p className="admin-eyebrow">Latest Movement</p>
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <div>
+              <h2 className="text-lg font-semibold text-white">Recent applications</h2>
+              <div className="mt-3 grid gap-2">
+                {recentAuditions.length === 0 ? (
+                  <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm admin-subtle">
+                    No applications yet.
+                  </p>
+                ) : (
+                  recentAuditions.map((application) => (
+                    <div
+                      key={application.id}
+                      className="rounded-2xl border border-white/10 bg-black/24 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-white">
+                            {application.fullName}
+                          </p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/45">
+                            {application.category}
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/76">
+                          {application.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h2 className="text-lg font-semibold text-white">Upcoming events</h2>
+              <div className="mt-3 grid gap-2">
+                {upcomingEvents.length === 0 ? (
+                  <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm admin-subtle">
+                    No upcoming events.
+                  </p>
+                ) : (
+                  upcomingEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className="rounded-2xl border border-white/10 bg-black/24 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-white">{event.title}</p>
+                          <p className="mt-1 text-sm admin-subtle">
+                            {formatDate(event.startsAt)}
+                          </p>
+                        </div>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/76">
+                          {event.isPublished ? "Live" : "Draft"}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </aside>
+      </section>
+
+      <section className="admin-section">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="admin-eyebrow">Workspaces</p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">
+              Open a focused admin page
+            </h2>
+          </div>
+          <p className="max-w-xl text-sm leading-6 admin-subtle">
+            Each area now has its own route, so desktop and mobile admins can move with less scrolling and clearer context.
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {modules.map((module) => {
+            const Icon = module.icon;
+            return (
+              <Link key={module.href} href={module.href} className="admin-nav-card">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-cyan-100">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="admin-pill admin-pill-inline">
+                    {formatCompactNumber(module.count)}
+                  </span>
+                </div>
+                <h3 className="mt-4 text-lg font-semibold text-white">{module.title}</h3>
+                <p className="mt-2 text-sm leading-6 admin-subtle">{module.detail}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
+                  Open workspace
+                  <ArrowUpRight className="h-4 w-4" />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }

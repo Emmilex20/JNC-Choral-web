@@ -104,6 +104,11 @@ body {
   padding: 0.7rem 0.95rem;
 }
 
+.admin-pill.admin-pill-inline {
+  width: auto;
+  white-space: nowrap;
+}
+
 .admin-anchor {
   display: inline-flex;
   align-items: center;
