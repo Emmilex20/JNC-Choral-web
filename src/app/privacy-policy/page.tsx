@@ -3,11 +3,11 @@ import Link from "next/link";
 
 import LegalPageShell, { type LegalSection } from "@/components/legal-page-shell";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const lastUpdated = "June 6, 2026";
 const title = "Privacy Policy";
 const description =
-  "Learn how Jude Nnam Choral Platform collects, uses, protects, and manages personal information for accounts, auditions, choristers, events, and score downloads.";
+  "Learn how Jude Nnam Chorale Platform collects, uses, protects, and manages personal information for accounts, auditions, choristers, events, and score downloads.";
 
 export const metadata: Metadata = {
   title,
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     canonical: "/privacy-policy",
   },
   keywords: [
-    "Jude Nnam Choral privacy policy",
+    "Jude Nnam Chorale privacy policy",
     "JNC privacy policy",
     "choir website privacy policy",
     "Sir Jude Nnam scores privacy",
@@ -36,7 +36,7 @@ const sections: LegalSection[] = [
     title: "Who We Are",
     body: (
       <>
-        Jude Nnam Choral Platform is the official digital platform for Jude Nnam Choral
+        Jude Nnam Chorale Platform is the official digital platform for Jude Nnam Chorale
         activities, including public information, auditions, events, media, score access,
         and chorister administration. For privacy questions, contact{" "}
         <Link className="text-amber-100 underline-offset-4 hover:underline" href="mailto:jncplatform@gmail.com">
@@ -135,7 +135,7 @@ const jsonLd = {
   dateModified: "2026-06-06",
   isPartOf: {
     "@type": "WebSite",
-    name: "Jude Nnam Choral",
+    name: "Jude Nnam Chorale",
     url: siteUrl,
   },
 };

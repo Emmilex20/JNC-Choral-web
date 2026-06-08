@@ -15,7 +15,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { prisma } from "@/lib/prisma";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 
 type NewsDetailProps = {
   params: Promise<{ id: string }>;
@@ -157,11 +157,11 @@ export default async function NewsDetailPage({ params }: NewsDetailProps) {
     mainEntityOfPage: `${siteUrl}/news/${announcement.id}`,
     author: {
       "@type": "Organization",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
     },
     publisher: {
       "@type": "Organization",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
       logo: {
         "@type": "ImageObject",
         url: `${siteUrl}/logo.svg`,
@@ -219,7 +219,7 @@ export default async function NewsDetailPage({ params }: NewsDetailProps) {
               <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-white/45">
                 Published By
               </p>
-              <p className="mt-2 text-lg font-semibold text-white">Jude Nnam Choral</p>
+              <p className="mt-2 text-lg font-semibold text-white">Jude Nnam Chorale</p>
             </div>
           </div>
         </div>

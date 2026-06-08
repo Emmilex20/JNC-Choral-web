@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const ogImage = "/logo.svg";
-const siteName = "Jude Nnam Choral";
+const siteName = "Jude Nnam Chorale";
 const description =
-  "Jude Nnam Choral is a vibrant choir in Abuja, Nigeria. Join auditions, attend events, and experience uplifting choral music and community.";
+  "Jude Nnam Chorale is a vibrant choir in Abuja, Nigeria. Join auditions, attend events, and experience uplifting choral music and community.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   keywords: [
-    "Jude Nnam Choral",
+    "Jude Nnam Chorale",
     "choir in Abuja",
     "choral auditions Abuja",
     "choir Nigeria",
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     "choral group Abuja",
     "African choir",
     "live choral performance",
-    "JNC choral platform",
+    "JNC chorale platform",
   ],
   openGraph: {
     type: "website",
@@ -68,6 +68,11 @@ export const metadata: Metadata = {
     description,
     images: [ogImage],
   },
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? {
+        google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+      }
+    : undefined,
   robots: {
     index: true,
     follow: true,

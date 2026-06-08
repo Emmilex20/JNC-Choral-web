@@ -18,7 +18,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { Button } from "@/components/ui/button";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const email = "jncplatform@gmail.com";
 const phones = [
   { label: "08064087399", href: "tel:+2348064087399" },
@@ -86,12 +86,12 @@ const inquiryTypes = [
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Contact Jude Nnam Choral in Abuja for auditions, events, partnerships, media requests, score inquiries, and choir support.",
+    "Contact Jude Nnam Chorale in Abuja for auditions, events, partnerships, media requests, score inquiries, and choir support.",
   alternates: {
     canonical: "/contact",
   },
   keywords: [
-    "contact Jude Nnam Choral",
+    "contact Jude Nnam Chorale",
     "JNC contact",
     "Jude Nnam Chorale Abuja",
     "JNC auditions contact",
@@ -99,7 +99,7 @@ export const metadata: Metadata = {
     "JNC email",
   ],
   openGraph: {
-    title: "Contact Jude Nnam Choral",
+    title: "Contact Jude Nnam Chorale",
     description:
       "Reach JNC for auditions, events, partnerships, media requests, score inquiries, and choir support.",
     url: "/contact",
@@ -111,12 +111,12 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "ContactPage",
-  name: "Contact Jude Nnam Choral",
+  name: "Contact Jude Nnam Chorale",
   description: metadata.description,
   url: `${siteUrl}/contact`,
   mainEntity: {
     "@type": "Organization",
-    name: "Jude Nnam Choral",
+    name: "Jude Nnam Chorale",
     email,
     telephone: phones.map((phone) => phone.href.replace("tel:", "")),
     address: {
@@ -164,7 +164,7 @@ export default function ContactPage() {
               Let us help you reach the right desk.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
-              Reach Jude Nnam Choral for auditions, concerts, partnerships, media requests,
+              Reach Jude Nnam Chorale for auditions, concerts, partnerships, media requests,
               score inquiries, and chorister support. We will direct your message to the right
               team.
             </p>
@@ -192,7 +192,7 @@ export default function ContactPage() {
             <div className="relative aspect-[4/3]">
               <Image
                 src="/hero/hero-2.png"
-                alt="Jude Nnam Choral performance moment"
+                alt="Jude Nnam Chorale performance moment"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 420px"

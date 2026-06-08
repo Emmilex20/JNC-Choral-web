@@ -14,7 +14,7 @@ import {
 } from "@/lib/academy";
 import RichArticleContent from "./article-content";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-NG", {
@@ -114,11 +114,11 @@ export default async function AcademyArticlePage({
     dateModified: article.updatedAt,
     author: {
       "@type": "Organization",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
     },
     publisher: {
       "@type": "Organization",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
       logo: {
         "@type": "ImageObject",
         url: `${siteUrl}/logo.svg`,

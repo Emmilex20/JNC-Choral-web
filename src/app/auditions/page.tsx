@@ -26,9 +26,9 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Auditions",
   description:
-    "Register for Jude Nnam Choral auditions in Abuja. Apply as a singer, instrumentalist, or production crew.",
+    "Register for Jude Nnam Chorale auditions in Abuja. Apply as a singer, instrumentalist, or production crew.",
   alternates: {
-    canonical: "https://www.jnc.vercel.app/auditions",
+    canonical: "https://www.jncchorale.com/auditions",
   },
 };
 
@@ -81,7 +81,7 @@ export default async function AuditionsPage() {
               Bring your voice, instrument, or creative skill into the sound.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/72 md:text-lg">
-              Join Jude Nnam Choral as a singer, instrumentalist, or production
+              Join Jude Nnam Chorale as a singer, instrumentalist, or production
               creative. We are looking for people who are teachable, consistent,
               and ready to grow in excellence.
             </p>
@@ -105,7 +105,7 @@ export default async function AuditionsPage() {
               <div className="relative aspect-video">
                 <Image
                   src={versionedHeroAsset("/hero/hero-1.png")}
-                  alt="Dr. Sir Jude Nnam with Jude Nnam Choral members"
+                  alt="Dr. Sir Jude Nnam with Jude Nnam Chorale members"
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"

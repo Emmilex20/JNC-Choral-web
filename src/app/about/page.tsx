@@ -19,9 +19,9 @@ import { versionedHeroAsset } from "@/lib/site-assets";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Learn about Jude Nnam Choral, a Nigerian liturgical and gospel choir founded by Dr. Sir Jude Nnam and dedicated to contemporary African choral music.",
+    "Learn about Jude Nnam Chorale, a Nigerian liturgical and gospel choir founded by Dr. Sir Jude Nnam and dedicated to contemporary African choral music.",
   alternates: {
-    canonical: "https://www.jnc.vercel.app/about",
+    canonical: "https://www.jncchorale.com/about",
   },
 };
 
@@ -112,14 +112,14 @@ export default function AboutPage() {
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:px-6 md:py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div className="relative z-10">
             <p className="text-xs uppercase tracking-[0.28em] text-amber-100/70">
-              About Jude Nnam Choral
+              About Jude Nnam Chorale
             </p>
             <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
               A Nigerian liturgical and gospel choir carrying African sacred
               music with excellence.
             </h1>
             <p className="mt-6 max-w-3xl text-base leading-8 text-white/72 md:text-lg">
-              Jude Nnam Choral, known as JNC, is a prominent Nigerian choral
+              Jude Nnam Chorale, known as JNC, is a prominent Nigerian choral
               family founded by the acclaimed composer and music icon Dr. Sir
               Jude Nnam. The choir is celebrated for performing, arranging, and
               promoting contemporary African choral music, especially Catholic
@@ -144,7 +144,7 @@ export default function AboutPage() {
               <div className="relative aspect-video">
                 <Image
                   src={versionedHeroAsset("/hero/hero-1.png")}
-                  alt="Dr. Sir Jude Nnam standing with members of Jude Nnam Choral"
+                  alt="Dr. Sir Jude Nnam standing with members of Jude Nnam Chorale"
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"

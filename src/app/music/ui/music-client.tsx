@@ -126,7 +126,7 @@ export default function MusicClient({
             <div className="relative min-h-[320px] bg-black">
               <Image
                 src={mediaPoster}
-                alt="Jude Nnam Choral music cover"
+                alt="Jude Nnam Chorale music cover"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover object-top"

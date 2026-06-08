@@ -107,7 +107,7 @@ export default function SiteNavbar() {
           </div>
           <div className="leading-tight">
             <p className="text-base font-semibold tracking-tight text-white">
-              Jude Nnam Choral
+              Jude Nnam Chorale
             </p>
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-amber-100/58">
               JNC Platform

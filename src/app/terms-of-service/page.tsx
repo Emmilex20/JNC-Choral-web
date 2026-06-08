@@ -3,11 +3,11 @@ import Link from "next/link";
 
 import LegalPageShell, { type LegalSection } from "@/components/legal-page-shell";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const lastUpdated = "June 6, 2026";
 const title = "Terms of Service";
 const description =
-  "Read the terms for using Jude Nnam Choral Platform, including accounts, auditions, chorister access, media, score downloads, and acceptable use.";
+  "Read the terms for using Jude Nnam Chorale Platform, including accounts, auditions, chorister access, media, score downloads, and acceptable use.";
 
 export const metadata: Metadata = {
   title,
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     canonical: "/terms-of-service",
   },
   keywords: [
-    "Jude Nnam Choral terms",
+    "Jude Nnam Chorale terms",
     "JNC terms of service",
     "Sir Jude Nnam score download terms",
     "JNC platform rules",
@@ -34,7 +34,7 @@ const sections: LegalSection[] = [
   {
     title: "Acceptance of Terms",
     body:
-      "By accessing or using Jude Nnam Choral Platform, you agree to these Terms of Service and any related policies referenced here. If you do not agree, you should not use the platform.",
+      "By accessing or using Jude Nnam Chorale Platform, you agree to these Terms of Service and any related policies referenced here. If you do not agree, you should not use the platform.",
   },
   {
     title: "Platform Purpose",
@@ -140,7 +140,7 @@ const jsonLd = {
   dateModified: "2026-06-06",
   isPartOf: {
     "@type": "WebSite",
-    name: "Jude Nnam Choral",
+    name: "Jude Nnam Chorale",
     url: siteUrl,
   },
 };

@@ -403,7 +403,7 @@ export async function generateAcademyArticleDraftAction(input: unknown) {
     generateOpenAIJson({
       schema: ArticleDraftSchema,
       system:
-        "You are the editorial assistant for Jude Nnam Choral Platform. Write practical, original music education content for Nigerian choral, gospel, Catholic liturgical, and worship musicians. Return valid JSON only.",
+        "You are the editorial assistant for Jude Nnam Chorale Platform. Write practical, original music education content for Nigerian choral, gospel, Catholic liturgical, and worship musicians. Return valid JSON only.",
       prompt: `Create a polished JNC Music Academy article draft.
 
 Category: ${categoryName}
@@ -431,7 +431,7 @@ export async function generateQuizDraftAction(input: unknown) {
     generateOpenAIJson({
       schema: QuizDraftSchema,
       system:
-        "You create accurate multiple-choice music education quizzes for Jude Nnam Choral Platform. Return valid JSON only.",
+        "You create accurate multiple-choice music education quizzes for Jude Nnam Chorale Platform. Return valid JSON only.",
       prompt: `Create a JNC Music Hub quiz draft.
 
 Category: ${category}
@@ -460,7 +460,7 @@ export async function generateDailyChallengeDraftAction(input: unknown) {
     generateOpenAIJson({
       schema: DailyChallengeDraftSchema,
       system:
-        "You create one-question daily music theory challenges for Jude Nnam Choral Platform. Return valid JSON only.",
+        "You create one-question daily music theory challenges for Jude Nnam Chorale Platform. Return valid JSON only.",
       prompt: `Create one daily theory challenge.
 
 Topic or focus: ${topic}
@@ -510,7 +510,7 @@ export async function generateMusicChallengeDraftAction(input: unknown) {
     generateOpenAIJson({
       schema: createMusicChallengeDraftSchema(topic, type),
       system:
-        "You create public music challenge prompts for Jude Nnam Choral Platform. Return valid JSON only.",
+        "You create public music challenge prompts for Jude Nnam Chorale Platform. Return valid JSON only.",
       prompt: `Create a public JNC music challenge draft.
 
 Challenge type: ${type}
@@ -541,7 +541,7 @@ export async function generateSightReadingExerciseDraftAction(input: unknown) {
     generateOpenAIJson({
       schema: SightReadingExerciseDraftSchema,
       system:
-        "You create short, practical sight-singing exercises for Jude Nnam Choral Platform. Return valid JSON only.",
+        "You create short, practical sight-singing exercises for Jude Nnam Chorale Platform. Return valid JSON only.",
       prompt: `Create a 2-3 line sight-singing sheet music exercise.
 
 Use case: ${source}

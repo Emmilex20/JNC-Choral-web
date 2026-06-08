@@ -20,9 +20,9 @@ import {
 import { prisma } from "@/lib/prisma";
 import VideosClient from "./ui/videos-client";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const description =
-  "Watch Jude Nnam Choral performance videos, rehearsals, concert highlights, and behind-the-scenes media from JNC.";
+  "Watch Jude Nnam Chorale performance videos, rehearsals, concert highlights, and behind-the-scenes media from JNC.";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,14 +34,14 @@ export const metadata: Metadata = {
     canonical: "/videos",
   },
   keywords: [
-    "Jude Nnam Choral videos",
+    "Jude Nnam Chorale videos",
     "JNC performance videos",
     "Sir Jude Nnam choir videos",
     "JNC rehearsals",
     "Nigerian gospel choir video",
   ],
   openGraph: {
-    title: "Jude Nnam Choral Video Highlights",
+    title: "Jude Nnam Chorale Video Highlights",
     description,
     url: "/videos",
     type: "video.other",
@@ -73,12 +73,12 @@ export default async function VideosPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Jude Nnam Choral Video Highlights",
+    name: "Jude Nnam Chorale Video Highlights",
     description,
     url: `${siteUrl}/videos`,
     isPartOf: {
       "@type": "WebSite",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
       url: siteUrl,
     },
     mainEntity: {
@@ -113,7 +113,7 @@ export default async function VideosPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
               Watch performances, rehearsals, public highlights, and behind-the-scenes stories
-              that reveal the spirit and excellence of Jude Nnam Choral.
+              that reveal the spirit and excellence of Jude Nnam Chorale.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button className="rounded-2xl bg-amber-200 px-6 py-6 text-black hover:bg-amber-100" asChild>
@@ -139,7 +139,7 @@ export default async function VideosPage() {
             <div className="relative aspect-[4/3] bg-black">
               <Image
                 src={featured?.posterUrl ?? "/hero/hero-2.png"}
-                alt={featured?.title ?? "Jude Nnam Choral video feature"}
+                alt={featured?.title ?? "Jude Nnam Chorale video feature"}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 430px"

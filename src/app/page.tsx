@@ -303,10 +303,10 @@ export default async function HomePage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "MusicGroup",
-    name: "Jude Nnam Choral",
-    url: "https://www.jnc.vercel.app",
+    name: "Jude Nnam Chorale",
+    url: "https://www.jncchorale.com",
     description:
-      "Jude Nnam Choral is a vibrant choir in Abuja, Nigeria. Auditions, events, and uplifting choral performances.",
+      "Jude Nnam Chorale is a vibrant choir in Abuja, Nigeria. Auditions, events, and uplifting choral performances.",
     areaServed: "Nigeria",
     address: {
       "@type": "PostalAddress",
@@ -612,7 +612,7 @@ export default async function HomePage() {
           <div className="relative min-h-120 overflow-hidden rounded-4xl bg-black">
             <Image
               src={versionedHeroAsset("/hero/hero-1.png")}
-              alt="Sir Jude standing with Jude Nnam Choral members"
+              alt="Sir Jude standing with Jude Nnam Chorale members"
               fill
               priority={false}
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -630,7 +630,7 @@ export default async function HomePage() {
             <div className="mt-8 border-l-2 border-amber-500 pl-6">
               <Quote className="h-8 w-8 text-amber-600" />
               <p className="mt-5 text-xl leading-9 text-black/78">
-                Every voice carries a story. At Jude Nnam Choral, we train those
+                Every voice carries a story. At Jude Nnam Chorale, we train those
                 stories into sound, discipline, worship, and joy. If you are
                 ready to grow, serve, and be part of something bigger than
                 yourself, there is room for you here.

@@ -20,12 +20,12 @@ import {
   getReadingMinutes,
 } from "@/lib/academy";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 
 export const metadata: Metadata = {
   title: "Music Academy",
   description:
-    "Learn music theory, vocal training, choral leadership, worship music, instrumental training, and music history with the Jude Nnam Choral Music Academy.",
+    "Learn music theory, vocal training, choral leadership, worship music, instrumental training, and music history with the Jude Nnam Chorale Music Academy.",
   alternates: {
     canonical: "/academy",
   },

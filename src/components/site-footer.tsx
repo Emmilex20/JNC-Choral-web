@@ -19,7 +19,7 @@ export default function SiteFooter() {
                   className="object-cover"
                 />
               </div>
-              <p className="text-lg font-semibold text-white">Jude Nnam Choral (JNC)</p>
+              <p className="text-lg font-semibold text-white">Jude Nnam Chorale (JNC)</p>
             </div>
             <p className="mt-2 text-sm text-white/70">
               Spreading joy through music - auditions, performances, and community.
@@ -66,7 +66,7 @@ export default function SiteFooter() {
         <Separator className="my-8 bg-white/10" />
 
         <div className="flex flex-col gap-3 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {new Date().getFullYear()} Jude Nnam Choral Platform. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Jude Nnam Chorale Platform. All rights reserved.</p>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             <Link className="hover:text-white" href="/privacy-policy">
               Privacy

@@ -8,9 +8,9 @@ import EventsClient from "./ui/events-client";
 export const metadata: Metadata = {
   title: "Events",
   description:
-    "Explore upcoming and past Jude Nnam Choral events, rehearsals, performances, and RSVP interest.",
+    "Explore upcoming and past Jude Nnam Chorale events, rehearsals, performances, and RSVP interest.",
   alternates: {
-    canonical: "https://www.jnc.vercel.app/events",
+    canonical: "https://www.jncchorale.com/events",
   },
 };
 

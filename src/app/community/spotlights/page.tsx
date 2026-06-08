@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "JNC Chorister Spotlights",
     description:
-      "Weekly featured member stories from the Jude Nnam Choral community.",
+      "Weekly featured member stories from the Jude Nnam Chorale community.",
     url: "/community/spotlights",
     images: ["/logo.svg"],
   },

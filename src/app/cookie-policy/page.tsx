@@ -3,11 +3,11 @@ import Link from "next/link";
 
 import LegalPageShell, { type LegalSection } from "@/components/legal-page-shell";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const lastUpdated = "June 6, 2026";
 const title = "Cookie Policy";
 const description =
-  "Learn how Jude Nnam Choral Platform uses essential cookies, browser storage, consent preferences, and optional future analytics or media cookies.";
+  "Learn how Jude Nnam Chorale Platform uses essential cookies, browser storage, consent preferences, and optional future analytics or media cookies.";
 
 export const metadata: Metadata = {
   title,
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     canonical: "/cookie-policy",
   },
   keywords: [
-    "Jude Nnam Choral cookie policy",
+    "Jude Nnam Chorale cookie policy",
     "JNC cookies",
     "JNC consent settings",
     "choir website cookie policy",
@@ -39,7 +39,7 @@ const sections: LegalSection[] = [
   {
     title: "How JNC Uses Cookies",
     body:
-      "Jude Nnam Choral Platform uses cookies and similar storage in a limited way so the website can function properly and remember your consent choice.",
+      "Jude Nnam Chorale Platform uses cookies and similar storage in a limited way so the website can function properly and remember your consent choice.",
     points: [
       "Essential authentication and session cookies help registered users stay signed in securely.",
       "Security and platform cookies help protect forms, admin areas, downloads, and account access.",
@@ -104,7 +104,7 @@ const jsonLd = {
   dateModified: "2026-06-06",
   isPartOf: {
     "@type": "WebSite",
-    name: "Jude Nnam Choral",
+    name: "Jude Nnam Chorale",
     url: siteUrl,
   },
 };

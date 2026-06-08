@@ -198,7 +198,7 @@ export default function VideosClient({ items }: { items: Item[] }) {
           <div className="relative min-h-55 overflow-hidden rounded-[1.25rem] bg-black">
             <Image
               src={versionedHeroAsset("/hero/hero-1.png")}
-              alt="Jude Nnam Choral media preview"
+              alt="Jude Nnam Chorale media preview"
               fill
               sizes="(max-width: 1024px) 100vw, 300px"
               className="object-cover"

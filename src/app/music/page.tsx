@@ -24,9 +24,9 @@ import { prisma } from "@/lib/prisma";
 import { versionedHeroAsset } from "@/lib/site-assets";
 import MusicClient from "./ui/music-client";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const description =
-  "Listen to Jude Nnam Choral music, live recordings, worship sessions, and access available JNC scores and choir sheets.";
+  "Listen to Jude Nnam Chorale music, live recordings, worship sessions, and access available JNC scores and choir sheets.";
 
 export const metadata: Metadata = {
   title: "Music Library",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     canonical: "/music",
   },
   keywords: [
-    "Jude Nnam Choral music",
+    "Jude Nnam Chorale music",
     "JNC music library",
     "Sir Jude Nnam songs",
     "JNC live recordings",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     "Jude Nnam scores",
   ],
   openGraph: {
-    title: "Jude Nnam Choral Music Library",
+    title: "Jude Nnam Chorale Music Library",
     description,
     url: "/music",
     type: "music.playlist",
@@ -73,12 +73,12 @@ export default async function MusicPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Jude Nnam Choral Music Library",
+    name: "Jude Nnam Chorale Music Library",
     description,
     url: `${siteUrl}/music`,
     isPartOf: {
       "@type": "WebSite",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
       url: siteUrl,
     },
     mainEntity: {
@@ -139,7 +139,7 @@ export default async function MusicPage() {
             <div className="relative aspect-4/3">
               <Image
                 src={versionedHeroAsset("/hero/hero-1.png")}
-                alt="Jude Nnam Choral music library"
+                alt="Jude Nnam Chorale music library"
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 420px"

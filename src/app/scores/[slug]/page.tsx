@@ -96,7 +96,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
     },
     inLanguage: score.lyricsLanguage ?? undefined,
     genre: "Choral score",
-    url: `https://www.jnc.vercel.app${scorePath}`,
+    url: `https://www.jncchorale.com${scorePath}`,
     datePublished: score.createdAt.toISOString(),
     dateModified: score.updatedAt.toISOString(),
     isAccessibleForFree: true,

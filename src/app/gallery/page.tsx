@@ -15,9 +15,9 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import GalleryClient from "./ui/gallery-client";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 const description =
-  "Browse the Jude Nnam Choral gallery with concert photos, rehearsal moments, choir memories, and media highlights from JNC.";
+  "Browse the Jude Nnam Chorale gallery with concert photos, rehearsal moments, choir memories, and media highlights from JNC.";
 
 export const metadata: Metadata = {
   title: "Gallery",
@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     canonical: "/gallery",
   },
   keywords: [
-    "Jude Nnam Choral gallery",
+    "Jude Nnam Chorale gallery",
     "JNC photos",
     "Sir Jude Nnam choir photos",
     "JNC concert pictures",
     "Nigerian choir gallery",
   ],
   openGraph: {
-    title: "Jude Nnam Choral Gallery",
+    title: "Jude Nnam Chorale Gallery",
     description,
     url: "/gallery",
     type: "website",
@@ -67,12 +67,12 @@ export default async function GalleryPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ImageGallery",
-    name: "Jude Nnam Choral Gallery",
+    name: "Jude Nnam Chorale Gallery",
     description,
     url: `${siteUrl}/gallery`,
     isPartOf: {
       "@type": "WebSite",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
       url: siteUrl,
     },
     image: items.slice(0, 24).map((item) => ({
@@ -104,7 +104,7 @@ export default async function GalleryPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
               Explore concert posters, rehearsal memories, stage highlights, backstage energy,
-              and the visual story of Jude Nnam Choral.
+              and the visual story of Jude Nnam Chorale.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button className="rounded-2xl bg-amber-200 px-6 py-6 text-black hover:bg-amber-100" asChild>
@@ -127,7 +127,7 @@ export default async function GalleryPage() {
             <div className="relative aspect-[4/5]">
               <Image
                 src={featuredImage}
-                alt={featured?.title ?? "Jude Nnam Choral gallery feature"}
+                alt={featured?.title ?? "Jude Nnam Chorale gallery feature"}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 430px"

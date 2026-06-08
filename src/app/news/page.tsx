@@ -14,7 +14,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { prisma } from "@/lib/prisma";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 
 type NewsPost = {
   id: string;
@@ -27,12 +27,12 @@ type NewsPost = {
 export const metadata: Metadata = {
   title: "News and Updates",
   description:
-    "Read official JNC news, announcements, choir updates, auditions, events, media releases, and public notices from Jude Nnam Choral.",
+    "Read official JNC news, announcements, choir updates, auditions, events, media releases, and public notices from Jude Nnam Chorale.",
   alternates: {
     canonical: "/news",
   },
   keywords: [
-    "Jude Nnam Choral news",
+    "Jude Nnam Chorale news",
     "JNC announcements",
     "Sir Jude Nnam choir updates",
     "JNC auditions news",
@@ -130,12 +130,12 @@ export default async function NewsPage() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: "Jude Nnam Choral News",
+    name: "Jude Nnam Chorale News",
     description: metadata.description,
     url: `${siteUrl}/news`,
     isPartOf: {
       "@type": "WebSite",
-      name: "Jude Nnam Choral",
+      name: "Jude Nnam Chorale",
       url: siteUrl,
     },
     mainEntity: {
@@ -170,7 +170,7 @@ export default async function NewsPage() {
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
               Announcements, rehearsal notes, event releases, audition updates, and platform news
-              from Jude Nnam Choral.
+              from Jude Nnam Chorale.
             </p>
           </div>
 

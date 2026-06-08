@@ -102,7 +102,7 @@ export async function GET(
   });
 
   const brandX = logoX + logoDims.width + 6;
-  page.drawText("JUDE NNAM CHORAL", {
+  page.drawText("JUDE NNAM CHORALE", {
     x: brandX,
     y: brandY,
     size: 10,
@@ -197,7 +197,7 @@ export async function GET(
     color: rgb(0.45, 0.45, 0.45),
   });
 
-  page.drawText("jnc-choral.vercel.app", {
+  page.drawText("jncchorale.com", {
     x: cardX + 16,
     y: cardY + 10,
     size: 8,

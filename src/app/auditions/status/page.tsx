@@ -9,9 +9,9 @@ import SiteFooter from "@/components/site-footer";
 export const metadata: Metadata = {
   title: "Audition Status",
   description:
-    "Track the status of your Jude Nnam Choral audition application.",
+    "Track the status of your Jude Nnam Chorale audition application.",
   alternates: {
-    canonical: "https://www.jnc.vercel.app/auditions/status",
+    canonical: "https://www.jncchorale.com/auditions/status",
   },
 };
 

@@ -5,7 +5,7 @@ import { listPublishedChallengesForSitemap } from "@/lib/challenges";
 import { listPublicScoreSheets } from "@/lib/music-sheets";
 import { listPublishedQuizzesForSitemap } from "@/lib/music-hub";
 
-const siteUrl = "https://www.jnc.vercel.app";
+const siteUrl = "https://www.jncchorale.com";
 
 type ScoreSitemapEntry = Awaited<ReturnType<typeof listPublicScoreSheets>>[number];
 type AcademySitemapEntry = Awaited<

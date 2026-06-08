@@ -17,7 +17,7 @@ const slides = [
   },
   {
     src: versionedHeroAsset("/hero/hero1.jpg"),
-    title: "Jude Nnam Choral Platform",
+    title: "Jude Nnam Chorale Platform",
     subtitle: "Spreading joy through music",
     fit: "contain",
     position: "top center",
@@ -93,7 +93,7 @@ export default function Hero() {
           </p>
 
           <p className="mt-5 text-base leading-relaxed text-white/75 md:text-lg">
-            Join Jude Nnam Choral Platform as a singer, instrumentalist, or production crew.
+            Join Jude Nnam Chorale Platform as a singer, instrumentalist, or production crew.
             Experience excellence, community, and growth.
           </p>
 
