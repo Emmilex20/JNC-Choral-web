@@ -21,6 +21,7 @@ import {
   listVisibleMusicSheets,
 } from "@/lib/music-sheets";
 import { prisma } from "@/lib/prisma";
+import { jncEntityKeywords, mediaKeywords, scoreKeywords, songKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import { versionedHeroAsset } from "@/lib/site-assets";
 import MusicClient from "./ui/music-client";
 
@@ -34,14 +35,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/music",
   },
-  keywords: [
-    "Jude Nnam Chorale music",
-    "JNC music library",
-    "Sir Jude Nnam songs",
+  keywords: uniqueKeywords(jncEntityKeywords, mediaKeywords, scoreKeywords, songKeywords, [
     "JNC live recordings",
     "Nigerian gospel choir music",
-    "Jude Nnam scores",
-  ],
+    "Jude Nnam worship songs",
+  ]),
   openGraph: {
     title: "Jude Nnam Chorale Music Library",
     description,

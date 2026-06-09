@@ -6,6 +6,7 @@ import { ArrowUpRight, HeartHandshake, Music2, Quote, Sparkles } from "lucide-re
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { listPublishedSpotlights } from "@/lib/spotlights";
+import { communityKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 export const metadata: Metadata = {
   title: "Chorister Spotlights",
@@ -14,6 +15,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/community/spotlights",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, communityKeywords, [
+    "JNC Chorister Spotlights",
+    "Jude Nnam Chorale member stories",
+    "JNC musical journey",
+    "JNC chorister stories",
+  ]),
   openGraph: {
     title: "JNC Chorister Spotlights",
     description:

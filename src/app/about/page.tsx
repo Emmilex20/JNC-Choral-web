@@ -14,6 +14,7 @@ import {
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
+import { jncEntityKeywords, songKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import { versionedHeroAsset } from "@/lib/site-assets";
 
 export const metadata: Metadata = {
@@ -23,6 +24,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.jncchorale.com/about",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, songKeywords, [
+    "Sir Jude Nnam biography",
+    "Dr Sir Jude Nnam biography",
+    "Jude Nnam Chorale history",
+    "about Jude Nnam Chorale",
+    "Jude Nnam gospel composer",
+    "Nigerian liturgical composer",
+  ]),
 };
 
 const highlights = [

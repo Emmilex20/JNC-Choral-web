@@ -18,6 +18,7 @@ import {
   getOptimizedCloudinaryVideoUrl,
 } from "@/lib/cloudinary-media";
 import { prisma } from "@/lib/prisma";
+import { jncEntityKeywords, mediaKeywords, songKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import VideosClient from "./ui/videos-client";
 
 const siteUrl = "https://www.jncchorale.com";
@@ -33,13 +34,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/videos",
   },
-  keywords: [
-    "Jude Nnam Chorale videos",
+  keywords: uniqueKeywords(jncEntityKeywords, mediaKeywords, songKeywords, [
     "JNC performance videos",
     "Sir Jude Nnam choir videos",
     "JNC rehearsals",
     "Nigerian gospel choir video",
-  ],
+    "JNC concert highlights",
+  ]),
   openGraph: {
     title: "Jude Nnam Chorale Video Highlights",
     description,

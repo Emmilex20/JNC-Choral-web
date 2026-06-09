@@ -12,6 +12,7 @@ import {
   getAcademyArticleBySlug,
   getReadingMinutes,
 } from "@/lib/academy";
+import { academyKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import RichArticleContent from "./article-content";
 
 const siteUrl = "https://www.jncchorale.com";
@@ -69,6 +70,11 @@ export async function generateMetadata({
 
   const { article } = data;
   const description = articleExcerpt(article, 170);
+  const keywords = uniqueKeywords(jncEntityKeywords, academyKeywords, [
+    article.title,
+    article.category.name,
+    ...article.tags,
+  ]);
 
   return {
     title: article.title,
@@ -76,7 +82,7 @@ export async function generateMetadata({
     alternates: {
       canonical: `/academy/${article.slug}`,
     },
-    keywords: ["JNC Music Academy", article.category.name, ...article.tags],
+    keywords,
     openGraph: {
       title: article.title,
       description,
@@ -109,6 +115,10 @@ export default async function AcademyArticlePage({
     "@type": "Article",
     headline: article.title,
     description: articleExcerpt(article, 170),
+    keywords: uniqueKeywords(academyKeywords, [
+      article.category.name,
+      ...article.tags,
+    ]).join(", "),
     image: article.coverImageUrl ?? `${siteUrl}/logo.svg`,
     datePublished: article.publishedAt ?? article.createdAt,
     dateModified: article.updatedAt,

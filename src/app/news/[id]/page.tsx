@@ -14,6 +14,7 @@ import {
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { prisma } from "@/lib/prisma";
+import { auditionKeywords, jncEntityKeywords, mediaKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 const siteUrl = "https://www.jncchorale.com";
 
@@ -80,6 +81,11 @@ export async function generateMetadata({ params }: NewsDetailProps): Promise<Met
 
   const title = `${post.title} | JNC News`;
   const description = excerpt(post.body, 155);
+  const keywords = uniqueKeywords(jncEntityKeywords, auditionKeywords, mediaKeywords, [
+    post.title,
+    "JNC news",
+    "Jude Nnam Chorale announcement",
+  ]);
 
   return {
     title,
@@ -87,6 +93,7 @@ export async function generateMetadata({ params }: NewsDetailProps): Promise<Met
     alternates: {
       canonical: `/news/${post.id}`,
     },
+    keywords,
     openGraph: {
       title,
       description,
@@ -152,6 +159,11 @@ export default async function NewsDetailPage({ params }: NewsDetailProps) {
     "@type": "NewsArticle",
     headline: announcement.title,
     description,
+    keywords: uniqueKeywords(jncEntityKeywords, [
+      announcement.title,
+      "JNC news",
+      "Jude Nnam Chorale announcement",
+    ]).join(", "),
     datePublished: announcement.createdAt.toISOString(),
     dateModified: announcement.updatedAt.toISOString(),
     mainEntityOfPage: `${siteUrl}/news/${announcement.id}`,

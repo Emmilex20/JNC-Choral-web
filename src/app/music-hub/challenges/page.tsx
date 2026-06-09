@@ -22,6 +22,7 @@ import {
   formatChallengeWindow,
   getChallengesIndexData,
 } from "@/lib/challenges";
+import { challengeKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import { getServerSession } from "next-auth";
 
 export const metadata: Metadata = {
@@ -31,6 +32,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/music-hub/challenges",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, challengeKeywords, [
+    "JNC Music Challenges",
+    "JNC vocal challenge",
+    "JNC instrumental challenge",
+    "JNC harmony challenge",
+    "JNC sight reading challenge",
+    "choir performance challenge",
+  ]),
 };
 
 export const dynamic = "force-dynamic";

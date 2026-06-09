@@ -6,6 +6,7 @@ import { ArrowLeft, Brain, ListChecks, Trophy } from "lucide-react";
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { getQuizForPlay, parseOptions } from "@/lib/music-hub";
+import { academyKeywords, challengeKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import QuizRunner from "../ui/quiz-runner";
 
 export async function generateMetadata({
@@ -28,6 +29,12 @@ export async function generateMetadata({
     alternates: {
       canonical: `/music-hub/quizzes/${quiz.slug}`,
     },
+    keywords: uniqueKeywords(jncEntityKeywords, academyKeywords, challengeKeywords, [
+      quiz.title,
+      quiz.category,
+      `${quiz.title} quiz`,
+      "JNC music quiz",
+    ]),
     openGraph: {
       title: quiz.title,
       description:

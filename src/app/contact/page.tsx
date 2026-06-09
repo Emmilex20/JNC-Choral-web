@@ -17,6 +17,7 @@ import {
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { Button } from "@/components/ui/button";
+import { auditionKeywords, jncEntityKeywords, scoreKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 const siteUrl = "https://www.jncchorale.com";
 const email = "jncplatform@gmail.com";
@@ -90,14 +91,16 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/contact",
   },
-  keywords: [
+  keywords: uniqueKeywords(jncEntityKeywords, auditionKeywords, scoreKeywords, [
     "contact Jude Nnam Chorale",
     "JNC contact",
     "Jude Nnam Chorale Abuja",
     "JNC auditions contact",
     "Sir Jude Nnam choir",
     "JNC email",
-  ],
+    "JNC phone number",
+    "JNC media inquiry",
+  ]),
   openGraph: {
     title: "Contact Jude Nnam Chorale",
     description:

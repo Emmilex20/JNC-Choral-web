@@ -13,6 +13,7 @@ import {
   getChallengeBySlug,
   isChallengeAcceptingEntries,
 } from "@/lib/challenges";
+import { challengeKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import { normalizeSightReadingExercise } from "@/lib/sight-reading";
 import ChallengeDetailClient from "../ui/challenge-detail-client";
 
@@ -40,6 +41,21 @@ export async function generateMetadata({
       "Join this JNC music challenge and submit your performance.",
     alternates: {
       canonical: `/music-hub/challenges/${data.challenge.slug}`,
+    },
+    keywords: uniqueKeywords(jncEntityKeywords, challengeKeywords, [
+      data.challenge.title,
+      data.challenge.type,
+      `${data.challenge.title} challenge`,
+      "JNC challenge submission",
+    ]),
+    openGraph: {
+      title: data.challenge.title,
+      description:
+        data.challenge.description ??
+        data.challenge.prompt ??
+        "Join this JNC music challenge and submit your performance.",
+      url: `/music-hub/challenges/${data.challenge.slug}`,
+      images: [data.challenge.coverImageUrl ?? "/logo.svg"],
     },
   };
 }

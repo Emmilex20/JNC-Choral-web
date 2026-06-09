@@ -8,6 +8,7 @@ import { authOptions } from "@/auth";
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { listPublicScoreSheets } from "@/lib/music-sheets";
+import { jncEntityKeywords, scoreKeywords, songKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 export const metadata: Metadata = {
   title: "Sir Jude Nnam Scores Bank",
@@ -16,6 +17,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/scores",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, scoreKeywords, songKeywords, [
+    "JNC Scores Bank",
+    "Sir Jude Nnam Scores Bank",
+    "Jude Nnam liturgical scores",
+    "Jude Nnam gospel arrangements",
+  ]),
   openGraph: {
     title: "Sir Jude Nnam Scores Bank",
     description:

@@ -13,6 +13,7 @@ import {
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { prisma } from "@/lib/prisma";
+import { auditionKeywords, jncEntityKeywords, mediaKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 const siteUrl = "https://www.jncchorale.com";
 
@@ -31,13 +32,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/news",
   },
-  keywords: [
+  keywords: uniqueKeywords(jncEntityKeywords, auditionKeywords, mediaKeywords, [
     "Jude Nnam Chorale news",
     "JNC announcements",
     "Sir Jude Nnam choir updates",
     "JNC auditions news",
     "Nigerian gospel choir news",
-  ],
+    "JNC event updates",
+  ]),
   openGraph: {
     title: "News and Updates",
     description:

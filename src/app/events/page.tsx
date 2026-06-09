@@ -3,6 +3,7 @@ import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import { getEventResponseSummaryMap } from "@/lib/event-responses";
 import { prisma } from "@/lib/prisma";
+import { auditionKeywords, jncEntityKeywords, mediaKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import EventsClient from "./ui/events-client";
 
 export const metadata: Metadata = {
@@ -12,6 +13,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.jncchorale.com/events",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, auditionKeywords, mediaKeywords, [
+    "Jude Nnam Chorale events",
+    "JNC events",
+    "JNC rehearsals",
+    "JNC performances",
+    "JNC concerts Abuja",
+    "choir events Abuja",
+  ]),
 };
 
 export default async function EventsPage() {

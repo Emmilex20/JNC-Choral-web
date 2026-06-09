@@ -13,6 +13,7 @@ import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
+import { jncEntityKeywords, mediaKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import GalleryClient from "./ui/gallery-client";
 
 const siteUrl = "https://www.jncchorale.com";
@@ -25,13 +26,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/gallery",
   },
-  keywords: [
+  keywords: uniqueKeywords(jncEntityKeywords, mediaKeywords, [
     "Jude Nnam Chorale gallery",
     "JNC photos",
     "Sir Jude Nnam choir photos",
     "JNC concert pictures",
     "Nigerian choir gallery",
-  ],
+    "JNC rehearsal photos",
+  ]),
   openGraph: {
     title: "Jude Nnam Chorale Gallery",
     description,

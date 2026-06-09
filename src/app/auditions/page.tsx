@@ -18,6 +18,7 @@ import {
   DEFAULT_AUDITION_ANTICIPATION_TEXT,
   getCurrentAuditionSetting,
 } from "@/lib/audition-settings";
+import { auditionKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import { versionedHeroAsset } from "@/lib/site-assets";
 import AuditionForm from "./ui/audition-form";
 
@@ -30,6 +31,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.jncchorale.com/auditions",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, auditionKeywords, [
+    "join Jude Nnam Chorale",
+    "join JNC",
+    "choir recruitment Abuja",
+    "JNC singer application",
+    "JNC instrumentalist application",
+  ]),
 };
 
 const lanes = [

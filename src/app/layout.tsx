@@ -3,6 +3,15 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import CookieConsent from "@/components/cookie-consent";
+import {
+  academyKeywords,
+  auditionKeywords,
+  jncEntityKeywords,
+  mediaKeywords,
+  scoreKeywords,
+  songKeywords,
+  uniqueKeywords,
+} from "@/lib/seo-keywords";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,18 +44,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl,
   },
-  keywords: [
-    "Jude Nnam Chorale",
-    "choir in Abuja",
-    "choral auditions Abuja",
-    "choir Nigeria",
-    "gospel choir Nigeria",
-    "music auditions Abuja",
-    "choral group Abuja",
-    "African choir",
-    "live choral performance",
-    "JNC chorale platform",
-  ],
+  keywords: uniqueKeywords(
+    jncEntityKeywords,
+    songKeywords,
+    scoreKeywords,
+    auditionKeywords,
+    academyKeywords,
+    mediaKeywords
+  ),
   openGraph: {
     type: "website",
     url: siteUrl,

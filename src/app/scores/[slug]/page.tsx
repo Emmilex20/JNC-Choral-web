@@ -8,6 +8,7 @@ import { authOptions } from "@/auth";
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { findPublicScoreSheetBySlug } from "@/lib/music-sheets";
+import { jncEntityKeywords, scoreKeywords, songKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 type ScorePageProps = {
   params: Promise<{ slug: string }>;
@@ -44,6 +45,15 @@ export async function generateMetadata({ params }: ScorePageProps): Promise<Meta
 
   const title = `${scoreTitle(score)} Score by ${score.composer}`;
   const description = scoreDescription(score);
+  const scoreKeywordsForPage = uniqueKeywords(jncEntityKeywords, scoreKeywords, songKeywords, [
+    scoreTitle(score),
+    `${scoreTitle(score)} score`,
+    `${scoreTitle(score)} sheet music`,
+    `${scoreTitle(score)} by ${score.composer}`,
+    score.composer,
+    score.voicing,
+    score.lyricsLanguage,
+  ]);
 
   return {
     title,
@@ -51,6 +61,7 @@ export async function generateMetadata({ params }: ScorePageProps): Promise<Meta
     alternates: {
       canonical: `/scores/${score.slug}`,
     },
+    keywords: scoreKeywordsForPage,
     openGraph: {
       title,
       description,
@@ -81,6 +92,15 @@ export default async function ScorePage({ params }: ScorePageProps) {
   const isSignedIn = Boolean(session?.user?.id);
   const downloadUrl = `/api/music-sheets/${score.id}/download`;
   const scorePath = `/scores/${score.slug}`;
+  const scoreKeywordsForPage = uniqueKeywords(jncEntityKeywords, scoreKeywords, songKeywords, [
+    title,
+    `${title} score`,
+    `${title} sheet music`,
+    `${title} by ${score.composer}`,
+    score.composer,
+    score.voicing,
+    score.lyricsLanguage,
+  ]);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
@@ -96,6 +116,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
     },
     inLanguage: score.lyricsLanguage ?? undefined,
     genre: "Choral score",
+    keywords: uniqueKeywords(scoreKeywordsForPage).join(", "),
     url: `https://www.jncchorale.com${scorePath}`,
     datePublished: score.createdAt.toISOString(),
     dateModified: score.updatedAt.toISOString(),

@@ -17,6 +17,7 @@ import {
   getTodayDailyChallenge,
   parseOptions,
 } from "@/lib/music-hub";
+import { academyKeywords, challengeKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import { normalizeSightReadingExercise } from "@/lib/sight-reading";
 import DailyChallengeClient from "./ui/daily-challenge-client";
 
@@ -27,6 +28,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/music-hub/daily-challenge",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, academyKeywords, challengeKeywords, [
+    "JNC Daily Theory Challenge",
+    "daily music theory challenge",
+    "daily ear training challenge",
+    "daily sight singing challenge",
+    "music theory practice",
+  ]),
   openGraph: {
     title: "JNC Daily Theory Challenge",
     description:

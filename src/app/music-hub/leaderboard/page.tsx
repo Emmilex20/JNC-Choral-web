@@ -6,6 +6,7 @@ import { ArrowUpRight, CalendarDays, Crown, Medal, Trophy } from "lucide-react";
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { getLeaderboardSnapshot } from "@/lib/gamification";
+import { challengeKeywords, communityKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 export const metadata: Metadata = {
   title: "Music Hub Leaderboard",
@@ -14,6 +15,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/music-hub/leaderboard",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, communityKeywords, challengeKeywords, [
+    "JNC Music Hub leaderboard",
+    "JNC quiz rankings",
+    "JNC daily challenge rankings",
+    "JNC member rankings",
+  ]),
   openGraph: {
     title: "JNC Music Hub Leaderboard",
     description:

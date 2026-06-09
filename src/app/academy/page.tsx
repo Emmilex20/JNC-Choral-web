@@ -19,6 +19,7 @@ import {
   getAcademyIndexData,
   getReadingMinutes,
 } from "@/lib/academy";
+import { academyKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 const siteUrl = "https://www.jncchorale.com";
 
@@ -29,14 +30,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/academy",
   },
-  keywords: [
-    "Jude Nnam Music Academy",
-    "music theory Nigeria",
-    "vocal training",
-    "choral leadership",
-    "worship music training",
+  keywords: uniqueKeywords(jncEntityKeywords, academyKeywords, [
     "African choral music lessons",
-  ],
+    "JNC academy articles",
+    "music learning for choristers",
+  ]),
   openGraph: {
     title: "JNC Music Academy",
     description:

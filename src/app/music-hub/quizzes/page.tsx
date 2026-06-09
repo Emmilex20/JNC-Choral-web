@@ -5,6 +5,7 @@ import { ArrowUpRight, Brain, Clock3, ListChecks, Music2, Trophy } from "lucide-
 import SiteFooter from "@/components/site-footer";
 import SiteNavbar from "@/components/site-navbar";
 import { listPublishedQuizzes, quizCategories } from "@/lib/music-hub";
+import { academyKeywords, challengeKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 
 export const metadata: Metadata = {
   title: "Music Quiz Center",
@@ -13,6 +14,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/music-hub/quizzes",
   },
+  keywords: uniqueKeywords(jncEntityKeywords, academyKeywords, challengeKeywords, [
+    "JNC Music Quiz Center",
+    "beginner music quiz",
+    "choral knowledge quiz",
+    "worship music quiz",
+    "instrumental knowledge quiz",
+  ]),
   openGraph: {
     title: "JNC Music Quiz Center",
     description:
