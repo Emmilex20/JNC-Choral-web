@@ -101,3 +101,24 @@ describe("safeCallbackUrl", () => {
     expect(safeCallbackUrl(value)).toBe("/");
   });
 });
+
+import { buildCsp, getCspMode } from "@/lib/csp";
+
+describe("csp", () => {
+  it("builds a nonce-based script policy without unsafe-inline scripts", () => {
+    const csp = buildCsp("abc123", false);
+    expect(csp).toContain("script-src 'self' 'nonce-abc123' 'strict-dynamic'");
+    expect(csp).not.toMatch(/script-src[^;]*unsafe-inline/);
+    expect(csp).not.toMatch(/script-src[^;]*unsafe-eval/);
+    expect(csp).toContain("object-src 'none'");
+  });
+
+  it("allows eval only in dev", () => {
+    expect(buildCsp("n", true)).toMatch(/script-src[^;]*unsafe-eval/);
+  });
+
+  it("defaults to report-only until explicitly enforced", () => {
+    expect(getCspMode(undefined)).toBe("report-only");
+    expect(getCspMode("enforce")).toBe("enforce");
+  });
+});
