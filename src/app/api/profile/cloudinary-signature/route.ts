@@ -1,36 +1,28 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+
 import { authOptions } from "@/auth";
-import { cloudinary } from "@/lib/cloudinary";
+import { IMAGE_FORMATS, signUserUpload } from "@/lib/upload-signing";
 
 const allowedFolderSuffixes = new Set(["passport-images"]);
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const timestamp = Math.floor(Date.now() / 1000);
   const baseFolder = process.env.CLOUDINARY_FOLDER || "jnc-platform";
-  const url = new URL(request.url);
-  const folderSuffix = url.searchParams.get("folderSuffix")?.trim();
-
+  const folderSuffix = new URL(request.url).searchParams.get("folderSuffix")?.trim();
   const folder =
     folderSuffix && allowedFolderSuffixes.has(folderSuffix)
       ? `${baseFolder}/${folderSuffix}`
-      : baseFolder;
+      : `${baseFolder}/profile-images`;
 
-  const signature = cloudinary.utils.api_sign_request(
-    { timestamp, folder },
-    process.env.CLOUDINARY_API_SECRET!
-  );
-
-  return NextResponse.json({
-    timestamp,
-    signature,
+  return signUserUpload({
+    userId: session.user.id,
+    scope: "profile",
     folder,
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    apiKey: process.env.CLOUDINARY_API_KEY,
+    allowedFormats: IMAGE_FORMATS,
   });
 }

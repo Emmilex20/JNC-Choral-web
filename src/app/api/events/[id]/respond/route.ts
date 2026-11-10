@@ -5,6 +5,7 @@ import {
   getEventResponseSummaryMap,
 } from "@/lib/event-responses";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit, ipFromHeaders } from "@/lib/rate-limit";
 
 const ResponseSchema = z.object({
   status: z.enum(["ATTENDING", "MAYBE", "NOT_ATTENDING"]),
@@ -19,6 +20,14 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+  const ip = ipFromHeaders((name) => request.headers.get(name));
+  if (!(await consumeRateLimit(`rsvp:ip:${ip}`, 20, 60 * 60 * 1000))) {
+    return NextResponse.json(
+      { error: "Too many RSVPs. Please try again later." },
+      { status: 429 }
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = ResponseSchema.safeParse(body);
 

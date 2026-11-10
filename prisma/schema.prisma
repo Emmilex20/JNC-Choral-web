@@ -155,9 +155,18 @@ model PasswordReset {
   codeHash  String
   expiresAt DateTime
   usedAt    DateTime?
+  attempts  Int       @default(0)
   createdAt DateTime  @default(now())
 
   @@index([email])
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }
 
 /**

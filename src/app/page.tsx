@@ -1,3 +1,4 @@
+import { safeJsonLd } from "@/lib/json-ld";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
 import Hero from "@/components/hero";
@@ -333,7 +334,7 @@ export default async function HomePage() {
       <Hero />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
 
       <section className="border-y border-white/10 bg-white/3">

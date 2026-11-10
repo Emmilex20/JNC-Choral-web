@@ -4,7 +4,19 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 
+import { findUserByEmail, normalizeEmail } from "@/lib/email";
+import {
+  clearRateLimit,
+  ipFromHeaders,
+  isRateLimited,
+  recordRateLimitHit,
+} from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
+
+const ROLE_REFRESH_MS = 5 * 60 * 1000;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+// Valid bcrypt hash used to keep timing similar when the account doesn't exist.
+const DUMMY_HASH = "$2b$12$YDYVPPRJ/FE7rjYuyGN3tOD/KLWJYpm5g7EVSW1XKjgNwYNfZ0lqa";
 
 type JwtUser = {
   id?: string;
@@ -42,21 +54,36 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
 
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials.password) return null;
+        if (credentials.password.length > 128) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+        const email = normalizeEmail(credentials.email);
+        const ip = ipFromHeaders((name) => {
+          const value = req?.headers?.[name];
+          return Array.isArray(value) ? value[0] : value;
         });
+        const emailKey = `login:email:${email}`;
+        const ipKey = `login:ip:${ip}`;
 
-        if (!user || !user.passwordHash) return null;
+        if (
+          (await isRateLimited(emailKey, 8, LOGIN_WINDOW_MS)) ||
+          (await isRateLimited(ipKey, 30, LOGIN_WINDOW_MS))
+        ) {
+          return null;
+        }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        );
+        const user = await findUserByEmail(email);
+        const hash = user?.passwordHash ?? DUMMY_HASH;
+        const isValid = await bcrypt.compare(credentials.password, hash);
 
-        if (!isValid) return null;
+        if (!user || !user.passwordHash || !isValid) {
+          await recordRateLimitHit(emailKey);
+          await recordRateLimitHit(ipKey);
+          return null;
+        }
+
+        await clearRateLimit(emailKey);
 
         return {
           id: user.id,
@@ -88,6 +115,21 @@ export const authOptions: NextAuthOptions = {
         token.picture = updatedUser.image ?? token.picture;
         token.onboardingComplete =
           updatedUser.onboardingComplete ?? token.onboardingComplete;
+      }
+      // Re-check the role periodically so demotions and deletions take effect
+      // without waiting for the JWT to expire.
+      if (token.id) {
+        const checkedAt = (token.roleCheckedAt as number | undefined) ?? 0;
+        if (!user && Date.now() - checkedAt > ROLE_REFRESH_MS) {
+          const current = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true },
+          });
+          token.role = current?.role;
+          token.roleCheckedAt = Date.now();
+        } else if (user) {
+          token.roleCheckedAt = Date.now();
+        }
       }
       if (token.id && token.onboardingComplete !== true) {
         const dbUser = await prisma.user.findUnique({

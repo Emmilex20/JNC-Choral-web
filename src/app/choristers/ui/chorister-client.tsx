@@ -227,6 +227,7 @@ export default function ChoristerClient({
     formData.append("timestamp", String(sig.timestamp));
     formData.append("signature", sig.signature);
     formData.append("folder", sig.folder);
+    formData.append("allowed_formats", sig.allowedFormats);
 
     const up = await fetch(url, { method: "POST", body: formData });
     if (!up.ok) throw new Error("Passport upload failed");

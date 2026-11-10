@@ -41,3 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# generated/exported personal data
+/public/auditions.csv
+/public/audition-status-*.pdf
+!.env.example

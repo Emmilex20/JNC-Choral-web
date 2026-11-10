@@ -63,6 +63,7 @@ type SignatureResponse = {
   timestamp: number;
   signature: string;
   folder: string;
+  allowedFormats: string;
   cloudName: string;
   apiKey: string;
 };
@@ -132,6 +133,7 @@ async function uploadChallengeMedia(file: File) {
   form.append("timestamp", String(sig.timestamp));
   form.append("signature", sig.signature);
   form.append("folder", sig.folder);
+  form.append("allowed_formats", sig.allowedFormats);
 
   const up = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/video/upload`, {
     method: "POST",

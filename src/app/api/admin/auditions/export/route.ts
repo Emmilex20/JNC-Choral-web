@@ -5,7 +5,9 @@ import { isAdminSession } from "@/lib/authz";
 import { getServerSession } from "next-auth";
 
 function escapeCsv(value: unknown) {
-  const s = String(value ?? "");
+  let s = String(value ?? "");
+  // Neutralise spreadsheet formula injection (=, +, -, @, tab, CR).
+  if (/^[=+@-]/.test(s) || s.startsWith(String.fromCharCode(9)) || s.startsWith(String.fromCharCode(13))) s = `'${s}`;
   if (s.includes(",") || s.includes("\n") || s.includes('"')) {
     return `"${s.replaceAll('"', '""')}"`;
   }

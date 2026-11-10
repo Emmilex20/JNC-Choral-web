@@ -146,7 +146,7 @@ function RegisterForm() {
               value={form.password}
               onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="Password (8+ chars, letter and number)"
               className="w-full rounded-xl border border-white/10 bg-black/40 p-3 pr-12 text-white"
               required
             />

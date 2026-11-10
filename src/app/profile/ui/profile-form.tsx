@@ -84,6 +84,7 @@ type CloudinarySignature = {
   timestamp: number;
   signature: string;
   folder: string;
+  allowedFormats: string;
 };
 
 type CloudinaryUploadResponse = {
@@ -218,6 +219,7 @@ export default function ProfileForm({
     formData.append("timestamp", String(sig.timestamp));
     formData.append("signature", sig.signature);
     formData.append("folder", sig.folder);
+    formData.append("allowed_formats", sig.allowedFormats);
 
     const up = await fetch(url, { method: "POST", body: formData });
     if (!up.ok) throw new Error("Upload failed");

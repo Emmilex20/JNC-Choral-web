@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { requestPasswordResetAction } from "./actions";
 
@@ -36,12 +37,10 @@ function ForgotForm() {
   const [email, setEmail] = useState("");
   const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState<ToastState>(null);
-  const [code, setCode] = useState<string | null>(null);
 
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setToast(null);
-    setCode(null);
 
     startTransition(async () => {
       const res = await requestPasswordResetAction({ email });
@@ -53,9 +52,6 @@ function ForgotForm() {
         type: "success",
         message: "If the email exists, a code has been sent.",
       });
-      if ("code" in res && typeof res.code === "string") {
-        setCode(res.code);
-      }
     });
   }
 
@@ -88,11 +84,12 @@ function ForgotForm() {
           </Button>
         </form>
 
-        {code ? (
-          <div className="mt-4 rounded-2xl border border-amber-200/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-            Dev mode code: <b className="text-white">{code}</b>
-          </div>
-        ) : null}
+        <p className="mt-4 text-sm text-white/70">
+          Already have a code?{" "}
+          <Link href="/auth/reset" className="text-white underline">
+            Reset your password
+          </Link>
+        </p>
       </div>
     </div>
   );

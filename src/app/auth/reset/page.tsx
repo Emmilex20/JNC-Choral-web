@@ -42,7 +42,7 @@ function ResetForm() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [form, setForm] = useState({
     email: params.get("email") ?? "",
-    code: params.get("code") ?? "",
+    code: "",
     password: "",
     confirm: "",
   });
@@ -97,6 +97,9 @@ function ResetForm() {
             value={form.code}
             onChange={(e) => setForm((p) => ({ ...p, code: e.target.value }))}
             placeholder="6-digit code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
             className="rounded-xl border border-white/10 bg-black/40 p-3 text-white"
             required
           />
@@ -106,7 +109,7 @@ function ResetForm() {
               value={form.password}
               onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
               type={showPassword ? "text" : "password"}
-              placeholder="New password"
+              placeholder="New password (8+ chars, letter and number)"
               className="w-full rounded-xl border border-white/10 bg-black/40 p-3 pr-12 text-white"
               required
             />
