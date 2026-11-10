@@ -1,5 +1,6 @@
 "use client";
 
+import { safeCallbackUrl } from "@/lib/callback-url";
 import { Suspense, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
@@ -49,7 +50,7 @@ function Toast({ toast, onClose }: { toast: ToastState; onClose: () => void }) {
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/";
+  const callbackUrl = safeCallbackUrl(searchParams.get("callbackUrl"));
   const errorParam = searchParams.get("error");
   const [toast, setToast] = useState<ToastState>(() =>
     getLoginErrorToast(errorParam)

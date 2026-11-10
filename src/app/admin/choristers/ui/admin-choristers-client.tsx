@@ -1,5 +1,6 @@
 "use client";
 
+import { safeHttpUrl } from "@/lib/safe-url";
 import { useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -475,7 +476,7 @@ export default function AdminChoristersClient({
                             />
                           </div>
                           <a
-                            href={selected.profile.passportImageUrl}
+                            href={safeHttpUrl(selected.profile.passportImageUrl)}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10"

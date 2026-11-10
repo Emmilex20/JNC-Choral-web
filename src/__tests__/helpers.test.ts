@@ -81,3 +81,23 @@ describe("auditionSchema", () => {
     expect(auditionSchema.safeParse({ ...base, portfolioLink: "https://example.com" }).success).toBe(true);
   });
 });
+
+import { safeCallbackUrl } from "@/lib/callback-url";
+
+describe("safeCallbackUrl", () => {
+  it("keeps same-site paths", () => {
+    expect(safeCallbackUrl("/music-hub?x=1")).toBe("/music-hub?x=1");
+  });
+
+  it.each([
+    "javascript:alert(1)",
+    "https://evil.com",
+    "//evil.com",
+    "/"+String.fromCharCode(92)+"evil.com",
+    "/ok\nbad",
+    "",
+    null,
+  ])("rejects %s", (value) => {
+    expect(safeCallbackUrl(value)).toBe("/");
+  });
+});

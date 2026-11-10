@@ -1,5 +1,6 @@
 "use client";
 
+import { safeCallbackUrl } from "@/lib/callback-url";
 import { Suspense, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -40,8 +41,7 @@ function Toast({ toast, onClose }: { toast: ToastState; onClose: () => void }) {
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const rawCallbackUrl = searchParams.get("callbackUrl");
-  const callbackUrl = rawCallbackUrl?.startsWith("/") ? rawCallbackUrl : "/";
+  const callbackUrl = safeCallbackUrl(searchParams.get("callbackUrl"));
   const [toast, setToast] = useState<ToastState>(null);
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);

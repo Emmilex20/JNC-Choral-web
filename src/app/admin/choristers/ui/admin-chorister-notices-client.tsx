@@ -1,5 +1,6 @@
 "use client";
 
+import { safeHttpUrl } from "@/lib/safe-url";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -193,7 +194,7 @@ export default function AdminChoristerNoticesClient({
                   <p className="mt-2 text-sm text-white/70">{n.body}</p>
                   {n.attachmentUrl ? (
                     <a
-                      href={n.attachmentUrl}
+                      href={safeHttpUrl(n.attachmentUrl)}
                       target="_blank"
                       rel="noreferrer"
                       className="mt-3 inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 hover:bg-white/10"

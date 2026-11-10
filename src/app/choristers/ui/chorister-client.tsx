@@ -1,5 +1,6 @@
 "use client";
 
+import { safeHttpUrl } from "@/lib/safe-url";
 import { useMemo, useState, useTransition } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -827,7 +828,7 @@ export default function ChoristerClient({
                     <p className="mt-2 text-sm leading-6 text-white/68">{notice.body}</p>
                     {notice.attachmentUrl ? (
                       <a
-                        href={notice.attachmentUrl}
+                        href={safeHttpUrl(notice.attachmentUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/84 transition hover:bg-white/10"

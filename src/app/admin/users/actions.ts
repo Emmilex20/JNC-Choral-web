@@ -24,6 +24,16 @@ export async function updateUserAction(input: unknown) {
 
   const { id, name, role, isChorister, choristerVerified, adminNote } = parsed.data;
 
+  if (role === "USER") {
+    if (id === session.user.id) {
+      return { ok: false as const, error: "You cannot remove your own admin role." };
+    }
+    const target = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+    if (target?.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) {
+      return { ok: false as const, error: "At least one admin must remain." };
+    }
+  }
+
   const nextIsChorister =
     typeof isChorister === "boolean" ? isChorister : undefined;
   const nextVerified =
@@ -85,6 +95,17 @@ export async function deleteUserAction(input: unknown) {
 
   const parsed = DeleteSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
+
+  if (parsed.data.id === session.user.id) {
+    return { ok: false as const, error: "You cannot delete your own account here." };
+  }
+  const target = await prisma.user.findUnique({
+    where: { id: parsed.data.id },
+    select: { role: true },
+  });
+  if (target?.role === "ADMIN" && (await prisma.user.count({ where: { role: "ADMIN" } })) <= 1) {
+    return { ok: false as const, error: "At least one admin must remain." };
+  }
 
   await prisma.user.delete({ where: { id: parsed.data.id } });
   return { ok: true as const };
