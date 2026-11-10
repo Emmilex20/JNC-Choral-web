@@ -44,7 +44,7 @@ export default async function EventsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-black">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-black">
       <SiteNavbar />
 
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">

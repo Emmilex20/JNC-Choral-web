@@ -257,7 +257,7 @@ export default function SiteNavbar() {
                 variant="ghost"
                 size="icon"
                 aria-label="Open menu"
-                className="rounded-2xl text-white"
+                className="size-11 rounded-2xl text-white"
               >
                 <Menu />
               </Button>

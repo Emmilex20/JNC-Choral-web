@@ -19,7 +19,7 @@ type Slide = {
 function buildSlides(audition: AuditionBanner): Slide[] {
   return [
     {
-      src: versionedHeroAsset("/hero/hero-1.png"),
+      src: versionedHeroAsset("/hero/hero-1.webp"),
       title: audition.state === "upcoming" ? `Auditions ${audition.year}` : "Next auditions coming soon",
       subtitle: "S/A/T/B - Instrumentalists - Production",
       fit: "cover",
@@ -38,7 +38,7 @@ const baseSlides: Slide[] = [
     position: "top center",
   },
   {
-    src: versionedHeroAsset("/hero/hero-2.png"),
+    src: versionedHeroAsset("/hero/hero-2.webp"),
     title: "Voices. Strings. Stories.",
     subtitle: "A community built on excellence",
     fit: "cover",
@@ -134,16 +134,22 @@ export default function Hero({ audition }: { audition: AuditionBanner }) {
             </Button>
           </div>
 
-          <div className="mt-6 flex items-center gap-2">
+          <div className="mt-4 flex items-center gap-0.5">
             {slides.map((_, i) => (
               <button
                 key={i}
+                type="button"
                 onClick={() => setActive(i)}
-                className={`h-2.5 w-2.5 rounded-full border border-white/40 transition ${
-                  i === active ? "bg-white" : "bg-white/20 hover:bg-white/40"
-                }`}
+                className="flex h-8 w-8 items-center justify-center rounded-full"
                 aria-label={`Show slide ${i + 1}`}
-              />
+                aria-current={i === active}
+              >
+                <span
+                  className={`h-2.5 w-2.5 rounded-full border border-white/40 transition ${
+                    i === active ? "bg-white" : "bg-white/20"
+                  }`}
+                />
+              </button>
             ))}
           </div>
 

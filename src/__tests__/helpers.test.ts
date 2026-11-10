@@ -77,6 +77,14 @@ describe("auditionSchema", () => {
     expect(auditionSchema.safeParse({ ...base, notes: "x".repeat(2001) }).success).toBe(false);
   });
 
+  it("gives a friendly message for an empty voice part", () => {
+    const res = auditionSchema.safeParse({ ...base, voicePart: "" });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error.issues.map((i) => i.message)).toContain("Select your voice part");
+    }
+  });
+
   it("accepts a normal application", () => {
     expect(auditionSchema.safeParse({ ...base, portfolioLink: "https://example.com" }).success).toBe(true);
   });

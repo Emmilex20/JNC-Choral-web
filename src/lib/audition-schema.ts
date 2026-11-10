@@ -9,7 +9,9 @@ export const auditionSchema = z.object({
   category: z.enum(["SINGER", "INSTRUMENTALIST", "PRODUCTION"]),
 
   // SINGER
-  voicePart: z.enum(["SOPRANO", "ALTO", "TENOR", "BASS"]).optional(),
+  voicePart: z
+    .enum(["SOPRANO", "ALTO", "TENOR", "BASS"], { message: "Select your voice part" })
+    .optional(),
   singingExperience: z.string().max(1000).optional(),
   auditionSong: z.string().max(200).optional(),
 

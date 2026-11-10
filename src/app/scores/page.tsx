@@ -44,7 +44,7 @@ export default async function ScoresPage() {
   const isSignedIn = Boolean(session?.user?.id);
 
   return (
-    <main className="min-h-screen bg-[#02040a]">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a]">
       <SiteNavbar />
 
       <section className="relative overflow-hidden border-b border-white/10">

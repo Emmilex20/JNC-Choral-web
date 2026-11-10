@@ -37,7 +37,7 @@ export default function LegalPageShell({
   sections,
 }: LegalPageShellProps) {
   return (
-    <main className="min-h-screen bg-[#02040a] text-white">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
 
       <section className="border-b border-white/10 bg-[linear-gradient(135deg,#02040a_0%,#07111f_48%,#03151a_100%)]">

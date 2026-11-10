@@ -12,6 +12,29 @@ body {
   body {
     color: rgb(255 255 255 / 0.92);
   }
+
+  /* A clear keyboard focus ring everywhere (mouse clicks are unaffected). */
+  :focus-visible {
+    outline: 2px solid rgb(252 211 77);
+    outline-offset: 2px;
+  }
+
+  /* Don't show the ring on the programmatically focused page/step headings. */
+  main:focus,
+  [tabindex="-1"]:focus {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @layer utilities {

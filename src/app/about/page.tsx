@@ -136,7 +136,7 @@ const journey = [
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-black text-white">
       <SiteNavbar />
 
       <section className="relative overflow-hidden border-b border-white/10">

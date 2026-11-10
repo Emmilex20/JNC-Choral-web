@@ -20,6 +20,7 @@ import {
 } from "@/lib/audition-settings";
 import { auditionKeywords, jncEntityKeywords, uniqueKeywords } from "@/lib/seo-keywords";
 import { versionedHeroAsset } from "@/lib/site-assets";
+import { toAuditionBanner } from "@/lib/audition-banner";
 import AuditionForm from "./ui/audition-form";
 
 export const dynamic = "force-dynamic";
@@ -75,7 +76,7 @@ export default async function AuditionsPage() {
     setting?.anticipationText?.trim() || DEFAULT_AUDITION_ANTICIPATION_TEXT;
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-black text-white">
       <SiteNavbar />
 
       <section className="relative overflow-hidden border-b border-white/10">
@@ -230,7 +231,7 @@ export default async function AuditionsPage() {
           </div>
         </div>
 
-        <AuditionForm />
+        <AuditionForm audition={toAuditionBanner(setting)} />
       </section>
 
       <SiteFooter />

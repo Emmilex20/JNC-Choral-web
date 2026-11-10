@@ -169,7 +169,7 @@ export default async function AcademyPage({
   };
 
   return (
-    <main className="min-h-screen bg-[#02040a] text-white">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
 
       <script

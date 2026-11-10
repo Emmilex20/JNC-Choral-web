@@ -311,7 +311,7 @@ export default async function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-black text-white">
       <SiteNavbar />
       <Hero audition={auditionBanner} />
       <script

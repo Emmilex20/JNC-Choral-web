@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <main className="admin-shell relative min-h-screen overflow-x-clip bg-[#040712]">
+    <main id="main-content" tabIndex={-1} className="admin-shell relative min-h-screen overflow-x-clip bg-[#040712]">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-14rem] top-24 h-[30rem] w-[30rem] rounded-full bg-cyan-400/10 blur-3xl" />
         <div className="absolute right-[-16rem] top-32 h-[36rem] w-[36rem] rounded-full bg-amber-300/8 blur-3xl" />

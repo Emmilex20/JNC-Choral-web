@@ -165,7 +165,7 @@ export default async function ChoristersPage() {
   }));
 
   return (
-    <main className="relative min-h-screen overflow-x-clip bg-[#02050d]">
+    <main id="main-content" tabIndex={-1} className="relative min-h-screen overflow-x-clip bg-[#02050d]">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-10rem] top-24 h-[28rem] w-[28rem] rounded-full bg-amber-300/10 blur-3xl" />
         <div className="absolute right-[-12rem] top-20 h-[34rem] w-[34rem] rounded-full bg-cyan-400/10 blur-3xl" />
