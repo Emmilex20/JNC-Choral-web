@@ -38,10 +38,11 @@ type Sheet = {
   createdAt: string;
 };
 
-async function getSignature(folderSuffix?: string) {
-  const query = folderSuffix
-    ? `?folderSuffix=${encodeURIComponent(folderSuffix)}`
-    : "";
+async function getSignature(folderSuffix?: string, authenticated = false) {
+  const params = new URLSearchParams();
+  if (folderSuffix) params.set("folderSuffix", folderSuffix);
+  if (authenticated) params.set("type", "authenticated");
+  const query = params.size ? `?${params.toString()}` : "";
   const res = await fetch(`/api/admin/cloudinary-signature${query}`);
   if (!res.ok) throw new Error("Failed to get signature");
   return res.json();
@@ -107,7 +108,7 @@ export default function AdminMusicClient({
   async function uploadSheet(file: File) {
     setError(null);
 
-    const sig = await getSignature("music-sheets");
+    const sig = await getSignature("music-sheets", true);
     const url = `https://api.cloudinary.com/v1_1/${sig.cloudName}/raw/upload`;
 
     const form = new FormData();
@@ -117,6 +118,7 @@ export default function AdminMusicClient({
     form.append("signature", sig.signature);
     form.append("folder", sig.folder);
     form.append("resource_type", "raw");
+    form.append("type", sig.type);
 
     const up = await fetch(url, { method: "POST", body: form });
     if (!up.ok) throw new Error("Upload failed");

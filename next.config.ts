@@ -28,6 +28,13 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: [
+          // Directives that are safe to enforce without breaking inline scripts
+          // (Next.js, Google sign-in, Cloudinary). A full script-src policy needs
+          // per-request nonces, which would make every page dynamic.
+          {
+            key: "Content-Security-Policy",
+            value: "object-src 'none'; base-uri 'self'; frame-ancestors 'self'",
+          },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

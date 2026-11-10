@@ -110,6 +110,7 @@ export async function findMusicSheetById(id: string) {
           id: true,
           fileName: true,
           fileUrl: true,
+          publicId: true,
           mimeType: true,
           audience: true,
           isPublished: true,

@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 import { authOptions } from "@/auth";
+import { cloudinary } from "@/lib/cloudinary";
 import {
   findMusicSheetById,
   getMusicSheetAccess,
@@ -49,7 +50,18 @@ export async function GET(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const upstream = await fetch(sheet.fileUrl);
+  // Private uploads are type=authenticated: only reachable via a URL signed
+  // with our API secret, which never leaves the server. Older sheets are public.
+  const sourceUrl = sheet.fileUrl.includes("/authenticated/")
+    ? cloudinary.url(sheet.publicId, {
+        resource_type: "raw",
+        type: "authenticated",
+        sign_url: true,
+        secure: true,
+      })
+    : sheet.fileUrl;
+
+  const upstream = await fetch(sourceUrl);
   if (!upstream.ok || !upstream.body) {
     return NextResponse.json({ error: "Failed to fetch file" }, { status: 502 });
   }
