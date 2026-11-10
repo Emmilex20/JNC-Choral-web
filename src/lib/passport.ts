@@ -2,6 +2,9 @@ import { cloudinary } from "@/lib/cloudinary";
 
 export const PASSPORT_FOLDER = "passport-images";
 
+// Sent to the browser instead of the stored URL, which is a non-expiring signed link.
+export const PASSPORT_KEEP = "stored";
+
 const CLOUDINARY_IMAGE_PATH =
   /\/image\/(upload|authenticated)\/(?:s--[^/]+--\/)?(?:v\d+\/)?(.+)$/;
 

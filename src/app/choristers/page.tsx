@@ -1,3 +1,4 @@
+import { PASSPORT_KEEP } from "@/lib/passport";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import SiteNavbar from "@/components/site-navbar";
@@ -112,7 +113,7 @@ export default async function ChoristersPage() {
         stateOfOrigin: profile.stateOfOrigin,
         currentParish: profile.currentParish,
         socialHandle: profile.socialHandle,
-        passportImageUrl: profile.passportImageUrl,
+        passportImageUrl: profile.passportImageUrl ? PASSPORT_KEEP : null,
       }
     : null;
 

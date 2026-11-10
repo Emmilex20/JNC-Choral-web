@@ -1,3 +1,4 @@
+import { PASSPORT_KEEP } from "@/lib/passport";
 import { materializeAutoAbsences } from "@/lib/attendance-auto";
 import { prisma } from "@/lib/prisma";
 import { AdminPageHeader } from "../_components/admin-page-header";
@@ -71,7 +72,7 @@ export default async function AdminChoristersPage() {
                 stateOfOrigin: u.choristerProfile.stateOfOrigin,
                 currentParish: u.choristerProfile.currentParish,
                 socialHandle: u.choristerProfile.socialHandle,
-                passportImageUrl: u.choristerProfile.passportImageUrl,
+                passportImageUrl: u.choristerProfile.passportImageUrl ? PASSPORT_KEEP : null,
               }
             : null,
           attendance: u.choristerAttendances.map((a) => ({

@@ -13,7 +13,7 @@ import {
   NotificationType,
 } from "@/lib/notifications";
 import { updateGamificationForUser } from "@/lib/gamification";
-import { isOwnPrivatePassportUrl } from "@/lib/passport";
+import { isOwnPrivatePassportUrl, PASSPORT_KEEP } from "@/lib/passport";
 import { prisma } from "@/lib/prisma";
 
 function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean }) {
@@ -58,7 +58,13 @@ export async function upsertChoristerProfileAction(input: unknown) {
   });
   if (!user || !canAccess(user)) return { ok: false as const, error: "Unauthorized" };
 
-  const parsed = ProfileSchema.safeParse(input);
+  const keepPassport =
+    typeof input === "object" &&
+    input !== null &&
+    (input as { passportImageUrl?: unknown }).passportImageUrl === PASSPORT_KEEP;
+  const parsed = ProfileSchema.safeParse(
+    keepPassport ? { ...(input as object), passportImageUrl: undefined } : input
+  );
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
 
   // New passport uploads must be private files in the owner's folder; an
@@ -114,7 +120,9 @@ export async function upsertChoristerProfileAction(input: unknown) {
       stateOfOrigin: parsed.data.stateOfOrigin?.trim() || null,
       currentParish: parsed.data.currentParish?.trim() || null,
       socialHandle: parsed.data.socialHandle?.trim() || null,
-      passportImageUrl: parsed.data.passportImageUrl?.trim() || null,
+      ...(keepPassport
+        ? {}
+        : { passportImageUrl: parsed.data.passportImageUrl?.trim() || null }),
     },
   });
 
