@@ -31,7 +31,13 @@ const ProfileSchema = z.object({
   stateOfOrigin: z.string().max(60).optional(),
   currentParish: z.string().max(120).optional(),
   socialHandle: z.string().max(120).optional(),
-  passportImageUrl: z.string().url().max(500).optional().or(z.literal("")),
+  passportImageUrl: z
+    .string()
+    .url()
+    .max(500)
+    .refine((value) => value.startsWith("https://"), "Image must be an https URL")
+    .optional()
+    .or(z.literal("")),
 });
 
 export async function upsertChoristerProfileAction(input: unknown) {

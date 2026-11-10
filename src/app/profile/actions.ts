@@ -8,7 +8,12 @@ import { prisma } from "@/lib/prisma";
 
 const ProfileSchema = z.object({
   name: z.string().min(2).max(80),
-  image: z.string().url().optional().or(z.literal("")),
+  image: z
+    .string()
+    .url()
+    .refine((value) => value.startsWith("https://"), "Image must be an https URL")
+    .optional()
+    .or(z.literal("")),
 });
 
 export async function updateProfileAction(input: unknown) {

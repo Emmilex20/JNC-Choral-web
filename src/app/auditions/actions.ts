@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auditionSchema } from "@/lib/audition-schema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 export async function submitAuditionAction(input: unknown) {
   const session = await getServerSession(authOptions);
@@ -11,6 +12,13 @@ export async function submitAuditionAction(input: unknown) {
     return {
       ok: false as const,
       error: "Please log in to submit your audition.",
+    };
+  }
+
+  if (!(await consumeRateLimit(`audition:${session.user.id}`, 5, 24 * 60 * 60 * 1000))) {
+    return {
+      ok: false as const,
+      error: "You have submitted too many applications today. Please try again tomorrow.",
     };
   }
 

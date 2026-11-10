@@ -8,6 +8,7 @@ import { z } from "zod";
 import { authOptions } from "@/auth";
 import { challengeMediaTypes } from "@/lib/challenges";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 const ChallengeSubmissionSchema = z
   .object({
@@ -48,7 +49,7 @@ function revalidateChallengeRoutes(slug?: string) {
   if (slug) revalidatePath(`/music-hub/challenges/${slug}`);
 }
 
-function isTrustedCloudinaryUrl(value?: string) {
+function isTrustedCloudinaryUrl(value: string | undefined, userId: string) {
   if (!value) return false;
 
   try {
@@ -57,7 +58,9 @@ function isTrustedCloudinaryUrl(value?: string) {
     return (
       url.protocol === "https:" &&
       url.hostname === "res.cloudinary.com" &&
-      (!cloudName || url.pathname.startsWith(`/${cloudName}/`))
+      (!cloudName || url.pathname.startsWith(`/${cloudName}/`)) &&
+      // Uploads are signed into a per-user folder; only accept the caller's own files.
+      url.pathname.includes(`/challenge-submissions/${userId}/`)
     );
   } catch {
     return false;
@@ -70,6 +73,10 @@ export async function submitChallengeSubmissionAction(input: unknown) {
     return { ok: false as const, error: "Sign in to submit your challenge entry." };
   }
 
+  if (!(await consumeRateLimit(`challenge-submit:${session.user.id}`, 10, 60 * 60 * 1000))) {
+    return { ok: false as const, error: "Too many submissions. Please try again later." };
+  }
+
   const parsed = ChallengeSubmissionSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false as const, error: "Invalid challenge submission." };
@@ -77,14 +84,14 @@ export async function submitChallengeSubmissionAction(input: unknown) {
 
   if (
     parsed.data.mediaType === "AUDIO" &&
-    !isTrustedCloudinaryUrl(parsed.data.audioUrl)
+    !isTrustedCloudinaryUrl(parsed.data.audioUrl, session.user.id)
   ) {
     return { ok: false as const, error: "Upload audio through the JNC uploader." };
   }
 
   if (
     parsed.data.mediaType === "VIDEO" &&
-    !isTrustedCloudinaryUrl(parsed.data.videoUrl)
+    !isTrustedCloudinaryUrl(parsed.data.videoUrl, session.user.id)
   ) {
     return { ok: false as const, error: "Upload video through the JNC uploader." };
   }

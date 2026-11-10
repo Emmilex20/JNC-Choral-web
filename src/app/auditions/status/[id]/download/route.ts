@@ -23,7 +23,8 @@ export async function GET(
     { userId: session.user.id },
   ];
   if (session.user.email) {
-    ownerFilters.push({ email: session.user.email });
+    // Legacy applications predate userId; match those by email only.
+    ownerFilters.push({ userId: null, email: { equals: session.user.email, mode: "insensitive" } });
   }
 
   const app = await prisma.auditionApplication.findFirst({

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { authOptions } from "@/auth";
 import { updateGamificationForUser } from "@/lib/gamification";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const SubmitQuizSchema = z.object({
   quizId: z.string().min(1),
@@ -46,6 +47,11 @@ export async function submitQuizAttemptAction(input: unknown) {
 
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
+
+  const limiterId = userId ?? (await getClientIp());
+  if (!(await consumeRateLimit(`quiz:${limiterId}`, 60, 60 * 60 * 1000))) {
+    return { ok: false as const, error: "Too many attempts. Please slow down and try again later." };
+  }
 
   const attempt = await prisma.quizAttempt.create({
     data: {

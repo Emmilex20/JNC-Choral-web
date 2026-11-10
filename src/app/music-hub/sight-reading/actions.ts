@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
 type ChatCompletionResponse = {
   choices?: {
@@ -140,7 +141,11 @@ export async function submitSightReadingAttemptAction(input: unknown) {
   }
 
   const session = await getServerSession(authOptions);
-  const feedback = await generateFeedback(parsed.data);
+  // AI feedback costs money, so cap it per user (or IP); fall back to the local
+  // template once the cap is reached.
+  const limiterId = session?.user?.id ?? (await getClientIp());
+  const canUseAi = await consumeRateLimit(`sight-reading:${limiterId}`, 20, 60 * 60 * 1000);
+  const feedback = canUseAi ? await generateFeedback(parsed.data) : fallbackFeedback(parsed.data);
 
   if (session?.user?.id) {
     const source =

@@ -8,6 +8,7 @@ import { authOptions } from "@/auth";
 import { updateGamificationForUser } from "@/lib/gamification";
 import { getDailyChallengeAttemptForUser } from "@/lib/music-hub";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const SubmitDailyChallengeSchema = z.object({
   challengeId: z.string().min(1),
@@ -36,6 +37,12 @@ export async function submitDailyChallengeAttemptAction(input: unknown) {
 
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id ?? null;
+
+  const limiterId = userId ?? (await getClientIp());
+  if (!(await consumeRateLimit(`daily-challenge:${limiterId}`, 30, 60 * 60 * 1000))) {
+    return { ok: false as const, error: "Too many attempts. Please try again later." };
+  }
+
   const existing = await getDailyChallengeAttemptForUser(challenge.id, userId);
 
   if (existing) {
