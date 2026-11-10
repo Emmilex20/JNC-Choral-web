@@ -161,6 +161,23 @@ model PasswordReset {
   @@index([email])
 }
 
+/**
+ * Privacy-friendly first-party analytics: no cookies, no IP addresses and no
+ * user ids. `visitor` is a keyed hash that rotates daily, so it can count a
+ * day's unique visitors but cannot follow anyone across days.
+ */
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  name      String
+  path      String
+  referrer  String?
+  visitor   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([name, createdAt])
+}
+
 model RateLimitHit {
   id        String   @id @default(cuid())
   key       String

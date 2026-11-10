@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics-client";
 import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
@@ -76,6 +77,7 @@ export default function DailyChallengeClient({
         return;
       }
 
+      if (!res.alreadyAnswered) trackEvent("daily_challenge_played");
       setResult({
         selectedIndex: res.selectedIndex,
         correctIndex: res.correctIndex,

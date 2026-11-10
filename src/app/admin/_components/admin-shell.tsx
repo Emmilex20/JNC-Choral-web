@@ -23,6 +23,7 @@ import {
   UserCog,
   UsersRound,
   Video,
+  BarChart3,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,12 @@ const navGroups: { label: string; items: AdminNavItem[] }[] = [
         label: "Auditions",
         description: "Applications and schedule",
         icon: ClipboardList,
+      },
+      {
+        href: "/admin/analytics",
+        label: "Analytics",
+        description: "Visits, sources and funnels",
+        icon: BarChart3,
       },
     ],
   },

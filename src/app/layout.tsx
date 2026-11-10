@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import AnalyticsTracker from "@/components/analytics-tracker";
 import CookieConsent from "@/components/cookie-consent";
 import {
   academyKeywords,
@@ -114,6 +115,7 @@ export default async function RootLayout({
         <Providers>
           {children}
           <CookieConsent />
+          <AnalyticsTracker />
         </Providers>
       </body>
     </html>

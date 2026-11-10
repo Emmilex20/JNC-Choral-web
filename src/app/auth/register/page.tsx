@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics-client";
 import { safeCallbackUrl } from "@/lib/callback-url";
 import { Suspense, useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -74,6 +75,7 @@ function RegisterForm() {
         setToast({ type: "error", message: res.error });
         return;
       }
+      trackEvent("signup_completed");
       const signInResult = await signIn("credentials", {
         email: form.email,
         password: form.password,

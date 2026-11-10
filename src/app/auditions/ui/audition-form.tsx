@@ -10,6 +10,7 @@ import { CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { AuditionBanner } from "@/lib/audition-banner";
+import { trackEvent } from "@/lib/analytics-client";
 import { auditionSchema, type AuditionInput } from "@/lib/audition-schema";
 import { submitAuditionAction } from "../actions";
 
@@ -148,6 +149,10 @@ export default function AuditionForm({ audition }: { audition: AuditionBanner })
     }
   }, [reset]);
 
+  useEffect(() => {
+    trackEvent("audition_form_view");
+  }, []);
+
   // Autosave so nothing is lost if the visitor has to sign in first.
   useEffect(() => {
     if (!restoredRef.current || success) return;
@@ -169,7 +174,10 @@ export default function AuditionForm({ audition }: { audition: AuditionBanner })
 
   async function goNext() {
     const ok = await trigger(stepFields());
-    if (ok) setStep((s) => Math.min(s + 1, 2));
+    if (ok) {
+      trackEvent(step === 0 ? "audition_step_2" : "audition_step_3");
+      setStep((s) => Math.min(s + 1, 2));
+    }
   }
 
   // If final validation fails on a field from an earlier step (e.g. a restored
@@ -209,6 +217,7 @@ export default function AuditionForm({ audition }: { audition: AuditionBanner })
     }
 
     clearDraft();
+    trackEvent("audition_submitted");
     setSuccess({ name: values.fullName, category: values.category });
     reset(DEFAULTS);
     setStep(0);

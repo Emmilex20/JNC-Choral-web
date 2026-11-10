@@ -1,5 +1,6 @@
 "use client";
 
+import { trackEvent } from "@/lib/analytics-client";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
@@ -74,6 +75,7 @@ export default function QuizRunner({ quiz }: QuizRunnerProps) {
         return;
       }
 
+      trackEvent("quiz_completed");
       router.push(res.resultsHref);
     });
   }
