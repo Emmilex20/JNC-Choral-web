@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -78,6 +79,7 @@ export default async function AuditionsPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-black text-white">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Auditions" }]} />
 
       <section className="relative overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(250,204,21,0.14),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.14),transparent_45%)]" />
@@ -87,12 +89,11 @@ export default async function AuditionsPage() {
               JNC Auditions
             </p>
             <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-              Bring your voice, instrument, or creative skill into the sound.
+              Audition for Jude Nnam Chorale
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/72 md:text-lg">
-              Join Jude Nnam Chorale as a singer, instrumentalist, or production
-              creative. We are looking for people who are teachable, consistent,
-              and ready to grow in excellence.
+              Apply as a singer, instrumentalist or production crew. It takes about
+              five minutes.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -123,7 +124,7 @@ export default async function AuditionsPage() {
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(0,0,0,0.76))]" />
                 <div className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
                   <Sparkles className="h-4 w-4 text-amber-100" />
-                  Audition season
+                  Auditions
                 </div>
               </div>
 
@@ -131,7 +132,7 @@ export default async function AuditionsPage() {
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-4">
                   <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/48">
                     <CalendarClock className="h-4 w-4 text-amber-100" />
-                    {hasFutureAudition ? "Next audition" : "Anticipating"}
+                    {hasFutureAudition ? "Next audition" : "Next audition"}
                   </div>
                   <p className="mt-3 text-lg font-semibold leading-7 text-white">
                     {hasFutureAudition && setting?.startsAt
@@ -161,12 +162,12 @@ export default async function AuditionsPage() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-white">
-                    {hasFutureAudition ? "Prepare with confidence" : "Stay ready"}
+                    {hasFutureAudition ? "Before you come" : "Stay ready"}
                   </p>
                   <p className="mt-2 text-sm leading-7 text-white/66">
                     {hasFutureAudition
                       ? setting?.note ||
-                        "Come prepared, confident, and ready to grow with the choir."
+                        "Arrive early and bring what you plan to perform."
                       : anticipationText}
                   </p>
                 </div>
@@ -204,22 +205,25 @@ export default async function AuditionsPage() {
       >
         <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 md:p-8">
           <p className="text-xs uppercase tracking-[0.24em] text-amber-100/70">
-            Before you apply
+            How it works
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-            Simple, focused, and human.
+            Three simple steps
           </h2>
-          <div className="mt-6 grid gap-4 text-sm leading-7 text-white/68">
-            <p>
-              Use the form to tell us who you are and where you want to serve.
-              Singers can choose a voice part, instrumentalists can list their
-              instrument, and production applicants can share a role or portfolio.
-            </p>
-            <p>
-              You need an account to submit, so your application can be tracked
-              from your status page after registration.
-            </p>
-          </div>
+          <ol className="mt-6 grid gap-4 text-sm leading-7 text-white/75">
+            <li className="rounded-2xl border border-white/10 bg-black/25 p-4">
+              <span className="font-semibold text-white">1. Fill in the form.</span> Your details,
+              then your voice, instrument or role.
+            </li>
+            <li className="rounded-2xl border border-white/10 bg-black/25 p-4">
+              <span className="font-semibold text-white">2. Create a free account to submit.</span>{" "}
+              Your answers are saved while you sign up.
+            </li>
+            <li className="rounded-2xl border border-white/10 bg-black/25 p-4">
+              <span className="font-semibold text-white">3. We contact you.</span> Check your status
+              any time on the status page.
+            </li>
+          </ol>
           <div className="mt-6">
             <Button
               variant="outline"

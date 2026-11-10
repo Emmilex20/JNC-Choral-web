@@ -59,9 +59,9 @@ export default async function AdminAcademyPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Music Academy"
-        title="Teach, test, and challenge the JNC community."
-        description="Manage academy articles, music quizzes, and the daily theory challenge without disturbing the rest of the platform."
+        eyebrow="Learning"
+        title="Academy"
+        description="Write articles, create quizzes and set the daily theory challenge."
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="admin-stat-card min-h-0">

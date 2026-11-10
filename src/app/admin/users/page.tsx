@@ -11,9 +11,9 @@ export default async function AdminUsersPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Accounts"
-        title="Users"
-        description="Manage account roles, chorister flags, verification status, and member-facing admin notes."
+        eyebrow="People"
+        title="Users & roles"
+        description="Change roles and verify choristers."
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="admin-stat-card min-h-0">

@@ -11,9 +11,9 @@ export default async function AdminAnnouncementsPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Public Updates"
-        title="Announcements"
-        description="Draft, edit, publish, and retire public-facing choir news from a focused editorial workspace."
+        eyebrow="Website"
+        title="News"
+        description="Write and publish news for the public website."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-stat-card min-h-0">

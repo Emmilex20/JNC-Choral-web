@@ -64,9 +64,9 @@ export default async function AdminChallengesPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Music Challenges"
-        title="Run public challenge prompts, submissions, and voting."
-        description="Create vocal, instrumental, harmony, and sight-reading challenges. Moderate submitted recordings and track voting analytics from one workspace."
+        eyebrow="Learning"
+        title="Music challenges"
+        description="Create challenges, approve submitted recordings and see votes."
       >
         <div className="grid gap-3 sm:grid-cols-4">
           <div className="admin-stat-card min-h-0">

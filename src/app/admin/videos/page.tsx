@@ -23,9 +23,9 @@ export default async function AdminVideosPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Performance Library"
+        eyebrow="Website"
         title="Videos"
-        description="Upload, title, and poster performance videos for the public media section."
+        description="Upload performance videos and posters."
       >
         <div className="admin-stat-card min-h-0 max-w-xs">
           <p className="text-sm text-white/68">Videos</p>

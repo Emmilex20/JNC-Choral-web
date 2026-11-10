@@ -11,9 +11,9 @@ export default async function AdminGalleryPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Visual Archive"
+        eyebrow="Website"
         title="Gallery"
-        description="Upload and manage image moments from rehearsals, concerts, backstage, and public appearances."
+        description="Upload and manage the photos shown on the public gallery."
       >
         <div className="admin-stat-card min-h-0 max-w-xs">
           <p className="text-sm text-white/68">Images</p>

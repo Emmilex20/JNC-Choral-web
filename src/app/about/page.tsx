@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -111,33 +112,11 @@ const activities = [
   },
 ];
 
-const journey = [
-  {
-    label: "Foundation",
-    title: "A sound shaped by purpose",
-    body: "JNC began with a simple conviction: music can gather people, lift faith, and create lasting joy.",
-  },
-  {
-    label: "Training",
-    title: "Voices are formed, not rushed",
-    body: "Rehearsals focus on blend, tone, stage confidence, listening, and musical discipline.",
-  },
-  {
-    label: "Performance",
-    title: "The choir meets the moment",
-    body: "From worship gatherings to concerts and special events, every performance carries preparation and heart.",
-  },
-  {
-    label: "Next Generation",
-    title: "New singers, players, and creators rise",
-    body: "Auditions open the door for fresh voices, instrumentalists, and production talent to grow in the community.",
-  },
-];
-
 export default function AboutPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-black text-white">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "About" }]} />
 
       <section className="relative overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(250,204,21,0.16),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(20,184,166,0.13),transparent_45%)]" />
@@ -341,46 +320,6 @@ export default function AboutPage() {
                 </article>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
-        <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/70">
-              Choir Journey
-            </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-              How a sound becomes a movement.
-            </h2>
-            <p className="mt-4 text-base leading-8 text-white/65">
-              The journey is not only public performances. It is the weekly work,
-              the corrected notes, the friendships, the confidence, and the
-              moments when many voices become one.
-            </p>
-          </div>
-
-          <div className="grid gap-4">
-            {journey.map((step, index) => (
-              <article
-                key={step.title}
-                className="grid gap-5 rounded-3xl border border-white/10 bg-white/4 p-5 sm:grid-cols-[88px_1fr]"
-              >
-                <div>
-                  <p className="text-3xl font-semibold text-amber-100">
-                    {String(index + 1).padStart(2, "0")}
-                  </p>
-                  <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-white/42">
-                    {step.label}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-white/65">{step.body}</p>
-                </div>
-              </article>
-            ))}
           </div>
         </div>
       </section>

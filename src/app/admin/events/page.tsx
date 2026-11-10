@@ -16,9 +16,9 @@ export default async function AdminEventsPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Programming"
+        eyebrow="Website"
         title="Events"
-        description="Create public events, upload event media, and review audience responses from one page."
+        description="Add events, upload event photos and see RSVPs."
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="admin-stat-card min-h-0">

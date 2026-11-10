@@ -14,14 +14,12 @@ import {
   CirclePlay,
   Clapperboard,
   Crown,
-  HeartHandshake,
   KeyboardMusic,
   Lightbulb,
   MapPin,
   MicVocal,
   Quote,
   Sparkles,
-  TrendingUp,
   Trophy,
   UserRound,
   Users,
@@ -152,33 +150,18 @@ const joinReasons: {
 }[] = [
   {
     title: "Singers",
-    body: "Grow your voice across soprano, alto, tenor, and bass with disciplined section work.",
+    body: "Soprano, alto, tenor or bass. Sing in a section with regular rehearsals.",
     icon: MicVocal,
   },
   {
     title: "Instrumentalists",
-    body: "Bring keys, strings, percussion, brass, and musical sensitivity into a bigger sound.",
+    body: "Keys, strings, percussion and brass. Play with the choir at events.",
     icon: KeyboardMusic,
   },
   {
     title: "Production Crew",
-    body: "Shape the visual story through media, sound, content, graphics, and stage support.",
+    body: "Media, sound, graphics and stage support for rehearsals and shows.",
     icon: Clapperboard,
-  },
-  {
-    title: "Personal Growth",
-    body: "Build confidence, musicianship, consistency, and the courage to perform with excellence.",
-    icon: TrendingUp,
-  },
-  {
-    title: "Community",
-    body: "Find people who rehearse hard, encourage deeply, and celebrate every step forward.",
-    icon: HeartHandshake,
-  },
-  {
-    title: "Excellence",
-    body: "Join a culture where preparation, worship, beauty, and discipline meet.",
-    icon: Trophy,
   },
 ];
 
@@ -516,12 +499,11 @@ export default async function HomePage() {
                 Community Pulse
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">
-                Spotlight, rankings, and badges in one glance.
+                This week in the community
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-6 text-white/56">
-              Members can learn, compete, stay consistent, and be celebrated across the JNC
-              platform without leaving the public story behind.
+              A chorister spotlight, the leaderboard and the badges members can earn.
             </p>
           </div>
 
@@ -633,15 +615,14 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
         <div className="max-w-3xl">
           <p className="text-xs uppercase tracking-[0.24em] text-amber-100/70">
-            Why Join JNC?
+            Join the choir
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-            A place for voices, skill, service, and growth.
+            Three ways to join.
           </h2>
           <p className="mt-4 text-base leading-8 text-white/68">
-            JNC is not just a choir you sing with. It is a community where
-            musicianship, discipline, friendship, and purpose are shaped through
-            rehearsals, service, and performance.
+            Apply as a singer, an instrumentalist or a member of the production
+            crew.
           </p>
         </div>
 
@@ -816,7 +797,7 @@ export default async function HomePage() {
               Gallery Showcase
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-              Rehearsals, concerts, backstage moments, and the people.
+              Moments from rehearsals and concerts.
             </h2>
           </div>
           <Button
@@ -887,14 +868,13 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:px-6 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-amber-100/70">
-              Ready to be part of the sound?
+              Ready to join?
             </p>
             <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-white md:text-5xl">
-              Bring your voice, instrument, camera, or craft into JNC.
+              Audition for Jude Nnam Chorale.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-8 text-white/65">
-              Auditions are open to singers, instrumentalists, and production
-              creatives who want to grow in excellence and community.
+              Open to singers, instrumentalists and production crew.
             </p>
           </div>
           <div className="flex flex-wrap gap-3 lg:justify-end">

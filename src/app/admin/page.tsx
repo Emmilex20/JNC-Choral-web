@@ -1,447 +1,372 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 import {
-  ArrowUpRight,
-  BellRing,
-  BookOpenText,
+  ArrowRight,
+  BarChart3,
   CalendarDays,
+  CheckCircle2,
   ClipboardList,
-  Images,
   Megaphone,
-  Music2,
-  Sparkles,
   Trophy,
   UserCheck,
-  UserCog,
   UsersRound,
   Video,
+  type LucideIcon,
 } from "lucide-react";
 
+import { authOptions } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { materializeAutoAbsences } from "@/lib/attendance-auto";
+import { getCurrentAuditionSetting } from "@/lib/audition-settings";
 import { prisma } from "@/lib/prisma";
-import { AdminPageHeader } from "./_components/admin-page-header";
 
-function formatCompactNumber(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
-}
+export const dynamic = "force-dynamic";
 
-function formatDate(value: Date) {
-  return new Intl.DateTimeFormat("en-NG", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(value);
+const dateTime = new Intl.DateTimeFormat("en-NG", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "Africa/Lagos",
+});
+const dateOnly = new Intl.DateTimeFormat("en-NG", {
+  dateStyle: "full",
+  timeZone: "Africa/Lagos",
+});
+
+const statusStyle: Record<string, string> = {
+  PENDING: "bg-amber-300/15 text-amber-100",
+  ACCEPTED: "bg-emerald-300/15 text-emerald-100",
+  REJECTED: "bg-red-300/15 text-red-100",
+};
+
+type Task = { href: string; label: string; hint: string; count: number; icon: LucideIcon };
+
+async function getPageViews() {
+  try {
+    return await prisma.analyticsEvent.count({
+      where: { name: "pageview", createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+    });
+  } catch {
+    return null;
+  }
 }
 
 export default async function AdminPage() {
   await materializeAutoAbsences(prisma);
+  const session = await getServerSession(authOptions);
+  const firstName = session?.user?.name?.split(" ")[0] ?? "there";
+  const now = new Date();
 
   const [
-    totalAuditions,
     pendingAuditions,
-    acceptedAuditions,
-    eventsCount,
-    publishedEvents,
-    announcementsCount,
-    publishedAnnouncements,
-    galleryCount,
-    musicCount,
-    sheetCount,
-    videoCount,
-    academyArticleCount,
-    quizCount,
-    dailyChallengeCount,
-    challengeCount,
-    publishedChallengeCount,
-    challengeSubmissionCount,
-    pendingChallengeSubmissionCount,
-    challengeVoteCount,
-    spotlightCount,
-    choristerNoticesCount,
-    usersCount,
-    verifiedChoristers,
     pendingChoristers,
-    rehearsalsCount,
     pendingAttendance,
-    recentAuditions,
+    pendingChallengeEntries,
+    verifiedChoristers,
+    totalUsers,
+    totalApplications,
+    upcomingEventCount,
+    recentApplications,
     upcomingEvents,
+    auditionSetting,
+    pageViews,
   ] = await Promise.all([
-    prisma.auditionApplication.count(),
     prisma.auditionApplication.count({ where: { status: "PENDING" } }),
-    prisma.auditionApplication.count({ where: { status: "ACCEPTED" } }),
-    prisma.event.count(),
-    prisma.event.count({ where: { isPublished: true } }),
-    prisma.announcement.count(),
-    prisma.announcement.count({ where: { isPublished: true } }),
-    prisma.galleryItem.count(),
-    prisma.musicItem.count(),
-    prisma.musicSheet.count(),
-    prisma.videoItem.count(),
-    prisma.academyArticle.count(),
-    prisma.quiz.count(),
-    prisma.dailyChallenge.count(),
-    prisma.challenge.count(),
-    prisma.challenge.count({ where: { isPublished: true } }),
-    prisma.challengeSubmission.count(),
-    prisma.challengeSubmission.count({ where: { status: "PENDING" } }),
-    prisma.challengeVote.count(),
-    prisma.choristerSpotlight.count(),
-    prisma.choristerNotice.count(),
-    prisma.user.count(),
-    prisma.user.count({ where: { isChorister: true, choristerVerified: true } }),
     prisma.user.count({ where: { isChorister: true, choristerVerified: false } }),
-    prisma.rehearsal.count(),
     prisma.attendanceRecord.count({ where: { confirmedAt: null } }),
+    prisma.challengeSubmission.count({ where: { status: "PENDING" } }),
+    prisma.user.count({ where: { isChorister: true, choristerVerified: true } }),
+    prisma.user.count(),
+    prisma.auditionApplication.count(),
+    prisma.event.count({ where: { isPublished: true, startsAt: { gte: now } } }),
     prisma.auditionApplication.findMany({
       orderBy: { createdAt: "desc" },
-      take: 4,
-      select: {
-        id: true,
-        fullName: true,
-        category: true,
-        status: true,
-        createdAt: true,
-      },
+      take: 5,
+      select: { id: true, fullName: true, category: true, status: true, createdAt: true },
     }),
     prisma.event.findMany({
-      where: { startsAt: { gte: new Date() } },
+      where: { startsAt: { gte: now } },
       orderBy: { startsAt: "asc" },
-      take: 4,
-      select: {
-        id: true,
-        title: true,
-        startsAt: true,
-        isPublished: true,
-      },
+      take: 5,
+      select: { id: true, title: true, startsAt: true, isPublished: true },
     }),
+    getCurrentAuditionSetting(),
+    getPageViews(),
   ]);
 
-  const mediaCount = galleryCount + musicCount + sheetCount + videoCount;
-  const reviewQueue =
-    pendingAuditions + pendingChoristers + pendingAttendance + pendingChallengeSubmissionCount;
-  const publishedContent = publishedEvents + publishedAnnouncements;
-
-  const stats = [
-    {
-      label: "Review Queue",
-      value: reviewQueue,
-      detail: `${pendingAuditions} auditions, ${pendingChoristers} chorister requests, ${pendingAttendance} attendance requests, ${pendingChallengeSubmissionCount} challenge entries`,
-    },
-    {
-      label: "Members",
-      value: verifiedChoristers,
-      detail: `${usersCount} total accounts, ${pendingChoristers} awaiting verification`,
-    },
-    {
-      label: "Published",
-      value: publishedContent,
-      detail: `${publishedEvents}/${eventsCount} events, ${publishedAnnouncements}/${announcementsCount} announcements`,
-    },
-    {
-      label: "Media",
-      value: mediaCount,
-      detail: `${galleryCount} images, ${musicCount} tracks, ${sheetCount} sheets, ${videoCount} videos`,
-    },
-  ];
-
-  const queue = [
+  const tasks: Task[] = [
     {
       href: "/admin/auditions",
-      label: "Auditions",
-      value: pendingAuditions,
-      detail: `${acceptedAuditions} accepted from ${totalAuditions} applications`,
+      label: "Audition applications",
+      hint: "Waiting for a decision",
+      count: pendingAuditions,
       icon: ClipboardList,
     },
     {
       href: "/admin/choristers/pending",
-      label: "Chorister Verification",
-      value: pendingChoristers,
-      detail: "Requests waiting for admin decision",
+      label: "Chorister verification",
+      hint: "People asking to join the chorister portal",
+      count: pendingChoristers,
       icon: UserCheck,
     },
     {
       href: "/admin/rehearsals",
-      label: "Attendance Requests",
-      value: pendingAttendance,
-      detail: `${rehearsalsCount} rehearsals in the attendance ledger`,
+      label: "Attendance to approve",
+      hint: "Marked by choristers, not yet approved",
+      count: pendingAttendance,
       icon: CalendarDays,
     },
     {
       href: "/admin/challenges",
-      label: "Challenge Submissions",
-      value: pendingChallengeSubmissionCount,
-      detail: `${challengeSubmissionCount} entries and ${challengeVoteCount} votes across ${challengeCount} challenges`,
+      label: "Challenge recordings",
+      hint: "Submitted and waiting to be approved",
+      count: pendingChallengeEntries,
       icon: Trophy,
     },
   ];
+  const openTasks = tasks.filter((task) => task.count > 0);
+  const totalOpen = tasks.reduce((sum, task) => sum + task.count, 0);
 
-  const modules = [
+  const auditionDateSet =
+    auditionSetting?.startsAt instanceof Date && auditionSetting.startsAt.getTime() > now.getTime();
+
+  const kpis = [
     {
-      href: "/admin/auditions",
-      title: "Auditions",
-      detail: "Schedule auditions and process applications.",
-      count: totalAuditions,
-      icon: ClipboardList,
-    },
-    {
-      href: "/admin/rehearsals",
-      title: "Rehearsals",
-      detail: "Create rehearsals and approve attendance.",
-      count: rehearsalsCount,
-      icon: CalendarDays,
-    },
-    {
+      label: "Verified choristers",
+      value: verifiedChoristers,
+      note: `${totalUsers} accounts in total`,
       href: "/admin/choristers",
-      title: "Choristers",
-      detail: "Inspect profiles, notes, and attendance history.",
-      count: verifiedChoristers,
-      icon: UsersRound,
     },
     {
-      href: "/admin/choristers/notices",
-      title: "Member Notices",
-      detail: "Send private updates to verified choristers.",
-      count: choristerNoticesCount,
-      icon: BellRing,
+      label: "Items to review",
+      value: totalOpen,
+      note: totalOpen === 0 ? "Nothing waiting" : "See the list below",
+      href: "#attention",
     },
     {
+      label: "Upcoming events",
+      value: upcomingEventCount,
+      note: "Published and in the future",
       href: "/admin/events",
-      title: "Events",
-      detail: "Publish concerts, rehearsals, and programmes.",
-      count: eventsCount,
-      icon: CalendarDays,
     },
     {
-      href: "/admin/announcements",
-      title: "Announcements",
-      detail: "Write public news and updates.",
-      count: announcementsCount,
-      icon: Megaphone,
+      label: "Page views (7 days)",
+      value: pageViews ?? "-",
+      note: pageViews === null ? "Run the database migration to enable" : "Public pages only",
+      href: "/admin/analytics",
     },
-    {
-      href: "/admin/gallery",
-      title: "Gallery",
-      detail: "Manage public image showcases.",
-      count: galleryCount,
-      icon: Images,
-    },
-    {
-      href: "/admin/music",
-      title: "Music & Scores",
-      detail: "Manage audio tracks and the public scores bank.",
-      count: musicCount + sheetCount,
-      icon: Music2,
-    },
-    {
-      href: "/admin/videos",
-      title: "Videos",
-      detail: "Upload performance videos and posters.",
-      count: videoCount,
-      icon: Video,
-    },
-    {
-      href: "/admin/academy",
-      title: "Music Academy",
-      detail: "Manage articles, quizzes, and daily theory challenges.",
-      count: academyArticleCount + quizCount + dailyChallengeCount,
-      icon: BookOpenText,
-    },
-    {
-      href: "/admin/challenges",
-      title: "Music Challenges",
-      detail: `Publish prompts, moderate entries, and inspect voting. ${publishedChallengeCount} challenges are live.`,
-      count: challengeCount + challengeSubmissionCount,
-      icon: Trophy,
-    },
-    {
-      href: "/admin/spotlights",
-      title: "Chorister Spotlights",
-      detail: "Publish weekly member stories and community highlights.",
-      count: spotlightCount,
-      icon: Sparkles,
-    },
-    {
-      href: "/admin/users",
-      title: "Users",
-      detail: "Edit roles, access, and chorister flags.",
-      count: usersCount,
-      icon: UserCog,
-    },
+  ];
+
+  const quickActions = [
+    { href: "/admin/auditions", label: "Set audition date", icon: ClipboardList },
+    { href: "/admin/events", label: "Add an event", icon: CalendarDays },
+    { href: "/admin/announcements", label: "Post news", icon: Megaphone },
+    { href: "/admin/videos", label: "Upload a video", icon: Video },
+    { href: "/admin/rehearsals", label: "Add a rehearsal", icon: UsersRound },
+    { href: "/admin/analytics", label: "View analytics", icon: BarChart3 },
   ];
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        eyebrow="Command Center"
-        title="A calmer dashboard for the whole choir operation."
-        description="Scan the queue, jump into the right workspace, and keep the public site and private chorister portal under control without a long one-page scroll."
-        actions={
-          <Button
-            asChild
-            className="rounded-2xl"
-          >
-            <Link href="/admin/auditions">
-              Open Applications
-              <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        }
-      >
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="admin-stat-card min-h-0">
-              <p className="text-sm font-medium text-white/68">{stat.label}</p>
-              <p className="admin-metric-value">{formatCompactNumber(stat.value)}</p>
-              <p className="text-sm leading-6 admin-subtle">{stat.detail}</p>
-            </div>
-          ))}
-        </div>
-      </AdminPageHeader>
-
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <div className="admin-section">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="admin-eyebrow">Needs Review</p>
-              <h2 className="mt-2 text-2xl font-semibold text-white">
-                Priority queue
-              </h2>
-            </div>
-            <span className="admin-pill admin-pill-inline">{reviewQueue} open</span>
-          </div>
-
-          <div className="mt-5 grid gap-3">
-            {queue.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="admin-rail-link items-center"
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-amber-100">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-semibold text-white">{item.label}</span>
-                      <span className="mt-1 block text-sm admin-subtle">{item.detail}</span>
-                    </span>
-                  </span>
-                  <strong>{item.value}</strong>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="admin-section">
-          <p className="admin-eyebrow">Latest Movement</p>
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            <div>
-              <h2 className="text-lg font-semibold text-white">Recent applications</h2>
-              <div className="mt-3 grid gap-2">
-                {recentAuditions.length === 0 ? (
-                  <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm admin-subtle">
-                    No applications yet.
-                  </p>
-                ) : (
-                  recentAuditions.map((application) => (
-                    <div
-                      key={application.id}
-                      className="rounded-2xl border border-white/10 bg-black/24 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold text-white">
-                            {application.fullName}
-                          </p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/45">
-                            {application.category}
-                          </p>
-                        </div>
-                        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/76">
-                          {application.status}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-semibold text-white">Upcoming events</h2>
-              <div className="mt-3 grid gap-2">
-                {upcomingEvents.length === 0 ? (
-                  <p className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm admin-subtle">
-                    No upcoming events.
-                  </p>
-                ) : (
-                  upcomingEvents.map((event) => (
-                    <div
-                      key={event.id}
-                      className="rounded-2xl border border-white/10 bg-black/24 p-4"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-semibold text-white">{event.title}</p>
-                          <p className="mt-1 text-sm admin-subtle">
-                            {formatDate(event.startsAt)}
-                          </p>
-                        </div>
-                        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/76">
-                          {event.isPublished ? "Live" : "Draft"}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="admin-section">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="admin-eyebrow">Workspaces</p>
-            <h2 className="mt-2 text-2xl font-semibold text-white">
-              Open a focused admin page
-            </h2>
-          </div>
-          <p className="max-w-xl text-sm leading-6 admin-subtle">
-            Each area now has its own route, so desktop and mobile admins can move with less scrolling and clearer context.
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm text-white/55">{dateOnly.format(now)}</p>
+          <h2 className="mt-1 text-3xl font-semibold tracking-tight text-white">
+            Welcome back, {firstName}
+          </h2>
+          <p className="mt-2 text-sm text-white/65">
+            {totalOpen === 0
+              ? "You are all caught up."
+              : `${totalOpen} ${totalOpen === 1 ? "item needs" : "items need"} your attention.`}
           </p>
         </div>
+        <Button asChild variant="outline" className="w-fit rounded-xl border-white/15 bg-white/5 text-white hover:bg-white/10">
+          <Link href="/">View public site</Link>
+        </Button>
+      </header>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {modules.map((module) => {
-            const Icon = module.icon;
-            return (
-              <Link key={module.href} href={module.href} className="admin-nav-card">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-cyan-100">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <span className="admin-pill admin-pill-inline">
-                    {formatCompactNumber(module.count)}
-                  </span>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-white">{module.title}</h3>
-                <p className="mt-2 text-sm leading-6 admin-subtle">{module.detail}</p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-white">
-                  Open workspace
-                  <ArrowUpRight className="h-4 w-4" />
-                </span>
-              </Link>
-            );
-          })}
+      {!auditionDateSet ? (
+        <div
+          role="status"
+          className="flex flex-col gap-3 rounded-2xl border border-amber-200/25 bg-amber-200/10 p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-sm text-amber-50">
+            No upcoming audition date is set, so the website says &quot;Next auditions coming
+            soon&quot;.
+          </p>
+          <Button asChild size="sm" className="w-fit rounded-xl bg-amber-300 font-semibold text-black hover:bg-amber-200">
+            <Link href="/admin/auditions">Set the date</Link>
+          </Button>
         </div>
+      ) : null}
+
+      <section aria-label="Key numbers" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map((kpi) => (
+          <Link
+            key={kpi.label}
+            href={kpi.href}
+            className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition hover:border-white/25 hover:bg-white/[0.07]"
+          >
+            <p className="text-sm font-medium text-white/65">{kpi.label}</p>
+            <p className="mt-2 text-4xl font-semibold tabular-nums text-white">{kpi.value}</p>
+            <p className="mt-2 text-xs text-white/50">{kpi.note}</p>
+          </Link>
+        ))}
       </section>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <section
+          id="attention"
+          aria-labelledby="attention-title"
+          className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h3 id="attention-title" className="text-lg font-semibold text-white">
+              Needs your attention
+            </h3>
+            {totalOpen > 0 ? (
+              <span className="rounded-full bg-amber-300 px-3 py-1 text-xs font-semibold text-black">
+                {totalOpen} open
+              </span>
+            ) : null}
+          </div>
+
+          {openTasks.length === 0 ? (
+            <div className="mt-5 flex items-center gap-3 rounded-xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-emerald-50">
+              <CheckCircle2 className="h-5 w-5 shrink-0" aria-hidden />
+              <p className="text-sm">Nothing is waiting for review right now.</p>
+            </div>
+          ) : (
+            <ul className="mt-5 grid gap-3">
+              {openTasks.map((task) => (
+                <li key={task.href}>
+                  <Link
+                    href={task.href}
+                    className="group flex items-center gap-4 rounded-xl border border-white/10 bg-black/25 p-4 transition hover:border-amber-200/30 hover:bg-white/[0.06]"
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-amber-100">
+                      <task.icon className="h-5 w-5" aria-hidden />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold text-white">{task.label}</span>
+                      <span className="block text-xs text-white/55">{task.hint}</span>
+                    </span>
+                    <span className="text-2xl font-semibold tabular-nums text-white">{task.count}</span>
+                    <ArrowRight
+                      className="h-4 w-4 text-white/40 transition group-hover:translate-x-0.5 group-hover:text-white"
+                      aria-hidden
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section
+          aria-labelledby="quick-title"
+          className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6"
+        >
+          <h3 id="quick-title" className="text-lg font-semibold text-white">
+            Quick actions
+          </h3>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {quickActions.map((action) => (
+              <li key={action.label}>
+                <Link
+                  href={action.href}
+                  className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/25 px-4 py-3 text-sm font-medium text-white/90 transition hover:border-white/25 hover:bg-white/[0.07]"
+                >
+                  <action.icon className="h-4 w-4 text-amber-100" aria-hidden />
+                  {action.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-white/50">
+            Not sure where something is? Open the{" "}
+            <Link href="/admin/help" className="text-amber-100 underline underline-offset-2">
+              admin guide
+            </Link>
+            .
+          </p>
+        </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section
+          aria-labelledby="recent-title"
+          className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h3 id="recent-title" className="text-lg font-semibold text-white">
+              Latest audition applications
+            </h3>
+            <Link href="/admin/auditions" className="text-sm text-amber-100 hover:underline">
+              View all ({totalApplications})
+            </Link>
+          </div>
+          {recentApplications.length === 0 ? (
+            <p className="mt-5 text-sm text-white/60">No applications yet.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-white/10">
+              {recentApplications.map((app) => (
+                <li key={app.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-white">{app.fullName}</p>
+                    <p className="text-xs text-white/50">
+                      {app.category.toLowerCase()} · {dateTime.format(app.createdAt)}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      statusStyle[app.status] ?? "bg-white/10 text-white/80"
+                    }`}
+                  >
+                    {app.status.toLowerCase()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section
+          aria-labelledby="events-title"
+          className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h3 id="events-title" className="text-lg font-semibold text-white">
+              Upcoming events
+            </h3>
+            <Link href="/admin/events" className="text-sm text-amber-100 hover:underline">
+              Manage events
+            </Link>
+          </div>
+          {upcomingEvents.length === 0 ? (
+            <p className="mt-5 text-sm text-white/60">No upcoming events. Add one from Events.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-white/10">
+              {upcomingEvents.map((event) => (
+                <li key={event.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-white">{event.title}</p>
+                    <p className="text-xs text-white/50">{dateTime.format(event.startsAt)}</p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      event.isPublished
+                        ? "bg-emerald-300/15 text-emerald-100"
+                        : "bg-white/10 text-white/70"
+                    }`}
+                  >
+                    {event.isPublished ? "published" : "draft"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

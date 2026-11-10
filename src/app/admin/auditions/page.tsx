@@ -20,9 +20,9 @@ export default async function AdminAuditionsPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Talent Pipeline"
+        eyebrow="People"
         title="Auditions"
-        description="Set the public audition schedule, export applications, and move applicants through the review process."
+        description="Set the next audition date, review applications and export them."
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="admin-stat-card min-h-0">

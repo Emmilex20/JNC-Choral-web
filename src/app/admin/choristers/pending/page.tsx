@@ -12,9 +12,9 @@ export default async function AdminPendingChoristersPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Verification"
-        title="Pending Choristers"
-        description="Approve or decline chorister access requests without digging through the full user directory."
+        eyebrow="People"
+        title="Verification requests"
+        description="Approve or decline requests to join the chorister portal."
       >
         <div className="admin-stat-card min-h-0 max-w-xs">
           <p className="text-sm text-white/68">Awaiting Decision</p>

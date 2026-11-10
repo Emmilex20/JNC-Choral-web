@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import { safeJsonLd } from "@/lib/json-ld";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -89,6 +90,7 @@ export default async function GalleryPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Gallery" }]} />
 
       <script
         type="application/ld+json"

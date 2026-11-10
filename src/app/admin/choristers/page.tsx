@@ -29,9 +29,9 @@ export default async function AdminChoristersPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Membership"
+        eyebrow="People"
         title="Choristers"
-        description="Review verified chorister profiles, passport records, private notes, and attendance history."
+        description="View chorister profiles, notes and attendance."
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="admin-stat-card min-h-0">

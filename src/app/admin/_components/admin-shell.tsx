@@ -24,6 +24,7 @@ import {
   UsersRound,
   Video,
   BarChart3,
+  LifeBuoy,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,8 @@ import { cn } from "@/lib/utils";
 
 type AdminShellProps = {
   children: ReactNode;
+  /** Open-item counts per nav href, shown as badges (e.g. pending reviews). */
+  badges?: Record<string, number>;
   userName?: string | null;
   userEmail?: string | null;
 };
@@ -55,20 +58,14 @@ type AdminNavItem = {
 
 const navGroups: { label: string; items: AdminNavItem[] }[] = [
   {
-    label: "Command",
+    label: "Overview",
     items: [
       {
         href: "/admin",
-        label: "Overview",
-        description: "Live operational pulse",
+        label: "Dashboard",
+        description: "What needs your attention",
         icon: LayoutDashboard,
         exact: true,
-      },
-      {
-        href: "/admin/auditions",
-        label: "Auditions",
-        description: "Applications and schedule",
-        icon: ClipboardList,
       },
       {
         href: "/admin/analytics",
@@ -79,79 +76,95 @@ const navGroups: { label: string; items: AdminNavItem[] }[] = [
     ],
   },
   {
-    label: "Choir Ops",
+    label: "People",
     items: [
       {
-        href: "/admin/rehearsals",
-        label: "Rehearsals",
-        description: "Sessions and attendance",
-        icon: CalendarDays,
+        href: "/admin/auditions",
+        label: "Auditions",
+        description: "Applications and schedule",
+        icon: ClipboardList,
+      },
+      {
+        href: "/admin/choristers/pending",
+        label: "Verification requests",
+        description: "Approve chorister access",
+        icon: UserCheck,
       },
       {
         href: "/admin/choristers",
         label: "Choristers",
-        description: "Verified member records",
+        description: "Profiles and attendance",
         icon: UsersRound,
-        exact: true,
       },
       {
-        href: "/admin/choristers/pending",
-        label: "Pending",
-        description: "Verification queue",
-        icon: UserCheck,
+        href: "/admin/rehearsals",
+        label: "Rehearsals",
+        description: "Dates and attendance",
+        icon: CalendarDays,
       },
       {
         href: "/admin/choristers/notices",
-        label: "Notices",
-        description: "Member broadcasts",
+        label: "Member notices",
+        description: "Private updates",
         icon: BellRing,
       },
       {
         href: "/admin/users",
-        label: "Users",
-        description: "Accounts and roles",
+        label: "Users & roles",
+        description: "Accounts and access",
         icon: UserCog,
       },
     ],
   },
   {
-    label: "Public Content",
+    label: "Website",
     items: [
       {
         href: "/admin/events",
         label: "Events",
-        description: "Public events",
+        description: "Concerts and programmes",
         icon: CalendarDays,
       },
       {
         href: "/admin/announcements",
-        label: "Announcements",
-        description: "News posts",
+        label: "News",
+        description: "Public updates",
         icon: Megaphone,
       },
       {
         href: "/admin/gallery",
         label: "Gallery",
-        description: "Image showcase",
+        description: "Photos",
         icon: Images,
-      },
-      {
-        href: "/admin/music",
-        label: "Music & Scores",
-        description: "Audio and score bank",
-        icon: Music2,
       },
       {
         href: "/admin/videos",
         label: "Videos",
-        description: "Performance footage",
+        description: "Performance videos",
         icon: Video,
       },
       {
+        href: "/admin/music",
+        label: "Music & scores",
+        description: "Tracks and scores bank",
+        icon: Music2,
+      },
+    ],
+  },
+  {
+    label: "Learning",
+    items: [
+      {
         href: "/admin/academy",
         label: "Academy",
-        description: "Articles, quizzes, challenges",
+        description: "Articles, quizzes, daily challenge",
         icon: BookOpenText,
+      },
+      {
+        href: "/admin/challenges",
+        label: "Music challenges",
+        description: "Prompts and submissions",
+        icon: Trophy,
       },
       {
         href: "/admin/spotlights",
@@ -159,11 +172,16 @@ const navGroups: { label: string; items: AdminNavItem[] }[] = [
         description: "Weekly member stories",
         icon: Sparkles,
       },
+    ],
+  },
+  {
+    label: "Support",
+    items: [
       {
-        href: "/admin/challenges",
-        label: "Challenges",
-        description: "Prompts, submissions, voting",
-        icon: Trophy,
+        href: "/admin/help",
+        label: "Admin guide",
+        description: "How to do common tasks",
+        icon: LifeBuoy,
       },
     ],
   },
@@ -195,51 +213,58 @@ function AdminBrand() {
           JNC Admin
         </span>
         <span className="block text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-100/62">
-          Control Room
+          Management console
         </span>
       </span>
     </Link>
   );
 }
 
-function AdminNav({ pathname, mobile = false }: { pathname: string; mobile?: boolean }) {
+function AdminNav({
+  pathname,
+  mobile = false,
+  badges = {},
+}: {
+  pathname: string;
+  mobile?: boolean;
+  badges?: Record<string, number>;
+}) {
   return (
-    <nav className="grid gap-6">
+    <nav aria-label="Admin" className="grid gap-5">
       {navGroups.map((group) => (
         <div key={group.label}>
-          <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/38">
+          <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/38">
             {group.label}
           </p>
-          <div className="mt-2 grid gap-1.5">
+          <div className="mt-1.5 grid gap-0.5">
             {group.items.map((item) => {
               const active = isActive(pathname, item);
               const Icon = item.icon;
+              const count = badges[item.href] ?? 0;
               const link = (
                 <Link
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
-                    "group flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition",
+                    "group flex items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition",
                     active
-                      ? "border-amber-200/28 bg-amber-200/12 text-white shadow-[0_14px_35px_rgba(245,158,11,0.08)]"
-                      : "border-transparent bg-transparent text-white/66 hover:border-white/10 hover:bg-white/[0.06] hover:text-white"
+                      ? "border-amber-200/28 bg-amber-200/12 text-white"
+                      : "border-transparent text-white/70 hover:bg-white/[0.06] hover:text-white"
                   )}
                 >
-                  <span
-                    className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border transition",
-                      active
-                        ? "border-amber-200/20 bg-amber-200/12 text-amber-100"
-                        : "border-white/8 bg-white/5 text-white/54 group-hover:text-white"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold">{item.label}</span>
-                    <span className="mt-0.5 block truncate text-xs text-white/45">
-                      {item.description}
+                  <Icon
+                    className={cn("h-4 w-4 shrink-0", active ? "text-amber-100" : "text-white/55")}
+                    aria-hidden
+                  />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{item.label}</span>
+                  {count > 0 ? (
+                    <span
+                      className="rounded-full bg-amber-300 px-2 py-0.5 text-[11px] font-semibold text-black"
+                      aria-label={`${count} waiting`}
+                    >
+                      {count}
                     </span>
-                  </span>
+                  ) : null}
                 </Link>
               );
 
@@ -258,10 +283,12 @@ function AdminNav({ pathname, mobile = false }: { pathname: string; mobile?: boo
   );
 }
 
-export default function AdminShell({ children, userName, userEmail }: AdminShellProps) {
+export default function AdminShell({ children, userName, userEmail, badges }: AdminShellProps) {
   const pathname = usePathname();
   const current = getCurrentItem(pathname);
   const CurrentIcon = current.icon;
+  const currentGroup =
+    navGroups.find((group) => group.items.some((item) => item.href === current.href))?.label ?? "Overview";
 
   return (
     <div className="relative min-h-screen lg:grid lg:grid-cols-[18rem_minmax(0,1fr)]">
@@ -269,7 +296,7 @@ export default function AdminShell({ children, userName, userEmail }: AdminShell
         <div className="flex h-full flex-col">
           <AdminBrand />
           <div className="mt-6">
-            <AdminNav pathname={pathname} />
+            <AdminNav pathname={pathname} badges={badges} />
           </div>
           <div className="mt-auto rounded-3xl border border-white/10 bg-white/[0.04] p-4">
             <div className="flex items-center gap-2 text-white">
@@ -326,11 +353,11 @@ export default function AdminShell({ children, userName, userEmail }: AdminShell
                         <AdminBrand />
                       </SheetTitle>
                       <SheetDescription className="text-white/55">
-                        Navigate the admin workspace.
+                        Choose a section.
                       </SheetDescription>
                     </SheetHeader>
                     <div className="overflow-y-auto px-4 py-5">
-                      <AdminNav pathname={pathname} mobile />
+                      <AdminNav pathname={pathname} mobile badges={badges} />
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -340,8 +367,8 @@ export default function AdminShell({ children, userName, userEmail }: AdminShell
                 <CurrentIcon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/42">
-                  Admin
+                <p className="text-xs text-white/50">
+                  Admin <span aria-hidden>/</span> {currentGroup}
                 </p>
                 <h1 className="truncate text-lg font-semibold text-white sm:text-xl">
                   {current.label}

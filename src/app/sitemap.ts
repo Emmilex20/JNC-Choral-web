@@ -28,6 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/scores",
     "/academy",
     "/music-hub",
+    "/help",
     "/music-hub/quizzes",
     "/music-hub/daily-challenge",
     "/music-hub/leaderboard",

@@ -15,9 +15,9 @@ export default async function AdminMusicPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Audio Library"
-        title="Music & Scores"
-        description="Manage public audio tracks and the Sir Jude Nnam Scores Bank from one focused workspace."
+        eyebrow="Website"
+        title="Music & scores"
+        description="Manage audio tracks and the scores bank."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-stat-card min-h-0">

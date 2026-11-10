@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
@@ -46,6 +47,7 @@ export default async function AuditionStatusPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-black">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Auditions", href: "/auditions" }, { label: "Your status" }]} />
 
       <section className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-20">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6 md:p-10">

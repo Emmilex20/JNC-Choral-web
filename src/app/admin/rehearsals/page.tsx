@@ -46,9 +46,9 @@ export default async function AdminRehearsalsPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Operations"
-        title="Rehearsals & Attendance"
-        description="Create rehearsal dates, approve attendance, review excuses, and keep the automatic absence rule visible."
+        eyebrow="People"
+        title="Rehearsals & attendance"
+        description="Add rehearsal dates, approve attendance and review excuses."
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="admin-stat-card min-h-0">

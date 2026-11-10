@@ -44,9 +44,9 @@ export default async function AdminSpotlightsPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Chorister Spotlight"
-        title="Feature the people inside the sound."
-        description="Create weekly member stories with photos, musical journeys, favorite songs, and advice for the public community spotlight page."
+        eyebrow="Learning"
+        title="Spotlights"
+        description="Feature a chorister each week with a photo and short story."
       >
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="admin-stat-card min-h-0">

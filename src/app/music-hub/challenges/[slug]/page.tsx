@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -75,6 +76,7 @@ export default async function ChallengeDetailPage({
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Music Hub", href: "/music-hub" }, { label: "Music challenges", href: "/music-hub/challenges" }, { label: "Challenge" }]} />
 
       <section className="border-b border-white/10 bg-[linear-gradient(135deg,#02040a_0%,#08111f_52%,#101007_100%)]">
         <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 lg:py-16">

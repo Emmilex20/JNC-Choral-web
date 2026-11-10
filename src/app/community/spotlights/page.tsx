@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -83,6 +84,7 @@ export default async function SpotlightsPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Spotlights" }]} />
 
       <section className="border-b border-white/10 bg-[linear-gradient(135deg,#02040a_0%,#08111f_52%,#101007_100%)]">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:px-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center lg:py-20">

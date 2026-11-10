@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import { safeJsonLd } from "@/lib/json-ld";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
@@ -94,6 +95,7 @@ export default async function MusicPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Music" }]} />
 
       <script
         type="application/ld+json"

@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import { safeJsonLd } from "@/lib/json-ld";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -151,6 +152,7 @@ export default function ContactPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a] text-white">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Contact" }]} />
 
       <script
         type="application/ld+json"
@@ -165,12 +167,11 @@ export default function ContactPage() {
               Contact JNC
             </div>
             <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Let us help you reach the right desk.
+              Contact us
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-white/68">
-              Reach Jude Nnam Chorale for auditions, concerts, partnerships, media requests,
-              score inquiries, and chorister support. We will direct your message to the right
-              team.
+              Questions about auditions, concerts, scores or media? Call, email or send a message
+              below.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button className="rounded-2xl bg-amber-200 px-6 py-6 text-black hover:bg-amber-100" asChild>
@@ -252,14 +253,14 @@ export default function ContactPage() {
       <section className="mx-auto grid max-w-7xl gap-6 px-4 pb-10 md:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:pb-14">
         <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-100/62">
-            Direct Lines
+            Get in touch
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-            Choose the fastest route.
+            Call or email
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-white/62">
-            For formal requests, email is best. For urgent coordination, call. For auditions,
-            use the application page so your submission can be tracked.
+            Email for formal requests, call for anything urgent. To audition, use the audition
+            page so you can track your application.
           </p>
 
           <div className="mt-7 grid gap-4">
@@ -295,7 +296,7 @@ export default function ContactPage() {
           className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.035))] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.22)] md:p-8"
         >
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/45">
-            Message Desk
+            Message
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white">
             Send a message
@@ -377,14 +378,13 @@ export default function ContactPage() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-100/70">
-                Auditions and Membership
+                Auditions
               </p>
               <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight text-white">
-                Want to join the choir? Start with the audition form.
+                Want to join the choir?
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-white/64">
-                Submit your details online so the team can review your application and contact
-                you with next steps.
+                Apply online and we will contact you with the next steps.
               </p>
             </div>
             <Button className="rounded-2xl bg-white px-6 py-6 text-black hover:bg-white/90" asChild>

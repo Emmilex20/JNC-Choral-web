@@ -11,9 +11,9 @@ export default async function AdminChoristerNoticesPage() {
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Member Updates"
-        title="Chorister Notices"
-        description="Publish private updates, instructions, and attachments for verified choristers."
+        eyebrow="People"
+        title="Member notices"
+        description="Post private updates and files for verified choristers."
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="admin-stat-card min-h-0">

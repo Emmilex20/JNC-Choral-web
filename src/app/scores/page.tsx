@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,6 +47,7 @@ export default async function ScoresPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-[#02040a]">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Music Hub", href: "/music-hub" }, { label: "Scores bank" }]} />
 
       <section className="relative overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(4,7,18,0.98),rgba(10,16,31,0.9))]" />

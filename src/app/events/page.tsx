@@ -1,3 +1,4 @@
+import Breadcrumbs from "@/components/breadcrumbs";
 import type { Metadata } from "next";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
@@ -46,6 +47,7 @@ export default async function EventsPage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-black">
       <SiteNavbar />
+      <Breadcrumbs items={[{ label: "Events" }]} />
 
       <section className="mx-auto max-w-7xl px-4 py-16 md:px-6">
         <h1 className="text-3xl font-semibold text-white md:text-4xl">Events</h1>
