@@ -49,3 +49,35 @@ describe("ipFromHeaders", () => {
     expect(ipFromHeaders(() => null)).toBe("unknown");
   });
 });
+
+import { safeHttpUrl } from "@/lib/safe-url";
+import { auditionSchema } from "@/lib/audition-schema";
+
+describe("safeHttpUrl", () => {
+  it("allows http(s) and neutralises everything else", () => {
+    expect(safeHttpUrl("https://example.com/a")).toBe("https://example.com/a");
+    expect(safeHttpUrl("javascript:alert(1)")).toBe("#");
+    expect(safeHttpUrl("data:text/html,x")).toBe("#");
+    expect(safeHttpUrl("not a url")).toBe("#");
+    expect(safeHttpUrl(null)).toBe("#");
+  });
+});
+
+describe("auditionSchema", () => {
+  const base = {
+    fullName: "Jane Doe",
+    phone: "08012345678",
+    email: "jane@example.com",
+    category: "SINGER" as const,
+    voicePart: "ALTO" as const,
+  };
+
+  it("rejects non-http portfolio links and oversized notes", () => {
+    expect(auditionSchema.safeParse({ ...base, portfolioLink: "javascript:alert(1)" }).success).toBe(false);
+    expect(auditionSchema.safeParse({ ...base, notes: "x".repeat(2001) }).success).toBe(false);
+  });
+
+  it("accepts a normal application", () => {
+    expect(auditionSchema.safeParse({ ...base, portfolioLink: "https://example.com" }).success).toBe(true);
+  });
+});

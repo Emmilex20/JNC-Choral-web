@@ -1,5 +1,6 @@
 "use client";
 
+import { safeHttpUrl } from "@/lib/safe-url";
 import { useMemo, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -443,7 +444,7 @@ export default function AdminAuditionsClient({
                     {r.portfolioLink ? (
                       <a
                         className="text-white underline underline-offset-4"
-                        href={r.portfolioLink}
+                        href={safeHttpUrl(r.portfolioLink)}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -564,7 +565,7 @@ export default function AdminAuditionsClient({
                       {r.portfolioLink ? (
                         <a
                           className="text-white underline underline-offset-4"
-                          href={r.portfolioLink}
+                          href={safeHttpUrl(r.portfolioLink)}
                           target="_blank"
                           rel="noreferrer"
                         >
