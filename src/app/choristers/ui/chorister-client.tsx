@@ -2,7 +2,6 @@
 
 import { safeHttpUrl } from "@/lib/safe-url";
 import { useMemo, useState, useTransition } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   BellRing,
@@ -158,6 +157,8 @@ export default function ChoristerClient({
 }: Props) {
   const [isPending, startTransition] = useTransition();
   const [uploadingPassport, setUploadingPassport] = useState(false);
+  // Local preview of a just-uploaded (private, not yet saved) passport image.
+  const [passportPreview, setPassportPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [excuseNotes, setExcuseNotes] = useState<Record<string, string>>({});
@@ -229,6 +230,7 @@ export default function ChoristerClient({
     formData.append("signature", sig.signature);
     formData.append("folder", sig.folder);
     formData.append("allowed_formats", sig.allowedFormats);
+    formData.append("type", sig.type);
 
     const up = await fetch(url, { method: "POST", body: formData });
     if (!up.ok) throw new Error("Passport upload failed");
@@ -277,6 +279,7 @@ export default function ChoristerClient({
       const uploaded = await uploadPassport(file);
       const imageUrl = uploaded.secure_url as string;
       setForm((current) => ({ ...current, passportImageUrl: imageUrl }));
+      setPassportPreview(URL.createObjectURL(file));
       setStatusMessage("Passport image uploaded. Save profile to store it.");
     } catch (err) {
       setError(getErrorMessage(err, "Passport upload failed"));
@@ -534,12 +537,11 @@ export default function ChoristerClient({
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
                   <div className="relative h-28 w-28 overflow-hidden rounded-[1.25rem] border border-white/10 bg-black/40">
                     {form.passportImageUrl ? (
-                      <Image
-                        src={form.passportImageUrl}
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={passportPreview ?? `/api/choristers/passport/${user.id}`}
                         alt="Passport"
-                        fill
-                        sizes="112px"
-                        className="object-cover"
+                        className="h-full w-full object-cover"
                       />
                     ) : null}
                   </div>

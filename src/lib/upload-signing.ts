@@ -11,6 +11,8 @@ type SignInput = {
   scope: string;
   folder: string;
   allowedFormats: string;
+  /** Set to authenticated for private files that need signed delivery URLs. */
+  type?: "authenticated";
   limitPerHour?: number;
 };
 
@@ -24,6 +26,7 @@ export async function signUserUpload({
   scope,
   folder,
   allowedFormats,
+  type,
   limitPerHour = 30,
 }: SignInput) {
   if (!(await consumeRateLimit(`upload:${scope}:${userId}`, limitPerHour, 60 * 60 * 1000))) {
@@ -32,7 +35,7 @@ export async function signUserUpload({
 
   const timestamp = Math.floor(Date.now() / 1000);
   const signature = cloudinary.utils.api_sign_request(
-    { timestamp, folder, allowed_formats: allowedFormats },
+    { timestamp, folder, allowed_formats: allowedFormats, ...(type ? { type } : {}) },
     process.env.CLOUDINARY_API_SECRET!
   );
 
@@ -41,6 +44,7 @@ export async function signUserUpload({
     signature,
     folder,
     allowedFormats,
+    type,
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,
   });

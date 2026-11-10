@@ -13,6 +13,7 @@ import {
   NotificationType,
 } from "@/lib/notifications";
 import { updateGamificationForUser } from "@/lib/gamification";
+import { isOwnPrivatePassportUrl } from "@/lib/passport";
 import { prisma } from "@/lib/prisma";
 
 function canAccess(user: { role?: string; isChorister?: boolean; choristerVerified?: boolean }) {
@@ -59,6 +60,22 @@ export async function upsertChoristerProfileAction(input: unknown) {
 
   const parsed = ProfileSchema.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Invalid data" };
+
+  // New passport uploads must be private files in the owner's folder; an
+  // unchanged existing value (including a legacy public one) is still accepted.
+  const submittedPassport = parsed.data.passportImageUrl?.trim() || null;
+  if (submittedPassport) {
+    const existing = await prisma.choristerProfile.findUnique({
+      where: { userId: user.id },
+      select: { passportImageUrl: true },
+    });
+    if (
+      submittedPassport !== existing?.passportImageUrl &&
+      !isOwnPrivatePassportUrl(submittedPassport, user.id)
+    ) {
+      return { ok: false as const, error: "Please upload your passport image again." };
+    }
+  }
 
   const dobRaw = parsed.data.dateOfBirth?.trim();
   let dateOfBirth: Date | null = null;
