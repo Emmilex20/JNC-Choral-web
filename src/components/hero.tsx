@@ -6,15 +6,30 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { versionedHeroAsset } from "@/lib/site-assets";
+import type { AuditionBanner } from "@/lib/audition-banner";
 
-const slides = [
-  {
-    src: versionedHeroAsset("/hero/hero-1.png"),
-    title: "Auditions 2026",
-    subtitle: "S/A/T/B - Instrumentalists - Production",
-    fit: "cover",
-    position: "center",
-  },
+type Slide = {
+  src: string;
+  title: string;
+  subtitle: string;
+  fit: string;
+  position: string;
+};
+
+function buildSlides(audition: AuditionBanner): Slide[] {
+  return [
+    {
+      src: versionedHeroAsset("/hero/hero-1.png"),
+      title: audition.state === "upcoming" ? `Auditions ${audition.year}` : "Next auditions coming soon",
+      subtitle: "S/A/T/B - Instrumentalists - Production",
+      fit: "cover",
+      position: "center",
+    },
+    ...baseSlides,
+  ];
+}
+
+const baseSlides: Slide[] = [
   {
     src: versionedHeroAsset("/hero/hero1.jpg"),
     title: "Jude Nnam Chorale Platform",
@@ -31,17 +46,20 @@ const slides = [
   },
 ];
 
-export default function Hero() {
+export default function Hero({ audition }: { audition: AuditionBanner }) {
+  const slides = useMemo(() => buildSlides(audition), [audition]);
   const [active, setActive] = useState(0);
 
   useEffect(() => {
+    // Respect users who ask for reduced motion: no auto-advancing slides.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const t = setInterval(() => {
       setActive((i) => (i + 1) % slides.length);
     }, 6000);
     return () => clearInterval(t);
-  }, []);
+  }, [slides.length]);
 
-  const activeSlide = useMemo(() => slides[active], [active]);
+  const activeSlide = slides[active];
 
   return (
     <section className="relative overflow-hidden">
@@ -61,7 +79,7 @@ export default function Hero() {
             }}
           />
         </AnimatePresence>
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-black/70" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(253,230,138,0.18),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(56,189,248,0.14),transparent_60%)]" />
         <div className="absolute -top-28 left-1/2 h-80 w-160 -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.22),transparent_60%)] blur-2xl" />
@@ -77,11 +95,11 @@ export default function Hero() {
           >
             <div className="flex flex-wrap items-center gap-3">
               <Badge className="rounded-full bg-white/10 text-white hover:bg-white/10">
-                Auditions - Abuja
+                {audition.state === "upcoming" ? "Auditions - Abuja" : "Jude Nnam Chorale - Abuja"}
               </Badge>
-              <span className="text-xs text-white/70">
-                1st & 8th Feb, 2026 - 3:30pm
-              </span>
+              {audition.state === "upcoming" ? (
+                <span className="text-xs text-white/80">{audition.dateLabel}</span>
+              ) : null}
             </div>
 
           <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white md:text-6xl">
@@ -99,7 +117,9 @@ export default function Hero() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Button className="rounded-2xl" asChild>
-              <Link href="/auditions">Register for Auditions</Link>
+              <Link href="/auditions">
+                {audition.state === "upcoming" ? "Register for Auditions" : "Audition details"}
+              </Link>
             </Button>
 
             <Button
@@ -153,30 +173,46 @@ export default function Hero() {
               <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.2),transparent_60%)]" />
               <div className="relative">
                 <p className="text-xs uppercase tracking-[0.3em] text-white/60">
-                  Spotlight
+                  Next auditions
                 </p>
-                <h3 className="mt-3 text-2xl font-semibold text-white">
-                  Live sessions + media
-                </h3>
-                <p className="mt-2 text-sm text-white/70">
-                  Experience rehearsals, studio sessions, and performance highlights in one place.
-                </p>
+                {audition.state === "upcoming" ? (
+                  <>
+                    <h3 className="mt-3 text-2xl font-semibold text-white">
+                      {audition.dateLabel}
+                    </h3>
+                    <p className="mt-2 text-sm text-white/70">
+                      {audition.venue ?? "Abuja, Nigeria"}
+                    </p>
+                    {audition.note ? (
+                      <p className="mt-3 text-sm leading-6 text-white/70">{audition.note}</p>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <h3 className="mt-3 text-2xl font-semibold text-white">
+                      Dates will be announced soon
+                    </h3>
+                    <p className="mt-2 text-sm text-white/70">
+                      Keep rehearsing and check back. Create an account to be ready when
+                      the next call opens.
+                    </p>
+                  </>
+                )}
 
-                <div className="mt-6 grid gap-3">
+                <ul className="mt-6 grid gap-3 text-sm text-white/80">
                   {[
-                    { k: "45+", v: "Active members" },
-                    { k: "12", v: "Showcases yearly" },
-                    { k: "8", v: "Sections & crews" },
-                  ].map((s) => (
-                    <div
-                      key={s.k}
+                    "Singers: soprano, alto, tenor and bass",
+                    "Instrumentalists: keys, strings, percussion, brass",
+                    "Production crew: media, sound, graphics, stage",
+                  ].map((line) => (
+                    <li
+                      key={line}
                       className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3"
                     >
-                      <div className="text-lg font-semibold text-white">{s.k}</div>
-                      <div className="text-xs text-white/60">{s.v}</div>
-                    </div>
+                      {line}
+                    </li>
                   ))}
-                </div>
+                </ul>
 
                 <div className="mt-6">
                   <Button
@@ -184,7 +220,9 @@ export default function Hero() {
                     className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
                     asChild
                   >
-                    <Link href="/gallery">View highlights</Link>
+                    <Link href={audition.state === "upcoming" ? "/auditions" : "/auth/register"}>
+                      {audition.state === "upcoming" ? "See how to apply" : "Create an account"}
+                    </Link>
                   </Button>
                 </div>
               </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, User } from "lucide-react";
+import { ChevronDown, Menu, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import NotificationBell from "@/components/notification-bell";
@@ -23,61 +23,109 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-const baseNav = [
+type NavLink = { label: string; href: string };
+type NavGroup = { label: string; items: NavLink[] };
+
+const primaryNav: NavLink[] = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Auditions", href: "/auditions" },
-  { label: "Contact", href: "/contact" },
-];
-
-const mediaNav = [
-  { label: "Scores", href: "/scores" },
-  { label: "Challenges", href: "/music-hub/challenges" },
-  { label: "Gallery", href: "/gallery" },
-  { label: "Music", href: "/music" },
-  { label: "Videos", href: "/videos" },
-];
-
-const userNav = [
   { label: "Events", href: "/events" },
-  { label: "News", href: "/news" },
-  { label: "Academy", href: "/academy" },
-  { label: "Choristers", href: "/choristers" },
 ];
 
-const adminNav = [
-  { label: "Admin", href: "/admin" },
-];
+// Learn and play: everything in the Music Hub in one place.
+const musicHubNav: NavGroup = {
+  label: "Music Hub",
+  items: [
+    { label: "Academy articles", href: "/academy" },
+    { label: "Daily challenge", href: "/music-hub/daily-challenge" },
+    { label: "Quizzes", href: "/music-hub/quizzes" },
+    { label: "Music challenges", href: "/music-hub/challenges" },
+    { label: "Leaderboard", href: "/music-hub/leaderboard" },
+    { label: "Scores bank", href: "/scores" },
+  ],
+};
+
+// Watch and listen.
+const mediaNav: NavGroup = {
+  label: "Media",
+  items: [
+    { label: "Videos", href: "/videos" },
+    { label: "Music", href: "/music" },
+    { label: "Gallery", href: "/gallery" },
+    { label: "News", href: "/news" },
+  ],
+};
+
+const contactNav: NavLink = { label: "Contact", href: "/contact" };
+
+function navLinkClass(active: boolean) {
+  return cn(
+    "relative inline-flex items-center gap-1 whitespace-nowrap py-2 text-sm font-medium text-white/74 transition duration-200 hover:text-white",
+    "after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-amber-200 after:transition-transform after:duration-200 hover:after:scale-x-100",
+    active && "text-white after:scale-x-100"
+  );
+}
+
+const MOBILE_LINK_CLASS =
+  "rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition";
+
+function DesktopGroup({ group, active }: { group: NavGroup; active: boolean }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger className={navLinkClass(active)} suppressHydrationWarning>
+        {group.label}
+        <ChevronDown className="h-3.5 w-3.5 opacity-70" aria-hidden />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="border-white/10 bg-black text-white">
+        {group.items.map((item) => (
+          <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+            <Link href={item.href}>{item.label}</Link>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function MobileGroup({ group, onNavigate }: { group: NavGroup; onNavigate: () => void }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90">
+      <div className="text-xs uppercase tracking-[0.2em] text-white/60">{group.label}</div>
+      <div className="mt-3 grid gap-2">
+        {group.items.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/85 transition hover:bg-white/10"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function SiteNavbar() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const isAuthed = status === "authenticated";
-  const role = session?.user?.role;
   const avatar = session?.user?.image;
   const onboardingComplete = Boolean(session?.user?.onboardingComplete);
-  const isAdmin = role === "ADMIN";
-  const nav = [
-    ...baseNav.slice(0, 3),
-    ...userNav,
-    ...baseNav.slice(3),
-    ...(isAdmin ? adminNav : []),
-  ];
-  const isMediaActive = mediaNav.some((item) => pathname.startsWith(item.href));
+  const isAdmin = session?.user?.role === "ADMIN";
 
   function isActiveHref(href: string) {
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  function navLinkClass(active: boolean) {
-    return cn(
-      "relative py-2 text-sm font-medium text-white/74 transition duration-200 hover:text-white",
-      "after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-amber-200 after:transition-transform after:duration-200 hover:after:scale-x-100",
-      active && "text-white after:scale-x-100"
-    );
-  }
+  const isGroupActive = (group: NavGroup) =>
+    group.items.some((item) => isActiveHref(item.href));
+
+  const mobileLinkClass = MOBILE_LINK_CLASS;
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/62 backdrop-blur-xl">
@@ -94,8 +142,8 @@ export default function SiteNavbar() {
           </div>
         </div>
       ) : null}
-      <div className="mx-auto flex h-[4.75rem] max-w-7xl items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-3">
+      <div className="mx-auto flex h-[4.75rem] max-w-7xl items-center justify-between gap-4 px-4 md:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-3">
           <div className="relative h-11 w-11 overflow-hidden rounded-2xl border border-amber-200/15 bg-white/10 shadow-[0_0_28px_rgba(251,191,36,0.12)]">
             <Image
               src="/logo.svg"
@@ -106,40 +154,38 @@ export default function SiteNavbar() {
             />
           </div>
           <div className="leading-tight">
-            <p className="text-base font-semibold tracking-tight text-white">
+            <p className="whitespace-nowrap text-base font-semibold tracking-tight text-white">
               Jude Nnam Chorale
             </p>
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-amber-100/58">
+            <p className="hidden whitespace-nowrap text-xs font-medium uppercase tracking-[0.18em] text-amber-100/58 xl:block">
               JNC Platform
             </p>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex">
-          {nav.map((item) => (
+        <nav
+          aria-label="Main"
+          className="hidden items-center gap-5 lg:flex xl:gap-7"
+        >
+          {primaryNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={navLinkClass(isActiveHref(item.href))}
+              aria-current={isActiveHref(item.href) ? "page" : undefined}
             >
               {item.label}
             </Link>
           ))}
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              className={navLinkClass(isMediaActive)}
-              suppressHydrationWarning
-            >
-              Media
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-black text-white border-white/10">
-              {mediaNav.map((item) => (
-                <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
-                  <Link href={item.href}>{item.label}</Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <DesktopGroup group={musicHubNav} active={isGroupActive(musicHubNav)} />
+          <DesktopGroup group={mediaNav} active={isGroupActive(mediaNav)} />
+          <Link
+            href={contactNav.href}
+            className={navLinkClass(isActiveHref(contactNav.href))}
+            aria-current={isActiveHref(contactNav.href) ? "page" : undefined}
+          >
+            {contactNav.label}
+          </Link>
           <NotificationBell />
           {isAuthed ? (
             <DropdownMenu>
@@ -147,6 +193,7 @@ export default function SiteNavbar() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Account menu"
                   className="rounded-2xl border border-white/0 text-white transition hover:border-white/10 hover:bg-white/10 hover:text-white"
                 >
                   {avatar ? (
@@ -164,16 +211,24 @@ export default function SiteNavbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="bg-black text-white border-white/10"
+                className="border-white/10 bg-black text-white"
               >
                 <DropdownMenuItem asChild className="cursor-pointer">
-                  <Link href="/profile">Profile</Link>
+                  <Link href="/profile">My profile</Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/choristers">Chorister portal</Link>
+                </DropdownMenuItem>
+                {isAdmin ? (
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/admin">Admin dashboard</Link>
+                  </DropdownMenuItem>
+                ) : null}
                 <DropdownMenuItem
                   className="cursor-pointer"
                   onClick={() => signOut({ callbackUrl: "/" })}
                 >
-                  Logout
+                  Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -187,67 +242,80 @@ export default function SiteNavbar() {
                 <Link href="/auth/login">Log in</Link>
               </Button>
               <Button asChild className="rounded-2xl">
-                <Link href="/auth/register">Register</Link>
+                <Link href="/auth/register">Create account</Link>
               </Button>
             </div>
           )}
         </nav>
 
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           <NotificationBell compact />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-2xl text-white">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open menu"
+                className="rounded-2xl text-white"
+              >
                 <Menu />
               </Button>
             </SheetTrigger>
-            <SheetContent className="bg-black text-white border-white/10 overflow-y-auto">
+            <SheetContent className="overflow-y-auto border-white/10 bg-black text-white">
               <div className="flex min-h-full flex-col">
                 <SheetHeader>
                   <SheetTitle className="text-white">Menu</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6 grid gap-3">
-                  {nav.map((item) => (
+                  {primaryNav.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setOpen(false)}
-                      className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
+                      className={mobileLinkClass}
                     >
                       {item.label}
                     </Link>
                   ))}
-                  <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90">
-                    <div className="text-xs uppercase tracking-[0.2em] text-white/60">
-                      Media
-                    </div>
-                    <div className="mt-3 grid gap-2">
-                      {mediaNav.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className="rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm text-white/85 hover:bg-white/10 transition"
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+                  <MobileGroup group={musicHubNav} onNavigate={() => setOpen(false)} />
+                  <MobileGroup group={mediaNav} onNavigate={() => setOpen(false)} />
+                  <Link
+                    href={contactNav.href}
+                    onClick={() => setOpen(false)}
+                    className={mobileLinkClass}
+                  >
+                    {contactNav.label}
+                  </Link>
                   {isAuthed ? (
                     <>
                       <Link
                         href="/profile"
                         onClick={() => setOpen(false)}
-                        className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/90 hover:bg-white/10 transition"
+                        className={mobileLinkClass}
                       >
-                        Profile
+                        My profile
                       </Link>
+                      <Link
+                        href="/choristers"
+                        onClick={() => setOpen(false)}
+                        className={mobileLinkClass}
+                      >
+                        Chorister portal
+                      </Link>
+                      {isAdmin ? (
+                        <Link
+                          href="/admin"
+                          onClick={() => setOpen(false)}
+                          className={mobileLinkClass}
+                        >
+                          Admin dashboard
+                        </Link>
+                      ) : null}
                       <Button
-                        className="rounded-2xl mt-2"
+                        className="mt-2 rounded-2xl"
                         onClick={() => signOut({ callbackUrl: "/" })}
                       >
-                        Logout
+                        Log out
                       </Button>
                     </>
                   ) : (
@@ -255,7 +323,7 @@ export default function SiteNavbar() {
                       <Button
                         asChild
                         variant="ghost"
-                        className="rounded-2xl mt-2 text-white hover:bg-white/10 hover:text-white"
+                        className="mt-2 rounded-2xl text-white hover:bg-white/10 hover:text-white"
                       >
                         <Link href="/auth/login" onClick={() => setOpen(false)}>
                           Log in
@@ -263,7 +331,7 @@ export default function SiteNavbar() {
                       </Button>
                       <Button asChild className="rounded-2xl">
                         <Link href="/auth/register" onClick={() => setOpen(false)}>
-                          Register
+                          Create account
                         </Link>
                       </Button>
                     </>

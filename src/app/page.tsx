@@ -1,3 +1,4 @@
+import { getAuditionBanner } from "@/lib/audition-banner";
 import { safeJsonLd } from "@/lib/json-ld";
 import SiteNavbar from "@/components/site-navbar";
 import SiteFooter from "@/components/site-footer";
@@ -68,7 +69,9 @@ function leaderboardName(entry: LeaderboardPreviewEntry) {
 
 function HomeEventCard({
   event,
+  isUpcoming,
 }: {
+  isUpcoming: boolean;
   event: {
     id: string;
     title: string;
@@ -109,7 +112,7 @@ function HomeEventCard({
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.72))]" />
         <div className="absolute left-5 top-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/85">
           <CalendarDays className="h-3.5 w-3.5" />
-          Event
+          {isUpcoming ? "Upcoming" : "Past event"}
         </div>
       </div>
 
@@ -255,6 +258,7 @@ export default async function HomePage() {
     popularQuiz,
     currentSpotlight,
     leaderboardPreview,
+    auditionBanner,
   ] =
     await Promise.all([
       prisma.event.findMany({
@@ -285,6 +289,7 @@ export default async function HomePage() {
       getPopularQuiz(),
       getCurrentSpotlight(),
       getLeaderboardPreview(3),
+      getAuditionBanner(),
     ]);
 
   const homeEvents = [...upcomingEvents, ...recentPastEvents].slice(0, 3);
@@ -331,7 +336,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen bg-black text-white">
       <SiteNavbar />
-      <Hero />
+      <Hero audition={auditionBanner} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
@@ -381,12 +386,12 @@ export default async function HomePage() {
                 Featured Article
               </p>
               <h3 className="mt-3 line-clamp-2 text-xl font-semibold text-white">
-                {featuredAcademyArticle?.title ?? "Music Academy articles are coming soon"}
+                {featuredAcademyArticle?.title ?? "Music theory and choir craft"}
               </h3>
               <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
                 {featuredAcademyArticle
                   ? featuredAcademyArticle.category.name
-                  : "Publish an article from the admin Academy workspace to feature it here."}
+                  : "Guides on sight-reading, harmony, vocal health and more."}
               </p>
             </Link>
 
@@ -401,11 +406,11 @@ export default async function HomePage() {
                 Today&apos;s Challenge
               </p>
               <h3 className="mt-3 line-clamp-2 text-xl font-semibold text-white">
-                {todayChallenge?.title ?? "Daily theory challenge is waiting for setup"}
+                {todayChallenge?.title ?? "Try a daily theory challenge"}
               </h3>
               <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
                 {todayChallenge?.prompt ??
-                  "Create today&apos;s challenge in admin so visitors can practice."}
+                  "Test your ear and theory with a quick question. A new one is added regularly."}
               </p>
             </Link>
 
@@ -439,18 +444,19 @@ export default async function HomePage() {
                 Popular Quiz
               </p>
               <h3 className="mt-3 line-clamp-2 text-xl font-semibold text-white">
-                {popularQuiz?.title ?? "Music quizzes are ready for your first publish"}
+                {popularQuiz?.title ?? "Test your music knowledge"}
               </h3>
               <p className="mt-3 line-clamp-2 text-sm leading-6 text-white/58">
                 {popularQuiz
                   ? `${popularQuiz._count.questions} questions in ${popularQuiz.category}`
-                  : "Build and publish a quiz from the admin Academy workspace."}
+                  : "Short quizzes on theory, ear training and choir basics."}
               </p>
             </Link>
           </div>
         </div>
       </section>
 
+      {currentSpotlight || leaderboardPreview.length > 0 ? (
       <section className="border-b border-white/10 bg-[linear-gradient(135deg,#02040a_0%,#06101c_52%,#0d0b05_100%)]">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6">
           <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -492,14 +498,14 @@ export default async function HomePage() {
                     Weekly Spotlight
                   </span>
                   <h3 className="mt-3 text-2xl font-semibold text-white">
-                    {currentSpotlight?.name ?? "Member spotlight coming soon"}
+                    {currentSpotlight?.name ?? "Be part of the story"}
                   </h3>
                 </div>
               </div>
               <div className="p-5">
                 <p className="line-clamp-3 text-sm leading-7 text-white/62">
                   {currentSpotlight?.story ??
-                    "Publish a weekly chorister spotlight from the admin dashboard to celebrate the people inside the sound."}
+                    "Choristers are celebrated here every week. Join JNC and your story could be next."}
                 </p>
               </div>
             </Link>
@@ -534,7 +540,7 @@ export default async function HomePage() {
                   ))
                 ) : (
                   <p className="rounded-2xl border border-white/10 bg-black/24 p-4 text-sm leading-7 text-white/58">
-                    Complete quizzes or daily challenges to start the weekly rankings.
+                    Take a quiz or the daily challenge to appear on the weekly board.
                   </p>
                 )}
               </div>
@@ -571,6 +577,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      ) : null}
 
       <section className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
         <div className="max-w-3xl">
@@ -710,8 +717,8 @@ export default async function HomePage() {
                 Watch JNC perform.
               </h2>
               <p className="mt-4 text-base leading-8 text-white/66">
-                Sound sells the choir better than any paragraph. Feature recent
-                performances, rehearsals, music videos, and public highlights here.
+                Hear the blend, see the room, and feel the energy of recent
+                performances, rehearsals, and music videos.
               </p>
             </div>
             <Button
@@ -780,12 +787,10 @@ export default async function HomePage() {
               <div className="rounded-3xl border border-emerald-200/15 bg-emerald-300/8 p-6">
                 <Sparkles className="h-6 w-6 text-emerald-100" />
                 <p className="mt-4 text-lg font-semibold text-white">
-                  Upload more performance videos from the admin dashboard to keep
-                  this section fresh.
+                  More performances are on the way.
                 </p>
                 <p className="mt-3 text-sm leading-7 text-white/62">
-                  Public visitors should hear the blend, see the room, and feel
-                  the energy before they apply.
+                  Visit the videos page for everything we have published so far.
                 </p>
               </div>
             </div>
@@ -900,10 +905,12 @@ export default async function HomePage() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {homeEvents.length > 0 ? (
-            homeEvents.map((event) => <HomeEventCard key={event.id} event={event} />)
+            homeEvents.map((event) => (
+              <HomeEventCard key={event.id} event={event} isUpcoming={event.startsAt >= now} />
+            ))
           ) : (
             <div className="rounded-3xl border border-white/10 bg-white/4 p-6 text-sm leading-7 text-white/62 lg:col-span-2">
-              Published events will appear here when the admin team adds them.
+              No events are scheduled right now. Check back soon, or follow our news for updates.
             </div>
           )}
           <div className="rounded-3xl border border-white/10 bg-white/4 p-6">
