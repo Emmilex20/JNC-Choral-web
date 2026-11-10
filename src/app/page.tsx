@@ -182,29 +182,6 @@ const joinReasons: {
   },
 ];
 
-const journey = [
-  {
-    label: "Foundation",
-    title: "A sound shaped by purpose",
-    body: "JNC began with a simple conviction: music can gather people, lift faith, and create lasting joy.",
-  },
-  {
-    label: "Training",
-    title: "Voices are formed, not rushed",
-    body: "Rehearsals focus on blend, tone, stage confidence, listening, and musical discipline.",
-  },
-  {
-    label: "Performance",
-    title: "The choir meets the moment",
-    body: "From worship gatherings to concerts and special events, every performance carries preparation and heart.",
-  },
-  {
-    label: "Next Generation",
-    title: "New singers, players, and creators rise",
-    body: "Auditions open the door for fresh voices, instrumentalists, and production talent to grow in the community.",
-  },
-];
-
 const testimonials = [
   {
     quote:
@@ -357,6 +334,75 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.24em] text-amber-100/70">
+              Events and news
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
+              What&apos;s coming up.
+            </h2>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              variant="outline"
+              className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+              asChild
+            >
+              <Link href="/events">Events</Link>
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
+              asChild
+            >
+              <Link href="/news">News</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          {homeEvents.length > 0 ? (
+            homeEvents.map((event) => (
+              <HomeEventCard key={event.id} event={event} isUpcoming={event.startsAt >= now} />
+            ))
+          ) : (
+            <div className="rounded-3xl border border-white/10 bg-white/4 p-6 text-sm leading-7 text-white/62 lg:col-span-2">
+              No events are scheduled right now. Check back soon, or follow our news for updates.
+            </div>
+          )}
+          <div className="rounded-3xl border border-white/10 bg-white/4 p-6">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/45">
+              <Users className="h-4 w-4" />
+              Latest news
+            </div>
+            <div className="mt-5 grid gap-4">
+              {latestNews.length > 0 ? (
+                latestNews.map((post: HomeNewsPost) => (
+                  <Link
+                    key={post.id}
+                    href={`/news/${post.id}`}
+                    className="border-b border-white/10 pb-4 last:border-b-0 last:pb-0"
+                  >
+                    <p className="line-clamp-2 text-sm font-semibold text-white">
+                      {post.title}
+                    </p>
+                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/58">
+                      {post.body}
+                    </p>
+                  </Link>
+                ))
+              ) : (
+                <p className="text-sm leading-7 text-white/58">
+                  Choir announcements will appear here when published.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-b border-white/10 bg-[#030711]">
         <div className="mx-auto max-w-7xl px-4 py-10 md:px-6">
           <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -368,10 +414,15 @@ export default async function HomePage() {
                 Learn, practice, and return tomorrow stronger.
               </h2>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-white/56">
-              Fresh academy writing, today&apos;s theory challenge, public challenges, and a quiz
-              to sharpen your choir instincts.
-            </p>
+            <div className="flex max-w-xl flex-col gap-4 lg:items-end">
+              <p className="text-sm leading-6 text-white/56 lg:text-right">
+                Fresh academy writing, a daily theory challenge, music challenges and quizzes.
+                Free to explore, and signing in lets you save your progress.
+              </p>
+              <Button className="w-fit rounded-2xl bg-amber-300 font-semibold text-black hover:bg-amber-200" asChild>
+                <Link href="/music-hub">Open the Music Hub</Link>
+              </Button>
+            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -666,46 +717,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
-        <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-cyan-100/70">
-              Choir Journey
-            </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-              How a sound becomes a movement.
-            </h2>
-            <p className="mt-4 text-base leading-8 text-white/65">
-              The journey is not only public performances. It is the weekly work,
-              the corrected notes, the friendships, the confidence, and the
-              moments when many voices become one.
-            </p>
-          </div>
-
-          <div className="grid gap-4">
-            {journey.map((step, index) => (
-              <article
-                key={step.title}
-                className="grid gap-5 rounded-3xl border border-white/10 bg-white/4 p-5 sm:grid-cols-[88px_1fr]"
-              >
-                <div>
-                  <p className="text-3xl font-semibold text-amber-100">
-                    {String(index + 1).padStart(2, "0")}
-                  </p>
-                  <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-white/42">
-                    {step.label}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-white/65">{step.body}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="border-y border-white/10 bg-[#07110f]">
         <div className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -842,104 +853,32 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-white text-black">
-        <div className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
+      <section className="border-y border-white/10 bg-[#07110f]">
+        <div className="mx-auto max-w-7xl px-4 py-14 md:px-6 md:py-16">
           <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.24em] text-black/50">
+            <p className="text-xs uppercase tracking-[0.24em] text-emerald-100/70">
               Success Stories
             </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-5xl">
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-white md:text-4xl">
               What changes when people join the sound.
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
             {testimonials.map((story) => (
-              <article
+              <figure
                 key={story.quote}
-                className="rounded-3xl border border-black/10 bg-black/3 p-6"
+                className="rounded-3xl border border-white/10 bg-white/4 p-6"
               >
-                <Quote className="h-7 w-7 text-amber-600" />
-                <p className="mt-5 text-base leading-8 text-black/76">
+                <Quote className="h-6 w-6 text-amber-200" aria-hidden />
+                <blockquote className="mt-4 text-sm leading-7 text-white/80">
                   &ldquo;{story.quote}&rdquo;
-                </p>
-                <div className="mt-6">
-                  <p className="font-semibold text-black">{story.name}</p>
-                  <p className="text-xs uppercase tracking-[0.18em] text-black/45">
-                    {story.role}
-                  </p>
-                </div>
-              </article>
+                </blockquote>
+                <figcaption className="mt-5 text-xs uppercase tracking-[0.18em] text-white/50">
+                  {story.role}
+                </figcaption>
+              </figure>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-18 md:px-6 md:py-24">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.24em] text-amber-100/70">
-              Live Dates and Updates
-            </p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-              Meet the choir in motion.
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant="outline"
-              className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
-              asChild
-            >
-              <Link href="/events">Events</Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-2xl border-white/15 bg-white/5 text-white hover:bg-white/10"
-              asChild
-            >
-              <Link href="/news">News</Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {homeEvents.length > 0 ? (
-            homeEvents.map((event) => (
-              <HomeEventCard key={event.id} event={event} isUpcoming={event.startsAt >= now} />
-            ))
-          ) : (
-            <div className="rounded-3xl border border-white/10 bg-white/4 p-6 text-sm leading-7 text-white/62 lg:col-span-2">
-              No events are scheduled right now. Check back soon, or follow our news for updates.
-            </div>
-          )}
-          <div className="rounded-3xl border border-white/10 bg-white/4 p-6">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/45">
-              <Users className="h-4 w-4" />
-              Latest news
-            </div>
-            <div className="mt-5 grid gap-4">
-              {latestNews.length > 0 ? (
-                latestNews.map((post: HomeNewsPost) => (
-                  <Link
-                    key={post.id}
-                    href={`/news/${post.id}`}
-                    className="border-b border-white/10 pb-4 last:border-b-0 last:pb-0"
-                  >
-                    <p className="line-clamp-2 text-sm font-semibold text-white">
-                      {post.title}
-                    </p>
-                    <p className="mt-2 line-clamp-2 text-sm leading-6 text-white/58">
-                      {post.body}
-                    </p>
-                  </Link>
-                ))
-              ) : (
-                <p className="text-sm leading-7 text-white/58">
-                  Choir announcements will appear here when published.
-                </p>
-              )}
-            </div>
           </div>
         </div>
       </section>

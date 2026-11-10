@@ -116,7 +116,10 @@ export default function Hero({ audition }: { audition: AuditionBanner }) {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button className="rounded-2xl" asChild>
+            <Button
+              className="rounded-2xl bg-amber-300 px-6 font-semibold text-black hover:bg-amber-200"
+              asChild
+            >
               <Link href="/auditions">
                 {audition.state === "upcoming" ? "Register for Auditions" : "Audition details"}
               </Link>

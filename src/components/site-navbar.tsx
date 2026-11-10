@@ -37,6 +37,7 @@ const primaryNav: NavLink[] = [
 const musicHubNav: NavGroup = {
   label: "Music Hub",
   items: [
+    { label: "Music Hub home", href: "/music-hub" },
     { label: "Academy articles", href: "/academy" },
     { label: "Daily challenge", href: "/music-hub/daily-challenge" },
     { label: "Quizzes", href: "/music-hub/quizzes" },
