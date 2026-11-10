@@ -184,7 +184,11 @@ function analyzePerformance(
       index: note.index,
       expectedPitch: note.expectedPitch,
       sungPitch: midiToNearestSightReadingPitch(normalizedMidi),
-      pitchErrorSemitones: Number((normalizedMidi - note.expectedMidi).toFixed(2)),
+      // The server accepts +/-24 semitones; clamp stray octave-jump frames so one
+      // noisy note can't make the whole attempt fail validation.
+      pitchErrorSemitones: Number(
+        Math.max(-24, Math.min(24, normalizedMidi - note.expectedMidi)).toFixed(2)
+      ),
       coverage: Number(note.coverage.toFixed(2)),
     };
   });
@@ -212,7 +216,9 @@ function analyzePerformance(
     pitchScore,
     rhythmScore,
     stabilityScore,
-    transpositionSemitones: Number(transpositionSemitones.toFixed(2)),
+    transpositionSemitones: Number(
+      Math.max(-24, Math.min(24, transpositionSemitones)).toFixed(2)
+    ),
     noteResults,
   };
 }
@@ -284,26 +290,36 @@ export function SightSingingPractice({
     setFeedback(null);
     setSaved(false);
 
-    const res = await submitSightReadingAttemptAction({
-      sourceType,
-      sourceId,
-      exerciseTitle: exercise.title,
-      ...scorePayload,
-    });
+    try {
+      const res = await submitSightReadingAttemptAction({
+        sourceType,
+        sourceId,
+        exerciseTitle: exercise.title,
+        ...scorePayload,
+      });
 
-    if (res.ok) {
-      setFeedback(res.feedback);
-      setSaved(res.saved);
-    } else {
+      if (res.ok) {
+        setFeedback(res.feedback);
+        setSaved(res.saved);
+      } else {
+        setFeedback({
+          summary: "Your local scoring completed, but coaching feedback could not be saved.",
+          strengths: ["The browser still measured pitch, rhythm, and stability."],
+          improvements: [res.error],
+          nextStep: "Try again after refreshing the page.",
+        });
+      }
+    } catch {
+      // Network/server failure: keep the local score and don't leave the UI stuck.
       setFeedback({
         summary: "Your local scoring completed, but coaching feedback could not be saved.",
         strengths: ["The browser still measured pitch, rhythm, and stability."],
-        improvements: [res.error],
-        nextStep: "Try again after refreshing the page.",
+        improvements: ["The server could not be reached."],
+        nextStep: "Check your connection and try again.",
       });
+    } finally {
+      setStage("idle");
     }
-
-    setStage("idle");
   }
 
   async function startRecording() {
